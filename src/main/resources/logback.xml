@@ -1,0 +1,6 @@
+<configuration scan="true" scanPeriod="5 minutes">
+    <insertFromJNDI env-entry-name="java:comp/env/ds-storage-logback-config" as="logbackConfiguration"/>
+
+    <include file="${logbackConfiguration}"/>
+
+</configuration>
