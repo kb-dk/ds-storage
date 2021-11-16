@@ -6,6 +6,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dk.kb.storage.util.UniqueTimestampGenerator;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -50,7 +51,7 @@ public class DsStorage implements AutoCloseable {
 
 	// statistics shown on monitor.jsp page
 	public static Date INITDATE = null;
-	private static UniqueTimestampGenerator timestampGenerator = new UniqueTimestampGenerator();
+	
 
 	private Connection connection;
 
@@ -113,7 +114,7 @@ public class DsStorage implements AutoCloseable {
 			throw new Exception("Record with id has itself as parent:"+record.getId());			
 		}
 				
-		 long nowStamp = timestampGenerator.next();
+		 long nowStamp = UniqueTimestampGenerator.next();
   		 log.debug("Creating new record: " + record.getId());
 		
   		 try (PreparedStatement stmt = connection.prepareStatement(createRecordStatement);) {
