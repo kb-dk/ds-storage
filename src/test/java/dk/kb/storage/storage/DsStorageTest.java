@@ -1,9 +1,5 @@
 package dk.kb.storage.storage;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,6 +10,7 @@ import java.sql.SQLException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
@@ -118,13 +115,13 @@ public class DsStorageTest {
               
             //Load and check values are correct
             DsRecord recordLoaded = storage.loadRecord(id);
-            assertEquals(id,recordLoaded.getId());
-            assertEquals(base,recordLoaded.getBase());
-            assertEquals(indexable,recordLoaded.isIndexable());
-            assertFalse(recordLoaded.isDeleted());
-            assertEquals(parentId,record.getParentId());        
-            assertTrue(recordLoaded.getcTime() > 0);
-            assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
+            Assertions.assertEquals(id,recordLoaded.getId());
+            Assertions.assertEquals(base,recordLoaded.getBase());
+            Assertions.assertEquals(indexable,recordLoaded.isIndexable());
+            Assertions.assertFalse(recordLoaded.isDeleted());
+            Assertions.assertEquals(parentId,record.getParentId());        
+            Assertions.assertTrue(recordLoaded.getcTime() > 0);
+            Assertions.assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
 	    }
 	    
 	    
