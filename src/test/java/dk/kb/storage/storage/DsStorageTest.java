@@ -1,5 +1,9 @@
 package dk.kb.storage.storage;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,10 +12,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 
 public class DsStorageTest {
@@ -20,27 +27,31 @@ public class DsStorageTest {
 	    private static final String CREATE_TABLES_DDL_FILE = "ddl/create_ds_storage.ddl";
 
 	    private static final String DRIVER = "org.h2.Driver";
-	    private static final String test_classes_path = new File(Thread.currentThread().getContextClassLoader().getResource("logback-test.xml").getPath()).getParentFile().getAbsolutePath();
-	    private static final String URL = "jdbc:h2:"+test_classes_path+"/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE";
+	    
+	    //We need the relative location. This works both in IDE's and Maven.
+	    private static final String TEST_CLASSES_PATH = new File(Thread.currentThread().getContextClassLoader().getResource("logback-test.xml").getPath()).getParentFile().getAbsolutePath();
+	    private static final String URL = "jdbc:h2:"+TEST_CLASSES_PATH+"/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE";
 	    private static final String USERNAME = "";
 	    private static final String PASSWORD = "";
-
 	
+	    private DsStorage storage = null;
 
+	    
 	    private static void createEmptyDBFromDDL() throws Exception {
 	        // Delete if exists
-	        doDelete(new File(test_classes_path+"/h2"));
-	        
+	        doDelete(new File(TEST_CLASSES_PATH +"/h2"));
 	        try {
 	            Class.forName(DRIVER); // load the driver
 	        } catch (ClassNotFoundException e) {
-	            throw new SQLException(e);
+	          
+	        	throw new SQLException(e);
 	        }
+	        
 	        
 	        try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD)){
 	            File file = getFile(CREATE_TABLES_DDL_FILE);
 	            log.info("Running DDL script:" + file.getAbsolutePath());
-	        
+	            
 	            if (!file.exists()) {
 	                log.error("DDL script not found:" + file.getAbsolutePath());
 	                throw new RuntimeException("DDL Script file not found:" + file.getAbsolutePath());
@@ -50,16 +61,28 @@ public class DsStorageTest {
 	        
 	            connection.createStatement().execute("SHUTDOWN");
 	        }
+	        catch(Exception e) {
+	        	e.printStackTrace();
+	        }
 	        
 	    }
 	    
 
 	    @BeforeAll
 	    public static void beforeClass() throws Exception {
-	        createEmptyDBFromDDL();
+	        	    	
+	    	createEmptyDBFromDDL();
 	        DsStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
-
+	        
+	        
+	        
 	    }
+	    @BeforeEach
+	    public void beforeEach() throws Exception {	        	    	
+	    	storage = new  DsStorage();	        	        	        
+	    }
+	    
+        
 
 	    @AfterAll
 	    public static void afterClass() {
@@ -82,6 +105,27 @@ public class DsStorageTest {
 	    }
 	    
 	    
+	    @Test
+	    public void testCreateAndLoadRecord() throws Exception {
+	    	String id ="id1";
+	    	String base="base_test";
+	    	boolean indexable = true;
+	    	String data = "Hello";
+	    	String parentId="id_1_parent";
+	  	    	
+	    	DsRecord record = new DsRecord(id, base,indexable,data, parentId);
+            storage.createNewRecord(record );
+              
+            //Load and check values are correct
+            DsRecord recordLoaded = storage.loadRecord(id);
+            assertEquals(id,recordLoaded.getId());
+            assertEquals(base,recordLoaded.getBase());
+            assertEquals(indexable,recordLoaded.isIndexable());
+            assertFalse(recordLoaded.isDeleted());
+            assertEquals(parentId,record.getParentId());        
+            assertTrue(recordLoaded.getcTime() > 0);
+            assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
+	    }
 	    
 	    
 	    //TODO TOES? Is this somewhere in kb-util ?
