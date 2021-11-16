@@ -1,24 +1,7 @@
 package dk.kb.storage.storage;
 
-/*
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- */
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
+
 
 /**
  * Utility class that generates unique timestamps. The resulting timestamps
@@ -58,7 +41,7 @@ public class UniqueTimestampGenerator {
 
     private long salt;
     private long last;
-    private DateFormat dateFormat;
+
 
     /**
      * Create a new UniqueTimestampGenerator.
@@ -73,7 +56,7 @@ public class UniqueTimestampGenerator {
                                      " function past " + new Date(MAX_TIME));
         }
 
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+      
     }
 
     /**
@@ -196,46 +179,8 @@ public class UniqueTimestampGenerator {
         return systemTime << SALT_BITS;
     }
 
-    /**
-     * Return a string representation of the salted timestamp {@code timestamp}.
-     * The string is formatted as {@code "yyyy-MM-dd'T'HH:mm:ss.SSS"}, eg.
-     * {@code 2001-07-04T12:08:56.235}.
-     *
-     * @param timestamp the salted timestamp to format
-     * @return string formatted timestamp as described above
-     */
-    public String formatTimestamp(long timestamp){
-        return formatSystemTime(systemTime(timestamp));
-    }
+   
 
-    /**
-     * Return a string representation of the (unsalted) system time
-     * {@code systemTime} (as obtained from {@code System.currentTimeMillis()}).
-     * The string is formatted as {@code "yyyy-MM-dd'T'HH:mm:ss.SSS"}, eg.
-     * {@code 2001-07-04T12:08:56.235}.
-     *
-     * @param systemTime the system time, as obtained from
-     *                   {@code System.currentTimeMillis()}
-     * @return string formatted timestamp as described above
-     */
-    public String formatSystemTime(long systemTime) {
-        return dateFormat.format(new Date(systemTime));
-    }
-
-    /**
-     * Return a (unsalted) system time in milliseconds parsed from the string
-     * {@code systemTime} based on the pattern
-     * {@code "yyyy-MM-dd'T'HH:mm:ss.SSS"}.
-     * <p/>
-     * Use the method {@link #baseTimestamp(long)} to convert the result
-     * into a salted timestamp. But beware that a timestamp generated this
-     * way may not be unique.
-     * @param systemTime string formatted system time as described above
-     * @return number of milliseconds since the Unix Epoch
-     * @throws ParseException if unable to parse String. 
-     */
-    public long parseSystemTime(String systemTime) throws ParseException {
-        return dateFormat.parse(systemTime).getTime();
-    }
+   
 }
 
