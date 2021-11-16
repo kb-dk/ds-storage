@@ -7,6 +7,9 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
@@ -124,6 +127,38 @@ public class DsStorageTest {
             Assertions.assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
 	    
 	    }
+	    
+	    
+	    
+	    /*
+	    private void createLademansData() throws Exception{
+
+	        
+
+	        Record lademands = new Record(LADEMANNS_LEKSIKON, "foo", new byte[0]);
+	        records.add(lademands);
+	        ArrayList<Record> childrenList = new ArrayList<>();
+	        for (int i=1;i<=20;i++){
+	            Record bind =  new Record("Lademanns leksikon Bind "+i,  "foo", new byte[0]);
+	            bind.setParents(Arrays.asList(lademands));
+	            childrenList.add(bind);
+
+	            ArrayList<Record> childrenListNest1 = new ArrayList<>();
+	            for (int j=1;j<=3;j++){
+	                Record bindNest1 =  new Record("Lademanns leksikon Bind "+i+" Del "+j,  "foo", new byte[0]);
+	                bindNest1.setParents(Arrays.asList(bind));
+	                childrenListNest1.add(bindNest1);
+	            }
+	            bind.setChildren(childrenListNest1);
+
+	        }
+	        lademands.setChildren(childrenList);
+
+	        
+
+	    }
+  
+	    */
 	    
 	    
 	    //TODO TOES? Is this somewhere in kb-util ?
