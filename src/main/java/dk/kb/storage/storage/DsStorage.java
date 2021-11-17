@@ -17,6 +17,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+
+/*
+ * This class will be called by the facade class. The facade class is also responsible for commit or rollback
+  * 
+ */
+
 public class DsStorage implements AutoCloseable {
 
 	private static final Logger log = LoggerFactory.getLogger(DsStorage.class);
@@ -27,7 +33,6 @@ public class DsStorage implements AutoCloseable {
 	private static final String ID_COLUMN = "id";
 	private static final String BASE_COLUMN = "base";
 	private static final String DELETED_COLUMN = "deleted";
-	private static final String INDEXABLE_COLUMN = "indexable";
 	private static final String DATA_COLUMN = "data";
 	private static final String CTIME_COLUMN = "ctime";
 	private static final String MTIME_COLUMN = "mtime";
@@ -38,11 +43,14 @@ public class DsStorage implements AutoCloseable {
 			+ ID_COLUMN + ", "
 			+ BASE_COLUMN + ", "
 			+ DELETED_COLUMN + ", "
-			+ INDEXABLE_COLUMN + ", "
 			+ CTIME_COLUMN + ", "
 			+ MTIME_COLUMN + ", "
-			+ DATA_COLUMN +  " "
+			+ DATA_COLUMN +  ", "
+			+ PARENT_ID_COLUMN +  " "
 			+ ") VALUES (?,?,?,?,?,?,?)";
+	
+	
+	private static String getChildIdsStatement="SELECT "+ID_COLUMN +" FROM " + RECORDS_TABLE + " WHERE "+PARENT_ID_COLUMN+"= ?";
 	
 	private static String getRecordByIdStatement="SELECT * FROM " + RECORDS_TABLE + " WHERE ID= ?";
 	
@@ -100,8 +108,24 @@ public class DsStorage implements AutoCloseable {
 	                DsRecord record = createRecordFromRS(rs);
 		            return record;
 	            }			 
-		 }			
+		 }				      		 		 		
 	}
+	
+	public ArrayList<String> getChildIds(String parentId) throws SQLException {
+		
+		ArrayList<String> childIds= new ArrayList<String>();
+		try (PreparedStatement stmt = connection.prepareStatement(getChildIdsStatement);) {
+			 stmt.setString(1, parentId);			 
+			 try (ResultSet rs = stmt.executeQuery();) {	                
+				 while(rs.next()) {			 
+	                	 String id = rs.getString(ID_COLUMN);	                
+	                	 childIds.add(id);
+	                }				 	              
+	            }			 
+		 }			
+	 return childIds;
+	}
+	
 	
 
 	public void createNewRecord(DsRecord record) throws Exception {
@@ -120,15 +144,16 @@ public class DsStorage implements AutoCloseable {
   		 try (PreparedStatement stmt = connection.prepareStatement(createRecordStatement);) {
 			stmt.setString(1,record.getId());
 			stmt.setString(2, record.getBase());
-			stmt.setInt(3,0);
-			stmt.setInt(4, boolToInt(record.isIndexable()));
+			stmt.setInt(3,0);			
+			stmt.setLong(4, nowStamp);
 			stmt.setLong(5, nowStamp);
-			stmt.setLong(6, nowStamp);
-			stmt.setString(7,record.getData());
+			stmt.setString(6,record.getData());
+			stmt.setString(7,record.getParentId());
 			stmt.executeUpdate();			
 			
 		} catch (SQLException e) {
 			String message = "SQL Exception in createNewRecord with id:"+record.getId() +" error:"+e.getMessage();
+			e.printStackTrace();
 			log.error(message);
 			throw new SQLException(message, e);
 		}
@@ -140,14 +165,13 @@ public class DsStorage implements AutoCloseable {
         
         String id = rs.getString(ID_COLUMN);
         String base = rs.getString(BASE_COLUMN);
-        boolean deleted = rs.getInt(DELETED_COLUMN)==1;
-        boolean indexable = rs.getInt(INDEXABLE_COLUMN)==1;
+        boolean deleted = rs.getInt(DELETED_COLUMN)==1;     
         String data = rs.getString(DATA_COLUMN);
         long cTime = rs.getLong(CTIME_COLUMN);
         long mTime = rs.getLong(MTIME_COLUMN);	
         String parentId = rs.getString(PARENT_ID_COLUMN);
                
-        DsRecord record = new DsRecord(id, base, indexable, data, parentId);
+        DsRecord record = new DsRecord(id, base, data, parentId);
         record.setcTime(cTime);
         record.setmTime(mTime);
         record.setDeleted(deleted);
@@ -177,10 +201,6 @@ public class DsStorage implements AutoCloseable {
 			throw new SQLException();
 		}
 	}
-
-	private int boolToInt(boolean isTrue) {
-        return isTrue ? 1 : 0;
-    }
 
 
 	public void commit() throws SQLException {

@@ -1,5 +1,7 @@
 package dk.kb.storage.storage;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,8 +10,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
@@ -108,57 +108,54 @@ public class DsStorageTest {
 	    @Test
 	    public void testCreateAndLoadRecord() throws Exception {
 	    	String id ="id1";
-	    	String base="base_test";
-	    	boolean indexable = true;
+	    	String base="base_test";	    	
 	    	String data = "Hello";
 	    	String parentId="id_1_parent";
 	  	    	
-	    	DsRecord record = new DsRecord(id, base,indexable,data, parentId);
+	    	DsRecord record = new DsRecord(id, base,data, parentId);
             storage.createNewRecord(record );
               
             //Load and check values are correct
             DsRecord recordLoaded = storage.loadRecord(id);
             Assertions.assertEquals(id,recordLoaded.getId());
             Assertions.assertEquals(base,recordLoaded.getBase());
-            Assertions.assertEquals(indexable,recordLoaded.isIndexable());
             Assertions.assertFalse(recordLoaded.isDeleted());
             Assertions.assertEquals(parentId,record.getParentId());        
             Assertions.assertTrue(recordLoaded.getcTime() > 0);
             Assertions.assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
 	    
+            storage.commit();
 	    }
 	    
 	    
 	    
 	    /*
-	    private void createLademansData() throws Exception{
-
+	     * Example of parent with 10K children
+	     */
+	    @Test
+	    public  void testManyChildren10K() throws Exception{
+	    	
+	    	
+	    	String parentId="mega_parent_id";
+	       	DsRecord megaParent = new DsRecord(parentId, "test_base","mega parent data",null);
+	    	
+	    	storage.createNewRecord(megaParent);
 	        
-
-	        Record lademands = new Record(LADEMANNS_LEKSIKON, "foo", new byte[0]);
-	        records.add(lademands);
-	        ArrayList<Record> childrenList = new ArrayList<>();
-	        for (int i=1;i<=20;i++){
-	            Record bind =  new Record("Lademanns leksikon Bind "+i,  "foo", new byte[0]);
-	            bind.setParents(Arrays.asList(lademands));
-	            childrenList.add(bind);
-
-	            ArrayList<Record> childrenListNest1 = new ArrayList<>();
-	            for (int j=1;j<=3;j++){
-	                Record bindNest1 =  new Record("Lademanns leksikon Bind "+i+" Del "+j,  "foo", new byte[0]);
-	                bindNest1.setParents(Arrays.asList(bind));
-	                childrenListNest1.add(bindNest1);
-	            }
-	            bind.setChildren(childrenListNest1);
-
+	        for (int i=1;i<=10000;i++){	        
+	         	DsRecord child = new DsRecord("child"+i, "test_base","child data "+i,parentId);
+                storage.createNewRecord(child);	            
+	        
 	        }
-	        lademands.setChildren(childrenList);
-
+	        storage.commit();  	        
+           //test children are loaded correct
 	        
-
+	        ArrayList<String> childIds = storage.getChildIds(parentId);
+	        assertEquals(10000, childIds.size());
+	        System.out.println(childIds);
+	      
 	    }
   
-	    */
+	    
 	    
 	    
 	    //TODO TOES? Is this somewhere in kb-util ?

@@ -1,21 +1,22 @@
 package dk.kb.storage.storage;
 
+import java.util.ArrayList;
+
 public class DsRecord {
 
 private String id;
 private String base;
 private boolean deleted;
-private boolean indexable;
 private String data;
 private long cTime; //Internal value
 private long mTime; //Internal value
+private ArrayList<String> children = new  ArrayList<String>();  
 private String parentId;
 
 
-  public DsRecord(String id, String base, boolean indexable, String data, String parentId) {
+  public DsRecord(String id, String base,  String data, String parentId) {
 		this.id=id;
-		this.base=base;
-		this.indexable=indexable;
+		this.base=base;		
 		this.data=data;
 		this.parentId=parentId;
 	}
@@ -50,17 +51,7 @@ private String parentId;
 		this.deleted = deleted;
 	}
 
-
-	public boolean isIndexable() {
-		return indexable;
-	}
-
-
-	public void setIndexable(boolean indexable) {
-		this.indexable = indexable;
-	}
-
-
+	
 	public String getData() {
 		return data;
 	}
@@ -99,6 +90,23 @@ private String parentId;
 	public void setParentId(String parentId) {
 		this.parentId = parentId;
 	}
+
+	public ArrayList<String> getChildren() {
+		return children;
+	}
+
+
+	public void setChildren(ArrayList<String> children) {
+		this.children = children;
+	}
+
+
+	@Override
+	public String toString() {
+		return "DsRecord [id=" + id + ", base=" + base + ", deleted=" + deleted + ", data=" + data + ", cTime=" + cTime
+				+ ", mTime=" + mTime + ", #children=" + children.size()+ ", parentId=" + parentId + "]";
+	}
+
 
 
 	
