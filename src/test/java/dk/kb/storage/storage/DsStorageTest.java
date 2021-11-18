@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
 
@@ -37,7 +38,7 @@ public class DsStorageTest {
 	    private static final String USERNAME = "";
 	    private static final String PASSWORD = "";
 	
-	    private DsStorage storage = null;
+	    private static DsStorage storage = null;
 
 	    
 	    private static void createEmptyDBFromDDL() throws Exception {
@@ -73,16 +74,16 @@ public class DsStorageTest {
 
 	    @BeforeAll
 	    public static void beforeClass() throws Exception {
-	        	    	
+	        ServiceConfig.initialize("conf/ds-storage*.yaml"); 	    
 	    	createEmptyDBFromDDL();
 	        DsStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
-	        
+	        storage = new  DsStorage();
 	        
 	        
 	    }
 	    @BeforeEach
-	    public void beforeEach() throws Exception {	        	    	
-	    	storage = new  DsStorage();	        	        	        
+	    public void beforeEach() throws Exception {	        	    		    	
+	    	storage.rollback(); //Important so each unittest has clean table
 	    }
 	    
         
@@ -137,9 +138,7 @@ public class DsStorageTest {
 	    	 
 	    	 
 	    	 createMegaParent(parentId);	
-	    	 storage.commit();
-	    	 
-	    	 
+	    	 	    	 	    	 
 	    	 ArrayList<DsRecord> list1 = storage.getModifiedAfterParentsOnly("does_not_exist", before, 100);
 	    	 assertEquals(0, list1.size());
 	    	 
@@ -198,8 +197,8 @@ public class DsStorageTest {
 	    	 	    	 
 	    	 createMegaParent(parentId);	
 	    	 	    	 	    	 
-	    	 ArrayList<DsRecord> list1 = storage.getModifiedAfter("test_base", before, 1000);
-	    	 assertEquals(101, list1.size()); //100 children +1 parent	    	 	    		    
+	    	 ArrayList<DsRecord> list1 = storage.getModifiedAfter("test_base", before, 10000);
+	    	 assertEquals(1001, list1.size()); //100 children +1 parent	    	 	    		    
 	    }
 	    
 	    
@@ -211,11 +210,13 @@ public class DsStorageTest {
 	    @Test
 	    public void testManyChildren1K() throws Exception{
 	    	
+	    	
+	    	System.out.println(ServiceConfig.getAllowedBases());
 	     String parentId="mega_parent_id";	  
 	     createMegaParent(parentId);
 	          	       	        
-	        ArrayList<String> childIds = storage.getChildIds(parentId);
-	        assertEquals(10000, childIds.size());	        	      
+	        ArrayList<String> childIds = storage.getChildrenIds(parentId);
+	        assertEquals(1000, childIds.size());	        	      
 	    }
   
 	    /*

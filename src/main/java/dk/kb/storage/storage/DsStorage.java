@@ -34,16 +34,17 @@ public class DsStorage implements AutoCloseable {
 	private static final String MTIME_COLUMN = "mtime";
 	private static final String PARENT_ID_COLUMN = "parentId";
 
-	private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE + " (" + ID_COLUMN + ", " + BASE_COLUMN
-			+ ", " + DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", "
-			+ PARENT_ID_COLUMN + " " + ") VALUES (?,?,?,?,?,?,?)";
+	private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
+			" (" + ID_COLUMN + ", " + BASE_COLUMN + ", " + DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
+			" VALUES (?,?,?,?,?,?,?)";
 
-	private static String getChildIdsStatement = "SELECT " + ID_COLUMN + " FROM " + RECORDS_TABLE + " WHERE "
+	private static String getChildrenIdsStatement = "SELECT " + ID_COLUMN +" FROM " + RECORDS_TABLE +
+			" WHERE "
 			+ PARENT_ID_COLUMN + "= ?";
 
 	private static String getRecordByIdStatement = "SELECT * FROM " + RECORDS_TABLE + " WHERE ID= ?";
 
-
+	
 	
 	//SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
 	private static String getRecordsModifiedAfterStatement =
@@ -90,6 +91,9 @@ public class DsStorage implements AutoCloseable {
 		dataSource.setDefaultReadOnly(false);
 		dataSource.setDefaultAutoCommit(false);
 
+		
+		
+		//TODO maybe set some datasource options.
 		// enable detection and logging of connection leaks
 		/*
 		 * dataSource.setRemoveAbandonedOnBorrow(
@@ -129,10 +133,10 @@ public class DsStorage implements AutoCloseable {
 		}
 	}
 
-	public ArrayList<String> getChildIds(String parentId) throws SQLException {
+	public ArrayList<String> getChildrenIds(String parentId) throws SQLException {
 
 		ArrayList<String> childIds = new ArrayList<String>();
-		try (PreparedStatement stmt = connection.prepareStatement(getChildIdsStatement);) {
+		try (PreparedStatement stmt = connection.prepareStatement(getChildrenIdsStatement);) {
 			stmt.setString(1, parentId);
 			try (ResultSet rs = stmt.executeQuery();) {
 				while (rs.next()) {

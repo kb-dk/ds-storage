@@ -38,6 +38,12 @@ public class ServiceConfig {
         return lines;
     }
 
+    public static List<String> getAllowedBases() {
+        List<String> bases = serviceConfig.getList("config.allowed_bases");
+        return bases;
+    }
+
+    
     /**
      * Direct access to the backing YAML-class is used for configurations with more flexible content
      * and/or if the service developer prefers key-based property access.

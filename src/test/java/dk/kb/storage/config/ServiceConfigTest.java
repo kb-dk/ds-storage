@@ -50,4 +50,7 @@ class ServiceConfigTest {
         // Real value in environment
         assertEquals("real_dbpassword", ServiceConfig.getConfig().getString("config.backend.password"));
     }
+    
+    
+    
 }
