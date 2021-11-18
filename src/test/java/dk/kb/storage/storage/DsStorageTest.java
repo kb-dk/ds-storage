@@ -144,21 +144,16 @@ public class DsStorageTest {
 	        
 	        for (int i=1;i<=10000;i++){	        
 	         	DsRecord child = new DsRecord("child"+i, "test_base","child data "+i,parentId);
-                storage.createNewRecord(child);	            
-	        
+                storage.createNewRecord(child);	            	        
 	        }
-	          	       
-	        
+	          	       	        
 	        ArrayList<String> childIds = storage.getChildIds(parentId);
-	        assertEquals(10000, childIds.size());
-	        	      
+	        assertEquals(10000, childIds.size());	        	      
 	    }
   
 	    @Test
 	    public void testBaseStatistics() throws Exception{
-	    	
-	    	
-	    	
+	    		    		    	
 	    	//3 different bases. 2 records in of them 
 	       	DsRecord r1 = new DsRecord("Id1", "test_base1","id1 text",null);	    	
 	    	storage.createNewRecord(r1);
