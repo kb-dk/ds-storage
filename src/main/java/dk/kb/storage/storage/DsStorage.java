@@ -43,6 +43,33 @@ public class DsStorage implements AutoCloseable {
 
 	private static String getRecordByIdStatement = "SELECT * FROM " + RECORDS_TABLE + " WHERE ID= ?";
 
+
+	
+	//SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
+	private static String getRecordsModifiedAfterStatement =
+			"SELECT * FROM " + RECORDS_TABLE +
+			" WHERE +"+BASE_COLUMN +"= ?" +
+			" AND "+MTIME_COLUMN+" > ?" +
+			" ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
+	
+	//SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 AND PARENTID IS NOT NULL ORDER BY mtime ASC LIMIT 100
+	private static String getRecordsModifiedAfterChildrenOnlyStatement =
+			"SELECT * FROM " + RECORDS_TABLE +
+			" WHERE +"+BASE_COLUMN +"= ?" +
+			" AND "+MTIME_COLUMN+" > ?" +
+			" AND "+PARENT_ID_COLUMN+" IS NOT NULL"+
+			" ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
+
+	//SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 AND parentId IS NULL ORDER BY mtime ASC LIMIT 100	
+	private static String getRecordsModifiedAfterParentsOnlyStatement =
+			"SELECT * FROM " + RECORDS_TABLE +
+			" WHERE +"+BASE_COLUMN +"= ?" +
+			" AND "+MTIME_COLUMN+" > ?" +
+			" AND "+PARENT_ID_COLUMN+" IS NULL"+
+			" ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
+
+
+
 	private static String getBaseStatisticsStatement = "SELECT " + BASE_COLUMN + " ,COUNT(*) AS COUNT FROM "
 			+ RECORDS_TABLE + " group by " + BASE_COLUMN;
 
@@ -117,6 +144,113 @@ public class DsStorage implements AutoCloseable {
 		return childIds;
 	}
 
+
+	/*
+	 * Will only extract with records strightly  larger than mTime!
+	 * Will be sorted by mTime. Latest is last
+	 * 
+	 * Only parents posts (those that have children) will be load or only children (those that have parent)
+	 * 
+	 */
+	public ArrayList<DsRecord> getModifiedAfterParentsOnly(String base, long mTime, int batchSize) throws Exception {
+
+		if (batchSize <1 || batchSize > 100000) { //No doom switch
+			throw new Exception("Batchsize must be in range 1 to 100000");			
+		}
+		ArrayList<DsRecord> records = new ArrayList<DsRecord>();
+		try (PreparedStatement stmt = connection.prepareStatement(getRecordsModifiedAfterParentsOnlyStatement);) {
+
+			stmt.setString(1, base);
+			stmt.setLong(2, mTime);
+			stmt.setLong(3, batchSize);
+			try (ResultSet rs = stmt.executeQuery();) {
+				while (rs.next()) {
+					DsRecord record = createRecordFromRS(rs);
+					records.add(record);
+
+				}
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+
+		}
+
+		return records;	
+	}
+
+	/*
+	 * Will only extract with records strightly  larger than mTime!
+	 * Will be sorted by mTime. Latest is last
+	 * 
+	 * Will extract all no matter of parent or child ids
+	 * 
+	 */
+	public ArrayList<DsRecord> getModifiedAfter(String base, long mTime, int batchSize) throws Exception {
+
+		if (batchSize <1 || batchSize > 100000) { //No doom switch
+			throw new Exception("Batchsize must be in range 1 to 100000");			
+		}
+		ArrayList<DsRecord> records = new ArrayList<DsRecord>();
+		try (PreparedStatement stmt = connection.prepareStatement(getRecordsModifiedAfterStatement);) {
+
+			stmt.setString(1, base);
+			stmt.setLong(2, mTime);
+			stmt.setLong(3, batchSize);
+			try (ResultSet rs = stmt.executeQuery();) {
+				while (rs.next()) {
+					DsRecord record = createRecordFromRS(rs);
+					records.add(record);
+
+				}
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+
+		}
+
+		return records;	
+	}
+
+	
+
+	/*
+	 * Will only extract with records strightly larger than mTime!
+	 * Will be sorted by mTime. Latest is last
+	 * 
+	 * Will only fetch children records. That is those that has a parent.
+	 * 
+	 */
+	public ArrayList<DsRecord> getModifiedAfterChildrenOnly(String base, long mTime, int batchSize) throws Exception {
+
+		if (batchSize <1 || batchSize > 100000) { //No doom switch
+			throw new Exception("Batchsize must be in range 1 to 100000");			
+		}
+		ArrayList<DsRecord> records = new ArrayList<DsRecord>();
+		try (PreparedStatement stmt = connection.prepareStatement(getRecordsModifiedAfterChildrenOnlyStatement);) {
+
+			stmt.setString(1, base);
+			stmt.setLong(2, mTime);
+			stmt.setLong(3, batchSize);
+			try (ResultSet rs = stmt.executeQuery();) {
+				while (rs.next()) {
+					DsRecord record = createRecordFromRS(rs);
+					records.add(record);
+
+				}
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+
+		}
+
+		return records;	
+	}
+
+
+
 	public HashMap<String, Long> getBaseStatictics() throws SQLException {
 
 		HashMap<String, Long> baseCount = new HashMap<String, Long>();
@@ -144,7 +278,7 @@ public class DsStorage implements AutoCloseable {
 		}
 
 		long nowStamp = UniqueTimestampGenerator.next();
-		log.debug("Creating new record: " + record.getId());
+		//log.debug("Creating new record: " + record.getId());
 
 		try (PreparedStatement stmt = connection.prepareStatement(createRecordStatement);) {
 			stmt.setString(1, record.getId());
