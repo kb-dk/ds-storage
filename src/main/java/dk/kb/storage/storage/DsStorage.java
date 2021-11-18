@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -53,6 +54,8 @@ public class DsStorage implements AutoCloseable {
 	private static String getChildIdsStatement="SELECT "+ID_COLUMN +" FROM " + RECORDS_TABLE + " WHERE "+PARENT_ID_COLUMN+"= ?";
 	
 	private static String getRecordByIdStatement="SELECT * FROM " + RECORDS_TABLE + " WHERE ID= ?";
+	
+	private static String getBaseStatisticsStatement="SELECT "+BASE_COLUMN +" ,COUNT(*) AS COUNT FROM "+RECORDS_TABLE +" group by "+BASE_COLUMN;
 	
 	private static BasicDataSource dataSource;
 
@@ -126,8 +129,23 @@ public class DsStorage implements AutoCloseable {
 	 return childIds;
 	}
 	
+public HashMap<String,Long> getBaseStatictics() throws SQLException {
+		
+	HashMap<String,Long> baseCount= new HashMap<String,Long>();
+		try (PreparedStatement stmt = connection.prepareStatement(getBaseStatisticsStatement);) {
+			 			 
+			 try (ResultSet rs = stmt.executeQuery();) {	                
+				 while(rs.next()) {			 
+	                	 String base = rs.getString(BASE_COLUMN);	                
+	                	 long count = rs.getLong("COUNT");
+	                     baseCount.put(base, count);				 
+				 }				 	              
+	           }			 
+		 }			
+	 return baseCount;
+	}
 	
-
+	
 	public void createNewRecord(DsRecord record) throws Exception {
 
 		//Sanity check

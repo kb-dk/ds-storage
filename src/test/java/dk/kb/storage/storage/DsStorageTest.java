@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
@@ -133,7 +134,7 @@ public class DsStorageTest {
 	     * Example of parent with 10K children
 	     */
 	    @Test
-	    public  void testManyChildren10K() throws Exception{
+	    public void testManyChildren10K() throws Exception{
 	    	
 	    	
 	    	String parentId="mega_parent_id";
@@ -146,17 +147,39 @@ public class DsStorageTest {
                 storage.createNewRecord(child);	            
 	        
 	        }
-	        storage.commit();  	        
-           //test children are loaded correct
+	          	       
 	        
 	        ArrayList<String> childIds = storage.getChildIds(parentId);
 	        assertEquals(10000, childIds.size());
-	        System.out.println(childIds);
-	      
+	        	      
 	    }
   
-	    
-	    
+	    @Test
+	    public void testBaseStatistics() throws Exception{
+	    	
+	    	
+	    	
+	    	//3 different bases. 2 records in of them 
+	       	DsRecord r1 = new DsRecord("Id1", "test_base1","id1 text",null);	    	
+	    	storage.createNewRecord(r1);
+	        
+	       	DsRecord r2 = new DsRecord("Id2", "test_base1","id2 text",null);	    	
+	    	storage.createNewRecord(r2);
+	          	       
+	    	DsRecord r3 = new DsRecord("Id3", "test_base2","id3 text",null);	    	
+	    	storage.createNewRecord(r3);
+	    	
+	    	DsRecord r4 = new DsRecord("Id4", "test_base3","id4 text",null);	    	
+	    	storage.createNewRecord(r4);
+	        
+
+	        HashMap<String, Long> baseStatictics = storage.getBaseStatictics();
+	        
+	        assertEquals(3,baseStatictics.size());
+	        assertEquals(2,baseStatictics.get("test_base1"));
+	        assertEquals(1,baseStatictics.get("test_base2"));
+	        assertEquals(1,baseStatictics.get("test_base3"));	        	     
+	    }
 	    
 	    //TODO TOES? Is this somewhere in kb-util ?
 	    /**
