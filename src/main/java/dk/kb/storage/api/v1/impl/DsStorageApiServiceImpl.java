@@ -90,95 +90,7 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     private transient MessageContext messageContext;
 
 
-    /**
-     * Perform some image processing and return the result as an image
-     * 
-     * @param image: The image to use as source for the colorization
-     * 
-     * @param method: The algorithm used to colorize the image
-     * 
-     * @param intensity: The intensity of the colorization
-     * 
-     * @return <ul>
-      *   <li>code = 200, message = "The colorized image", response = String.class</li>
-      *   </ul>
-      * @throws ServiceException when other http codes should be returned
-      *
-      * @implNote return will always produce a HTTP 200 code. Throw ServiceException if you need to return other codes
-     */
-    @Override
-    public javax.ws.rs.core.StreamingOutput colorize( Attachment imageDetail, String method, Double intensity) throws ServiceException {
-        // TODO: Implement...
     
-        
-        try{ 
-            String filename = "somefile";
-            // Show download link in Swagger UI, inline when opened directly in browser
-            // https://github.com/swagger-api/swagger-ui/issues/3832
-            httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
-
-            // Show inline in Swagger UI, inline when opened directly in browser
-            // httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"" + filename + "\"");
-
-            // Show download link in Swagger UI, download dialog when opened directly in browser
-            // httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-
-            return output -> output.write("Magic".getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        } catch (Exception e){
-            throw handleException(e);
-        }
-    
-    }
-
-    /**
-     * Sample OpenAPI definition for a service that constructs a PDF and delivers it
-     * 
-     * @param id: The ID of the article to process
-     * 
-     * @return <ul>
-      *   <li>code = 200, message = "OK", response = String.class</li>
-      *   <li>code = 404, message = "Article ID is unknown", response = ErrorDto.class</li>
-      *   </ul>
-      * @throws ServiceException when other http codes should be returned
-      *
-      * @implNote return will always produce a HTTP 200 code. Throw ServiceException if you need to return other codes
-     */
-    @Override
-    public javax.ws.rs.core.StreamingOutput getArticle(String id) throws ServiceException {
-        // TODO: Implement...
-    
-        
-        try{ 
-            String filename = "somefile";
-            // Show download link in Swagger UI, inline when opened directly in browser
-            // https://github.com/swagger-api/swagger-ui/issues/3832
-            httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
-
-            // Show inline in Swagger UI, inline when opened directly in browser
-            // httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"" + filename + "\"");
-
-            // Show download link in Swagger UI, download dialog when opened directly in browser
-            // httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-
-            return output -> output.write("Magic".getBytes(java.nio.charset.StandardCharsets.UTF_8));
-        } catch (Exception e){
-            throw handleException(e);
-        }
-    
-    }
-
-    /**
-     * Request a Hello World message, for testing purposes
-     * 
-     * @param alternateHello: Optional alternative to using the word &#39;Hello&#39; in the reply
-     * 
-     * @return <ul>
-      *   <li>code = 200, message = "A JSON structure containing a Hello World message", response = HelloReplyDto.class</li>
-      *   </ul>
-      * @throws ServiceException when other http codes should be returned
-      *
-      * @implNote return will always produce a HTTP 200 code. Throw ServiceException if you need to return other codes
-     */
     @Override
     public HelloReplyDto getGreeting(String alternateHello) throws ServiceException {
         // TODO: Implement...
@@ -194,33 +106,7 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     
     }
 
-    /**
-     * Ping the server to check if the server is reachable.
-     * 
-     * @return <ul>
-      *   <li>code = 200, message = "OK", response = String.class</li>
-      *   <li>code = 406, message = "Not Acceptable", response = ErrorDto.class</li>
-      *   <li>code = 500, message = "Internal Error", response = String.class</li>
-      *   </ul>
-      * @throws ServiceException when other http codes should be returned
-      *
-      * @implNote return will always produce a HTTP 200 code. Throw ServiceException if you need to return other codes
-     */
-    @Override
-    public String ping() throws ServiceException {
-        // TODO: Implement...
-    
-        
-        try{ 
-            String response = "LUfoP152o";
-        return response;
-        } catch (Exception e){
-            throw handleException(e);
-        }
-    
-    }
-
-
+  
     /**
     * This method simply converts any Exception into a Service exception
     * @param e: Any kind of exception

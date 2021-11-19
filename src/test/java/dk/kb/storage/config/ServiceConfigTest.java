@@ -44,11 +44,7 @@ class ServiceConfigTest {
 
         ServiceConfig.initialize(projectRoot + File.separator + "conf" + File.separator + "ds-storage*.yaml");
 
-        // Defined in behaviour
-        assertEquals(10, ServiceConfig.getConfig().getInteger("config.limits.min"));
-
-        // Real value in environment
-        assertEquals("real_dbpassword", ServiceConfig.getConfig().getString("config.backend.password"));
+     
     }
     
     
