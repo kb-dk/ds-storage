@@ -44,6 +44,26 @@ public class ServiceConfig {
     }
 
     
+    public static  String getDBDriver() {
+        String dbDriver= serviceConfig.getString("config.db.driver");
+        return dbDriver;
+    }
+        
+    public static  String getDBUrl() {
+        String dbUrl= serviceConfig.getString("config.db.url");
+        return dbUrl;
+    }
+    
+    public static  String getDBUserName() {
+        String dbUserName= serviceConfig.getString("config.db.username");
+        return dbUserName;
+    }
+
+    public static  String getDBPassword() {
+        String dbPassword= serviceConfig.getString("config.db.password");
+        return dbPassword;
+    }
+            
     /**
      * Direct access to the backing YAML-class is used for configurations with more flexible content
      * and/or if the service developer prefers key-based property access.

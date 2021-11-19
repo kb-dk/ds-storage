@@ -199,22 +199,16 @@ public class DsStorageTest {
 	    	 	    	 	    	 
 	    	 ArrayList<DsRecord> list1 = storage.getModifiedAfter("test_base", before, 10000);
 	    	 assertEquals(1001, list1.size()); //100 children +1 parent	    	 	    		    
-	    }
-	    
-	    
-	    
+	    }	    
 	    
 	    /*
 	     * Example of parent with 1K children
 	     */
 	    @Test
-	    public void testManyChildren1K() throws Exception{
-	    	
-	    	
-	    	System.out.println(ServiceConfig.getAllowedBases());
-	     String parentId="mega_parent_id";	  
-	     createMegaParent(parentId);
-	          	       	        
+	    public void testManyChildren1K() throws Exception{	    		    		   
+	        String parentId="mega_parent_id";	  
+	        createMegaParent(parentId);
+	          	       	       
 	        ArrayList<String> childIds = storage.getChildrenIds(parentId);
 	        assertEquals(1000, childIds.size());	        	      
 	    }
