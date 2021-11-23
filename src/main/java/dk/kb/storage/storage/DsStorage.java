@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
-import java.io.IOException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,7 +15,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
+
 
 /*
  * This class will be called by the facade class. The facade class is also responsible for commit or rollback
@@ -35,6 +35,9 @@ public class DsStorage implements AutoCloseable {
 	private static final String MTIME_COLUMN = "mtime";
 	private static final String PARENT_ID_COLUMN = "parentId";
 
+	
+	
+	
 	private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
 			" (" + ID_COLUMN + ", " + BASE_COLUMN + ", " + DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
 			" VALUES (?,?,?,?,?,?,?)";
@@ -49,23 +52,23 @@ public class DsStorage implements AutoCloseable {
 
 	
 	
-	private static String getChildrenIdsStatement = "SELECT " + ID_COLUMN +" FROM " + RECORDS_TABLE +
+	private static String childrenIdsStatement = "SELECT " + ID_COLUMN +" FROM " + RECORDS_TABLE +
 			" WHERE "
 			+ PARENT_ID_COLUMN + "= ?";
 
-	private static String getRecordByIdStatement = "SELECT * FROM " + RECORDS_TABLE + " WHERE ID= ?";
+	private static String recordByIdStatement = "SELECT * FROM " + RECORDS_TABLE + " WHERE ID= ?";
 
 	
 	
 	//SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
-	private static String getRecordsModifiedAfterStatement =
+	private static String recordsModifiedAfterStatement =
 			"SELECT * FROM " + RECORDS_TABLE +
 			" WHERE +"+BASE_COLUMN +"= ?" +
 			" AND "+MTIME_COLUMN+" > ?" +
 			" ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 	
 	//SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 AND PARENTID IS NOT NULL ORDER BY mtime ASC LIMIT 100
-	private static String getRecordsModifiedAfterChildrenOnlyStatement =
+	private static String recordsModifiedAfterChildrenOnlyStatement =
 			"SELECT * FROM " + RECORDS_TABLE +
 			" WHERE +"+BASE_COLUMN +"= ?" +
 			" AND "+MTIME_COLUMN+" > ?" +
@@ -73,7 +76,7 @@ public class DsStorage implements AutoCloseable {
 			" ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
 	//SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 AND parentId IS NULL ORDER BY mtime ASC LIMIT 100	
-	private static String getRecordsModifiedAfterParentsOnlyStatement =
+	private static String recordsModifiedAfterParentsOnlyStatement =
 			"SELECT * FROM " + RECORDS_TABLE +
 			" WHERE +"+BASE_COLUMN +"= ?" +
 			" AND "+MTIME_COLUMN+" > ?" +
@@ -81,10 +84,13 @@ public class DsStorage implements AutoCloseable {
 			" ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
 
-
-	private static String getBaseStatisticsStatement = "SELECT " + BASE_COLUMN + " ,COUNT(*) AS COUNT FROM "
+	private static String baseStatisticsStatement = "SELECT " + BASE_COLUMN + " ,COUNT(*) AS COUNT FROM "
 			+ RECORDS_TABLE + " group by " + BASE_COLUMN;
 
+
+	private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";			
+
+	
 	private static BasicDataSource dataSource;
 
 	// statistics shown on monitor.jsp page
@@ -131,7 +137,7 @@ public class DsStorage implements AutoCloseable {
 	}
 
 	public DsRecordDto  loadRecord(String id) throws SQLException {
-		try (PreparedStatement stmt = connection.prepareStatement(getRecordByIdStatement);) {
+		try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement);) {
 			stmt.setString(1, id);
 
 			try (ResultSet rs = stmt.executeQuery();) {
@@ -144,12 +150,23 @@ public class DsStorage implements AutoCloseable {
 		}
 	}
 
+	public boolean recordExists(String id) throws SQLException {
+		try (PreparedStatement stmt = connection.prepareStatement(recordIdExistsStatement);) {
+			stmt.setString(1, id);
 
+			try (ResultSet rs = stmt.executeQuery();) {
+         				rs.next(); //Count has always next
+                       int count = rs.getInt("COUNT");
+                       return  count == 1;				
+			}
+		}
+	}
+		
 	
 	public ArrayList<String> getChildrenIds(String parentId) throws SQLException {
 
 		ArrayList<String> childIds = new ArrayList<String>();
-		try (PreparedStatement stmt = connection.prepareStatement(getChildrenIdsStatement);) {
+		try (PreparedStatement stmt = connection.prepareStatement(childrenIdsStatement);) {
 			stmt.setString(1, parentId);
 			try (ResultSet rs = stmt.executeQuery();) {
 				while (rs.next()) {
@@ -175,7 +192,7 @@ public class DsStorage implements AutoCloseable {
 			throw new Exception("Batchsize must be in range 1 to 100000");			
 		}
 		ArrayList<DsRecordDto > records = new ArrayList<DsRecordDto >();
-		try (PreparedStatement stmt = connection.prepareStatement(getRecordsModifiedAfterParentsOnlyStatement);) {
+		try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterParentsOnlyStatement);) {
 
 			stmt.setString(1, base);
 			stmt.setLong(2, mTime);
@@ -209,7 +226,7 @@ public class DsStorage implements AutoCloseable {
 			throw new Exception("Batchsize must be in range 1 to 100000");			
 		}
 		ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
-		try (PreparedStatement stmt = connection.prepareStatement(getRecordsModifiedAfterStatement);) {
+		try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement);) {
 
 			stmt.setString(1, base);
 			stmt.setLong(2, mTime);
@@ -245,7 +262,7 @@ public class DsStorage implements AutoCloseable {
 			throw new Exception("Batchsize must be in range 1 to 100000");			
 		}
 		ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
-		try (PreparedStatement stmt = connection.prepareStatement(getRecordsModifiedAfterChildrenOnlyStatement);) {
+		try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterChildrenOnlyStatement);) {
 
 			stmt.setString(1, base);
 			stmt.setLong(2, mTime);
@@ -278,7 +295,7 @@ public class DsStorage implements AutoCloseable {
 	public HashMap<String, Long> getBaseStatictics() throws SQLException {
 
 		HashMap<String, Long> baseCount = new HashMap<String, Long>();
-		try (PreparedStatement stmt = connection.prepareStatement(getBaseStatisticsStatement);) {
+		try (PreparedStatement stmt = connection.prepareStatement(baseStatisticsStatement);) {
 
 			try (ResultSet rs = stmt.executeQuery();) {
 				while (rs.next()) {

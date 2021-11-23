@@ -1,7 +1,8 @@
 package dk.kb.storage.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -111,7 +112,12 @@ public class DsStorageTest {
 
 
 	@Test
-	public void testCreateAndLoadAndUpdateRecord() throws Exception {
+	public void testBAsicCRUD() throws Exception {
+     //TODO rescribe flow below
+		
+        //Test record not exist
+		assertFalse(storage.recordExists("unknown_id"));
+	
 		String id ="id1";
 		String base="base_test";	    	
 		String data = "Hello";
@@ -123,6 +129,10 @@ public class DsStorageTest {
 		record.setData(data);
 		record.setParentId(parentId);
 		storage.createNewRecord(record );
+		
+	    //Test record not exist
+ 	    assertTrue(storage.recordExists(id));
+		
 
 		//Load and check values are correct
 		DsRecordDto recordLoaded = storage.loadRecord(id);
