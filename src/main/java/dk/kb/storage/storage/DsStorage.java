@@ -38,6 +38,16 @@ public class DsStorage implements AutoCloseable {
 			" (" + ID_COLUMN + ", " + BASE_COLUMN + ", " + DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
 			" VALUES (?,?,?,?,?,?,?)";
 
+	private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+			 
+			 DATA_COLUMN + " = ? , "+ 						 
+			 MTIME_COLUMN + " = ? , "+
+			 DELETED_COLUMN + " = ? , "+
+			 PARENT_ID_COLUMN + " = ?  "+
+			 "WHERE "+
+			 ID_COLUMN + "= ?";
+
+	
+	
 	private static String getChildrenIdsStatement = "SELECT " + ID_COLUMN +" FROM " + RECORDS_TABLE +
 			" WHERE "
 			+ PARENT_ID_COLUMN + "= ?";
@@ -133,6 +143,8 @@ public class DsStorage implements AutoCloseable {
 		}
 	}
 
+
+	
 	public ArrayList<String> getChildrenIds(String parentId) throws SQLException {
 
 		ArrayList<String> childIds = new ArrayList<String>();
@@ -254,6 +266,13 @@ public class DsStorage implements AutoCloseable {
 	}
 
 
+	/*
+	 * FOR TEST JETTY RUN ONLY!
+	 * 
+	 */
+	public void createNewDatabase(String ddlFile) throws SQLException {	
+	     connection.createStatement().execute("RUNSCRIPT FROM '" + ddlFile+ "'");		
+	}
 
 	public HashMap<String, Long> getBaseStatictics() throws SQLException {
 
@@ -303,11 +322,43 @@ public class DsStorage implements AutoCloseable {
 
 	}
 
+	public void updateRecord(DsRecord record) throws Exception {
+
+		// Sanity check
+		if (record.getId() == null) {
+			throw new Exception("Id must not be null"); // TODO exception enum types, messages?
+		}
+		if (record.getId().equals(record.getParentId())) {
+			throw new Exception("Record with id has itself as parent:" + record.getId());
+		}
+
+		long nowStamp = UniqueTimestampGenerator.next();
+		//log.debug("Creating new record: " + record.getId());
+
+		try (PreparedStatement stmt = connection.prepareStatement(updateRecordStatement);) {
+		
+			stmt.setString(1, record.getData());
+			stmt.setLong(2, nowStamp);
+			stmt.setInt(3, boolToInt(record.isDeleted()));						
+			stmt.setString(4, record.getParentId());
+			stmt.setString(5, record.getId());
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			String message = "SQL Exception in updateRecord with id:" + record.getId() + " error:" + e.getMessage();
+			e.printStackTrace();
+			log.error(message);
+			throw new SQLException(message, e);
+		}
+
+	}
+
+	
+	
 	private static DsRecord createRecordFromRS(ResultSet rs) throws SQLException {
 
 		String id = rs.getString(ID_COLUMN);
 		String base = rs.getString(BASE_COLUMN);
-		boolean deleted = rs.getInt(DELETED_COLUMN) == 1;
+		boolean deleted = rs.getInt(DELETED_COLUMN) == 1;		
 		String data = rs.getString(DATA_COLUMN);
 		long cTime = rs.getLong(CTIME_COLUMN);
 		long mTime = rs.getLong(MTIME_COLUMN);
@@ -378,4 +429,8 @@ public class DsStorage implements AutoCloseable {
 		}
 	}
 
+	
+	 private int boolToInt(boolean isTrue) {
+	        return isTrue ? 1 : 0;
+	    }
 }

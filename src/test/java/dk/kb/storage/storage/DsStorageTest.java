@@ -110,7 +110,7 @@ public class DsStorageTest {
 	    
 	    
 	    @Test
-	    public void testCreateAndLoadRecord() throws Exception {
+	    public void testCreateAndLoadAndUpdateRecord() throws Exception {
 	    	String id ="id1";
 	    	String base="base_test";	    	
 	    	String data = "Hello";
@@ -125,10 +125,32 @@ public class DsStorageTest {
             Assertions.assertEquals(base,recordLoaded.getBase());
             Assertions.assertFalse(recordLoaded.isDeleted());
             Assertions.assertEquals(parentId,record.getParentId());        
-            Assertions.assertTrue(recordLoaded.getcTime() > 0);
+            Assertions.assertTrue(recordLoaded.getmTime() > 0);
             Assertions.assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
 	    
             
+            //Now update
+            
+            String dataUpdate = "Hello updated";
+            String parentIdUpdated="id_2_parent";
+            long mTimeBefore = recordLoaded.getmTime(); // Must be newer after update
+            long cTimeBefore = recordLoaded.getcTime(); //Must be the same
+            
+            record.setDeleted(true);
+            record.setData(dataUpdate);
+            record.setParentId(parentIdUpdated);            
+            
+            storage.updateRecord(record);
+            
+            //Check new updated record is correct.
+            DsRecord recordUpdated = storage.loadRecord(id);
+                        
+            Assertions.assertEquals(id,recordUpdated .getId());
+            Assertions.assertEquals(base,recordUpdated .getBase());
+            Assertions.assertTrue(recordUpdated.isDeleted()); //It is now deleted
+            Assertions.assertEquals(parentIdUpdated,record.getParentId());        
+            Assertions.assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
+            Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                	                           
 	    }
 	    
 	    @Test
