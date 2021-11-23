@@ -4,6 +4,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
 import java.io.IOException;
@@ -129,7 +130,7 @@ public class DsStorage implements AutoCloseable {
 
 	}
 
-	public DsRecord loadRecord(String id) throws SQLException {
+	public DsRecordDto  loadRecord(String id) throws SQLException {
 		try (PreparedStatement stmt = connection.prepareStatement(getRecordByIdStatement);) {
 			stmt.setString(1, id);
 
@@ -137,7 +138,7 @@ public class DsStorage implements AutoCloseable {
 				if (!rs.next()) {
 					return null;// Or throw exception?
 				}
-				DsRecord record = createRecordFromRS(rs);
+				DsRecordDto  record = createRecordFromRS(rs);
 				return record;
 			}
 		}
@@ -168,12 +169,12 @@ public class DsStorage implements AutoCloseable {
 	 * Only parents posts (those that have children) will be load or only children (those that have parent)
 	 * 
 	 */
-	public ArrayList<DsRecord> getModifiedAfterParentsOnly(String base, long mTime, int batchSize) throws Exception {
+	public ArrayList<DsRecordDto > getModifiedAfterParentsOnly(String base, long mTime, int batchSize) throws Exception {
 
 		if (batchSize <1 || batchSize > 100000) { //No doom switch
 			throw new Exception("Batchsize must be in range 1 to 100000");			
 		}
-		ArrayList<DsRecord> records = new ArrayList<DsRecord>();
+		ArrayList<DsRecordDto > records = new ArrayList<DsRecordDto >();
 		try (PreparedStatement stmt = connection.prepareStatement(getRecordsModifiedAfterParentsOnlyStatement);) {
 
 			stmt.setString(1, base);
@@ -181,7 +182,7 @@ public class DsStorage implements AutoCloseable {
 			stmt.setLong(3, batchSize);
 			try (ResultSet rs = stmt.executeQuery();) {
 				while (rs.next()) {
-					DsRecord record = createRecordFromRS(rs);
+					DsRecordDto  record = createRecordFromRS(rs);
 					records.add(record);
 
 				}
@@ -202,12 +203,12 @@ public class DsStorage implements AutoCloseable {
 	 * Will extract all no matter of parent or child ids
 	 * 
 	 */
-	public ArrayList<DsRecord> getModifiedAfter(String base, long mTime, int batchSize) throws Exception {
+	public ArrayList<DsRecordDto > getModifiedAfter(String base, long mTime, int batchSize) throws Exception {
 
 		if (batchSize <1 || batchSize > 100000) { //No doom switch
 			throw new Exception("Batchsize must be in range 1 to 100000");			
 		}
-		ArrayList<DsRecord> records = new ArrayList<DsRecord>();
+		ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
 		try (PreparedStatement stmt = connection.prepareStatement(getRecordsModifiedAfterStatement);) {
 
 			stmt.setString(1, base);
@@ -215,7 +216,7 @@ public class DsStorage implements AutoCloseable {
 			stmt.setLong(3, batchSize);
 			try (ResultSet rs = stmt.executeQuery();) {
 				while (rs.next()) {
-					DsRecord record = createRecordFromRS(rs);
+					DsRecordDto record = createRecordFromRS(rs);
 					records.add(record);
 
 				}
@@ -238,12 +239,12 @@ public class DsStorage implements AutoCloseable {
 	 * Will only fetch children records. That is those that has a parent.
 	 * 
 	 */
-	public ArrayList<DsRecord> getModifiedAfterChildrenOnly(String base, long mTime, int batchSize) throws Exception {
+	public ArrayList<DsRecordDto>  getModifiedAfterChildrenOnly(String base, long mTime, int batchSize) throws Exception {
 
 		if (batchSize <1 || batchSize > 100000) { //No doom switch
 			throw new Exception("Batchsize must be in range 1 to 100000");			
 		}
-		ArrayList<DsRecord> records = new ArrayList<DsRecord>();
+		ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
 		try (PreparedStatement stmt = connection.prepareStatement(getRecordsModifiedAfterChildrenOnlyStatement);) {
 
 			stmt.setString(1, base);
@@ -251,7 +252,7 @@ public class DsStorage implements AutoCloseable {
 			stmt.setLong(3, batchSize);
 			try (ResultSet rs = stmt.executeQuery();) {
 				while (rs.next()) {
-					DsRecord record = createRecordFromRS(rs);
+					DsRecordDto record = createRecordFromRS(rs);
 					records.add(record);
 
 				}
@@ -290,7 +291,7 @@ public class DsStorage implements AutoCloseable {
 		return baseCount;
 	}
 
-	public void createNewRecord(DsRecord record) throws Exception {
+	public void createNewRecord(DsRecordDto record) throws Exception {
 
 		// Sanity check
 		if (record.getId() == null) {
@@ -322,7 +323,7 @@ public class DsStorage implements AutoCloseable {
 
 	}
 
-	public void updateRecord(DsRecord record) throws Exception {
+	public void updateRecord(DsRecordDto record) throws Exception {
 
 		// Sanity check
 		if (record.getId() == null) {
@@ -339,7 +340,7 @@ public class DsStorage implements AutoCloseable {
 		
 			stmt.setString(1, record.getData());
 			stmt.setLong(2, nowStamp);
-			stmt.setInt(3, boolToInt(record.isDeleted()));						
+			stmt.setInt(3, boolToInt(record.getDeleted()));						
 			stmt.setString(4, record.getParentId());
 			stmt.setString(5, record.getId());
 			stmt.executeUpdate();
@@ -354,7 +355,7 @@ public class DsStorage implements AutoCloseable {
 
 	
 	
-	private static DsRecord createRecordFromRS(ResultSet rs) throws SQLException {
+	private static DsRecordDto createRecordFromRS(ResultSet rs) throws SQLException {
 
 		String id = rs.getString(ID_COLUMN);
 		String base = rs.getString(BASE_COLUMN);
@@ -364,7 +365,11 @@ public class DsStorage implements AutoCloseable {
 		long mTime = rs.getLong(MTIME_COLUMN);
 		String parentId = rs.getString(PARENT_ID_COLUMN);
 
-		DsRecord record = new DsRecord(id, base, data, parentId);
+		DsRecordDto record = new DsRecordDto();
+				record.setId(id);
+				record.setBase(base);
+				record.setData(data);
+				record.setParentId(parentId);
 		record.setcTime(cTime);
 		record.setmTime(mTime);
 		record.setDeleted(deleted);

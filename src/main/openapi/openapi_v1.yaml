@@ -53,6 +53,42 @@ components:
           type: string
           description: 'Greeting from the API'
 
+
+    DsRecord:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: 'Unique identifier for the record'
+        base:
+          type: string
+          description: 'Collection name where the record comes from'
+        deleted:
+          type: boolean
+          description: 'Mark the record as deleted'
+        data:
+          type: string
+          description: 'The payload of the record. Text in UTF-8'
+        cTime:
+          type: long
+          description: 'Creation time when the record was created first time. Format is millis with 3 added digits'
+        mTime:
+          type: long
+          description: 'Modification time for last create or update of the record.  Format is millis with 3 added digits'
+        children:
+          type: array
+          items:
+            type: string     
+        parentId:
+          type: string
+          description: 'Id of parent record. Is not required. '
+      
+
+
+
+
     Error:
       type: object
       required:
