@@ -59,8 +59,10 @@ components:
       properties:
         name:
           type: string
+          description: 'Name of the recordbase. IDs are prefixed with recordbase'
         updateStrategy:  
           type: string
+          description: 'UpdateStrategy much match the enum values defined in the open API specification'
 
     DsRecord:
       type: object
