@@ -54,6 +54,14 @@ components:
           description: 'Greeting from the API'
 
 
+    RecordBase:
+      type: object
+      properties:
+        name:
+          type: string
+        updateStrategy:  
+          type: string
+
     DsRecord:
       type: object
       required:

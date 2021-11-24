@@ -39,13 +39,14 @@ public class ServiceConfig {
     }
 
     public static List<String> getAllowedBases() {
-        List<YAML> bases = serviceConfig.getList("config.allowed_bases");
-        
-        
+        List<YAML> bases = serviceConfig.getYAMLList("config.allowed_bases");
+                
         //Load updtateStategy for each
         for (YAML base: bases) {
         
-        
+        String name = base.getString("name");
+        String updateStrategy = base.getString("update_strategy");        
+        System.out.println(name +":"+updateStrategy);
         	
           //String updateStrategy = serviceConfig.getString("config.allowed_bases"+"."+base+".update_strategy");
           //System.out.println(base +":"+updateStrategy);        	        	

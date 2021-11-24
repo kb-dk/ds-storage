@@ -1,11 +1,10 @@
 package dk.kb.storage.config.facade;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
@@ -30,9 +29,10 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 	@Test
 	public void testCreateAndUpdate() throws Exception {
        //TODO rescribe flow below
-			
+		ServiceConfig.getAllowedBases();
+	
 		DsRecordDto r1 = DsStorageFacade.getRecord("does_not_exist");
-		assertNull(r1);
+		Assertions.assertTrue(r1 == null);
 		
 		String id ="id1";
 		String base="base_test";	    	
@@ -47,7 +47,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 		DsStorageFacade.createOrUpdateRecord(record );
 		
 		DsRecordDto recordLoaded = DsStorageFacade.getRecord(id);
-		assertNotNull(recordLoaded);
+		Assertions.assertTrue(recordLoaded != null);
 
 		//Load and check values are correct
 		Assertions.assertEquals(id,recordLoaded.getId());
