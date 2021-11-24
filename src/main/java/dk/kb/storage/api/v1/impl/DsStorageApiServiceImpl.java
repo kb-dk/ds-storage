@@ -4,8 +4,9 @@ import dk.kb.storage.api.v1.*;
 import dk.kb.storage.model.v1.ErrorDto;
 import java.io.File;
 import dk.kb.storage.model.v1.HelloReplyDto;
-import java.util.List;
-import java.util.Map;
+import dk.kb.storage.storage.DsStorage;
+
+
 
 import dk.kb.storage.webservice.exception.ServiceException;
 import dk.kb.storage.webservice.exception.InternalServiceException;
@@ -13,14 +14,8 @@ import dk.kb.storage.webservice.exception.InternalServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Map;
-import java.io.File;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import javax.validation.constraints.NotNull;
+
+
 import javax.ws.rs.*;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -93,11 +88,25 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     
     @Override
     public HelloReplyDto getGreeting(String alternateHello) throws ServiceException {
-        // TODO: Implement...
-    
+        // TODO: Implement...    	
         
         try{ 
+        	
+        	DsStorage storage = new DsStorage();
+        
+        	
+        	storage.createNewDatabase("/home/teg/workspace/ds-storage/src/test/resources/ddl/create_ds_storage.ddl");
+        	
+        	String id ="id1";
+	    	String base="base_test";	    	
+	    	String data = "Hello";
+	    	String parentId="id_1_parent";
+	  	    /*	
+	    	DsRecord record = new DsRecord(id, base,data, parentId);
+            storage.createNewRecord(record );
+            */  
             HelloReplyDto response = new HelloReplyDto();
+            
         response.setMessage("KEG7Z6");
         return response;
         } catch (Exception e){
