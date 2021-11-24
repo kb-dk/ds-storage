@@ -40,6 +40,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/HelloReply'
 
+
+  /getBasesConfiguration:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Request a Hello World message, for testing purposes'
+      operationId: getBasesConfiguration
+      responses:
+        '200':
+          description: 'A JSON structure containing a Hello World message'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordBaseList'
+
+
   
 components:
   schemas:
@@ -63,6 +79,11 @@ components:
         updateStrategy:  
           type: string
           description: 'UpdateStrategy much match the enum values defined in the open API specification'
+
+    RecordBaseList:
+      type: array
+      items: 
+        $ref: '#/components/schemas/RecordBase'
 
     DsRecord:
       type: object

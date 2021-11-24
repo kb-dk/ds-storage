@@ -1,9 +1,13 @@
 package dk.kb.storage.api.v1.impl;
 
 import dk.kb.storage.api.v1.*;
+import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.ErrorDto;
 import java.io.File;
+import java.util.List;
+
 import dk.kb.storage.model.v1.HelloReplyDto;
+import dk.kb.storage.model.v1.RecordBaseDto;
 import dk.kb.storage.storage.DsStorage;
 
 
@@ -85,6 +89,10 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     private transient MessageContext messageContext;
 
 
+    @Override
+    public List<RecordBaseDto> getBasesConfiguration() {    	
+      return  ServiceConfig.getAllowedBases();
+    }
     
     @Override
     public HelloReplyDto getGreeting(String alternateHello) throws ServiceException {
