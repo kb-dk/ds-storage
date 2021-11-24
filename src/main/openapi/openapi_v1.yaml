@@ -103,10 +103,12 @@ components:
           type: string
           description: 'The payload of the record. Text in UTF-8'
         cTime:
-          type: long
+          type: integer
+          format: int64
           description: 'Creation time when the record was created first time. Format is millis with 3 added digits'
         mTime:
-          type: long
+          type: integer
+          format: int64
           description: 'Modification time for last create or update of the record.  Format is millis with 3 added digits'
         children:
           type: array
