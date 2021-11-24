@@ -1,8 +1,10 @@
 package dk.kb.storage.config;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+import dk.kb.storage.model.v1.RecordBaseDto;
 import dk.kb.util.yaml.YAML;
 
 /**
@@ -11,82 +13,83 @@ import dk.kb.util.yaml.YAML;
  */
 public class ServiceConfig {
 
-    /**
-     * Besides parsing of YAML files using SnakeYAML, the YAML helper class provides convenience
-     * methods like {@code getInteger("someKey", defaultValue)} and {@code getSubMap("config.sub1.sub2")}.
-     */
-    private static YAML serviceConfig;
+	/**
+	 * Besides parsing of YAML files using SnakeYAML, the YAML helper class provides convenience
+	 * methods like {@code getInteger("someKey", defaultValue)} and {@code getSubMap("config.sub1.sub2")}.
+	 */
+	private static YAML serviceConfig;
 
-    /**
-     * Initialized the configuration from the provided configFile.
-     * This should normally be called from {@link dk.kb.storage.webservice.ContextListener} as
-     * part of web server initialization of the container.
-     * @param configFile the configuration to load.
-     * @throws IOException if the configuration could not be loaded or parsed.
-     */
-    public static synchronized void initialize(String configFile) throws IOException {
-        serviceConfig = YAML.resolveLayeredConfigs(configFile);
-    }
+	/**
+	 * Initialized the configuration from the provided configFile.
+	 * This should normally be called from {@link dk.kb.storage.webservice.ContextListener} as
+	 * part of web server initialization of the container.
+	 * @param configFile the configuration to load.
+	 * @throws IOException if the configuration could not be loaded or parsed.
+	 */
+	public static synchronized void initialize(String configFile) throws IOException {
+		serviceConfig = YAML.resolveLayeredConfigs(configFile);
+	}
 
-    /**
-     * Demonstration of a first-class property, meaning that an explicit method has been provided.
-     * @see #getConfig() for alternative.
-     * @return the "Hello World" lines defined in the config file.
-     */
-    public static List<String> getHelloLines() {
-        List<String> lines = serviceConfig.getList("config.helloLines");
-        return lines;
-    }
+	/**
+	 * Demonstration of a first-class property, meaning that an explicit method has been provided.
+	 * @see #getConfig() for alternative.
+	 * @return the "Hello World" lines defined in the config file.
+	 */
+	public static List<String> getHelloLines() {
+		List<String> lines = serviceConfig.getList("config.helloLines");
+		return lines;
+	}
 
-    public static List<String> getAllowedBases() {
-        List<YAML> bases = serviceConfig.getYAMLList("config.allowed_bases");
-                
-        //Load updtateStategy for each
-        for (YAML base: bases) {
-        
-        String name = base.getString("name");
-        String updateStrategy = base.getString("update_strategy");        
-        System.out.println(name +":"+updateStrategy);
-        	
-          //String updateStrategy = serviceConfig.getString("config.allowed_bases"+"."+base+".update_strategy");
-          //System.out.println(base +":"+updateStrategy);        	        	
-        }
-        
-        return null;
-    }
+	public static List<RecordBaseDto> getAllowedBases() {
+		List<YAML> bases = serviceConfig.getYAMLList("config.allowed_bases");
 
-    
-    public static  String getDBDriver() {
-        String dbDriver= serviceConfig.getString("config.db.driver");
-        return dbDriver;
-    }
-        
-    public static  String getDBUrl() {
-        String dbUrl= serviceConfig.getString("config.db.url");
-        return dbUrl;
-    }
-    
-    public static  String getDBUserName() {
-        String dbUserName= serviceConfig.getString("config.db.username");
-        return dbUserName;
-    }
 
-    public static  String getDBPassword() {
-        String dbPassword= serviceConfig.getString("config.db.password");
-        return dbPassword;
-    }
-            
-    /**
-     * Direct access to the backing YAML-class is used for configurations with more flexible content
-     * and/or if the service developer prefers key-based property access.
-     * @see #getHelloLines() for alternative.
-     * @return the backing YAML-handler for the configuration.
-     */
-    public static YAML getConfig() {
-        if (serviceConfig == null) {
-            throw new IllegalStateException("The configuration should have been loaded, but was not");
-        }
-        return serviceConfig;
-    }
-  
+		List<RecordBaseDto> basesList = new  ArrayList<RecordBaseDto>();
+		//Load updtateStategy for each
+		for (YAML base: bases) {
+			String name = base.getString("name");
+			String updateStrategy = base.getString("update_strategy");        
+			RecordBaseDto recordBase = new RecordBaseDto();
+			recordBase.setName(name);
+			recordBase.setUpdateStrategy(updateStrategy);
+			basesList.add(recordBase);                	
+		}
+
+		return basesList;
+	}
+
+
+	public static  String getDBDriver() {
+		String dbDriver= serviceConfig.getString("config.db.driver");
+		return dbDriver;
+	}
+
+	public static  String getDBUrl() {
+		String dbUrl= serviceConfig.getString("config.db.url");
+		return dbUrl;
+	}
+
+	public static  String getDBUserName() {
+		String dbUserName= serviceConfig.getString("config.db.username");
+		return dbUserName;
+	}
+
+	public static  String getDBPassword() {
+		String dbPassword= serviceConfig.getString("config.db.password");
+		return dbPassword;
+	}
+
+	/**
+	 * Direct access to the backing YAML-class is used for configurations with more flexible content
+	 * and/or if the service developer prefers key-based property access.
+	 * @see #getHelloLines() for alternative.
+	 * @return the backing YAML-handler for the configuration.
+	 */
+	public static YAML getConfig() {
+		if (serviceConfig == null) {
+			throw new IllegalStateException("The configuration should have been loaded, but was not");
+		}
+		return serviceConfig;
+	}
+
 }

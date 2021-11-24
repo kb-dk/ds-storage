@@ -29,7 +29,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 	@Test
 	public void testCreateAndUpdate() throws Exception {
        //TODO rescribe flow below
-		ServiceConfig.getAllowedBases();
+		System.out.println(ServiceConfig.getAllowedBases());
 	
 		DsRecordDto r1 = DsStorageFacade.getRecord("does_not_exist");
 		Assertions.assertTrue(r1 == null);
