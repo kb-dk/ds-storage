@@ -37,6 +37,8 @@ public class DsStorage implements AutoCloseable {
 
 	
 	
+	private static String clearTableRecordsStatement = "DELETE FROM " + RECORDS_TABLE;
+		
 	
 	private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
 			" (" + ID_COLUMN + ", " + BASE_COLUMN + ", " + DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
@@ -179,6 +181,16 @@ public class DsStorage implements AutoCloseable {
 	}
 
 
+	/*
+	 * Only called from unittests, not exposed on facade class
+	 * 
+	 */
+	 public void clearTableRecords() throws SQLException {
+		try (PreparedStatement stmt = connection.prepareStatement(clearTableRecordsStatement);) {
+			stmt.execute(); //No resultset to close
+		  }		 
+	}
+	
 	/*
 	 * Will only extract with records strightly  larger than mTime!
 	 * Will be sorted by mTime. Latest is last
@@ -452,7 +464,11 @@ public class DsStorage implements AutoCloseable {
 	}
 
 	
-	 private int boolToInt(boolean isTrue) {
-	        return isTrue ? 1 : 0;
+	 private int boolToInt(Boolean isTrue) {
+         if (isTrue == null) {
+        	 return 0;
+         }
+		 
+		 return isTrue ? 1 : 0;
 	    }
 }

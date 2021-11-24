@@ -43,6 +43,7 @@ public abstract class DsStorageUnitTestUtil {
 
 	@BeforeAll
 	public static void beforeClass() throws Exception {
+
 		ServiceConfig.initialize("conf/ds-storage*.yaml"); 	    
 		createEmptyDBFromDDL();
 		DsStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
@@ -50,11 +51,8 @@ public abstract class DsStorageUnitTestUtil {
 
 
 	}
-	@BeforeEach
-	public void beforeEach() throws Exception {	        	    		    	
-		storage.rollback(); //Important so each unittest has clean table
-	}
 
+	
 
 
 	@AfterAll
