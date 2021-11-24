@@ -2,7 +2,6 @@ package dk.kb.storage.facade;
 
 import java.sql.SQLException;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
