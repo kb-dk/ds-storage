@@ -4,7 +4,11 @@ import dk.kb.storage.api.v1.*;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.ErrorDto;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import dk.kb.storage.model.v1.HelloReplyDto;
 import dk.kb.storage.model.v1.RecordBaseDto;
@@ -91,7 +95,12 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
 
     @Override
     public List<RecordBaseDto> getBasesConfiguration() {    	
-      return  ServiceConfig.getAllowedBases();
+    	List<RecordBaseDto>  basesList = new ArrayList<RecordBaseDto>();
+    	 HashMap<String, RecordBaseDto> allowedBases = ServiceConfig.getAllowedBases();    	
+    	for (String baseName: allowedBases.keySet()) {
+    		basesList.add(allowedBases.get(baseName));    		
+    	}
+        return basesList;  	
     }
     
     @Override

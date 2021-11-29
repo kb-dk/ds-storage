@@ -2,7 +2,12 @@ package dk.kb.storage.config;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import dk.kb.storage.model.v1.RecordBaseDto;
 import dk.kb.util.yaml.YAML;
@@ -13,6 +18,11 @@ import dk.kb.util.yaml.YAML;
  */
 public class ServiceConfig {
 
+	  private static final Logger log = LoggerFactory.getLogger(ServiceConfig.class);
+	
+	//key is basename
+	private static final HashMap<String,RecordBaseDto> allowedBases = new HashMap<String,RecordBaseDto>();
+	
 	/**
 	 * Besides parsing of YAML files using SnakeYAML, the YAML helper class provides convenience
 	 * methods like {@code getInteger("someKey", defaultValue)} and {@code getSubMap("config.sub1.sub2")}.
@@ -28,6 +38,7 @@ public class ServiceConfig {
 	 */
 	public static synchronized void initialize(String configFile) throws IOException {
 		serviceConfig = YAML.resolveLayeredConfigs(configFile);
+		loadAllowedBases();
 	}
 
 	/**
@@ -40,22 +51,22 @@ public class ServiceConfig {
 		return lines;
 	}
 
-	public static List<RecordBaseDto> getAllowedBases() {
+	private static void loadAllowedBases() {
+
 		List<YAML> bases = serviceConfig.getYAMLList("config.allowed_bases");
-
-
-		List<RecordBaseDto> basesList = new  ArrayList<RecordBaseDto>();
 		//Load updtateStategy for each
 		for (YAML base: bases) {
 			String name = base.getString("name");
 			String updateStrategy = base.getString("update_strategy");        
 			RecordBaseDto recordBase = new RecordBaseDto();
 			recordBase.setName(name);
-			recordBase.setUpdateStrategy(updateStrategy);
-			basesList.add(recordBase);                	
+			recordBase.setUpdateStrategy(updateStrategy);                	
+			allowedBases.put(name, recordBase);
+            log.info("Base loaded:"+name);
 		}
 
-		return basesList;
+		log.info("Allowed bases loaded from config. Number of bases:"+allowedBases.size());
+		
 	}
 
 
@@ -77,6 +88,10 @@ public class ServiceConfig {
 	public static  String getDBPassword() {
 		String dbPassword= serviceConfig.getString("config.db.password");
 		return dbPassword;
+	}
+		
+	public static HashMap<String, RecordBaseDto> getAllowedBases() {
+		return allowedBases;
 	}
 
 	/**

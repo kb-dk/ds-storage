@@ -35,7 +35,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 		Assertions.assertTrue(r1 == null);
 		
 		String id ="id1";
-		String base="base_test";	    	
+		String base="doms_radio"; //Must be defined in yaml properties as allowed base
 		String data = "Hello";
 		String parentId="id_1_parent";
 
@@ -82,8 +82,25 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 	}
 
 	@Test
-	public void testCreateAndUpdate2() throws Exception {
-    
+	public void testUnknownBase() throws Exception {
+		String id ="id1";
+		String base="unkown_base";	    	
+		String data = "Hello";
+		String parentId="id_1_parent";
+
+		DsRecordDto record = new DsRecordDto();
+		record.setId(id);
+		record.setBase(base);
+		record.setData(data);
+		record.setParentId(parentId);
+		try {
+		DsStorageFacade.createOrUpdateRecord(record );
+    		Assertions.fail("Should fail with unknown base");				
+		}
+		catch(Exception e) { //ignore			
+			
+		}
+		
 	}
 
 	

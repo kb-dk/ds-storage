@@ -5,9 +5,11 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.webservice.exception.InternalServiceException;
+import dk.kb.storage.webservice.exception.InvalidArgumentServiceException;
 
 
 
@@ -18,8 +20,9 @@ public class DsStorageFacade {
 
     
     public static void createOrUpdateRecord(DsRecordDto record) throws Exception {
+    	    	
+          validateBase(record.getBase());
     	
-    	//TODO validate base!    	
     	  try (DsStorage storage = new DsStorage();) {
               
               try {             
@@ -47,13 +50,21 @@ public class DsStorageFacade {
     }
 	
     
+    public static void validateBase(String base) throws Exception{
+    	
+    	if (ServiceConfig.getAllowedBases().get(base) == null) {    		
+    		throw new InvalidArgumentServiceException("Unknown record base:"+base);
+    	}
+    	
+    }
+    
+    
     /*
      * Return null if record does not exist
      * 
      */
  public static DsRecordDto getRecord(String recordId) throws Exception {
-    	
-    	//TODO validate base!    	
+    			 
     	  try (DsStorage storage = new DsStorage();) {
               
               try {             
