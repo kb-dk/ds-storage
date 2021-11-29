@@ -119,8 +119,22 @@ components:
           description: 'Id of parent record. Is not required. '
       
 
-
-
+# UpdateStrategy enums
+#     
+#    NONE:   Only the record itself should be marked as updated.</li>
+#    ALL:    All records in the transitive graphs originating in this object should be marked as updated.</li>
+#    CHILD:  Only follow relations where the record is the parent and links points to children.</li>
+#    PARENT: Only follow relations where the record is the child and links points to parents.</li>
+#
+           
+    UpdateStrategy:
+      type: string
+      nullable: false
+      enum:
+        - NONE
+        - ALL
+        - CHILD
+        - PARENT  
 
     Error:
       type: object
