@@ -29,7 +29,6 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 	@Test
 	public void testCreateAndUpdate() throws Exception {
        //TODO rescribe flow below
-		System.out.println(ServiceConfig.getAllowedBases());
 	
 		DsRecordDto r1 = DsStorageFacade.getRecord("does_not_exist");
 		Assertions.assertTrue(r1 == null);
@@ -94,8 +93,8 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 		record.setData(data);
 		record.setParentId(parentId);
 		try {
-		DsStorageFacade.createOrUpdateRecord(record );
-    		Assertions.fail("Should fail with unknown base");				
+		  DsStorageFacade.createOrUpdateRecord(record );
+    	  Assertions.fail("Should fail with unknown base");				
 		}
 		catch(Exception e) { //ignore			
 			

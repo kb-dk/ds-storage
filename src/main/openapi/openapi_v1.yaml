@@ -45,7 +45,7 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Request a Hello World message, for testing purposes'
+      summary: 'Retrieve list of configured recordbases with update strategies'
       operationId: getBasesConfiguration
       responses:
         '200':
@@ -77,8 +77,10 @@ components:
           type: string
           description: 'Name of the recordbase. IDs are prefixed with recordbase'
         updateStrategy:  
-          type: string
-          description: 'UpdateStrategy much match the enum values defined in the open API specification'
+          description: 'Update strategy defined for each recordbase'
+          schema:
+          $ref: '#/components/schemas/UpdateStrategy'        
+
 
     RecordBaseList:
       type: array

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 
 import dk.kb.storage.model.v1.RecordBaseDto;
+import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.util.yaml.YAML;
 
 /**
@@ -60,9 +61,9 @@ public class ServiceConfig {
 			String updateStrategy = base.getString("update_strategy");        
 			RecordBaseDto recordBase = new RecordBaseDto();
 			recordBase.setName(name);
-			recordBase.setUpdateStrategy(updateStrategy);                	
+			recordBase.setUpdateStrategy(UpdateStrategyDto.valueOf(updateStrategy));                	
 			allowedBases.put(name, recordBase);
-            log.info("Base loaded:"+name);
+            log.info("Updatestrategy loaded for recordbase:"+recordBase.getName()  +" with update strategy:"+recordBase.getUpdateStrategy());
 		}
 
 		log.info("Allowed bases loaded from config. Number of bases:"+allowedBases.size());
