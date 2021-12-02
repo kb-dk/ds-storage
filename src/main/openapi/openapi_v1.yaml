@@ -17,29 +17,7 @@ servers:
 paths:
   
 
-  # This definition uses parameters: http://example.com/myservice/v1/hello?alternateHello=Boston
-  /hello:
-    get:
-      tags:
-        - '${project.name}'
-      summary: 'Request a Hello World message, for testing purposes'
-      operationId: getGreeting
-      parameters:
-        - name: alternateHello
-          in: query
-          description: 'Optional alternative to using the word ''Hello'' in the reply'
-          required: false
-          schema:
-            type: string
-            default: 'World'
-      responses:
-        '200':
-          description: 'A JSON structure containing a Hello World message'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HelloReply'
-
+  
 
   /getBasesConfiguration:
     get:
@@ -59,16 +37,6 @@ paths:
   
 components:
   schemas:
-
-    HelloReply:
-      type: object
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          description: 'Greeting from the API'
-
 
     RecordBase:
       type: object

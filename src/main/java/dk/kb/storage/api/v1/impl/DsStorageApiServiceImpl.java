@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import dk.kb.storage.model.v1.HelloReplyDto;
 import dk.kb.storage.model.v1.RecordBaseDto;
 import dk.kb.storage.storage.DsStorage;
 
@@ -95,43 +94,22 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
 
     @Override
     public List<RecordBaseDto> getBasesConfiguration() {    	
+        try{ 
+    	
     	List<RecordBaseDto>  basesList = new ArrayList<RecordBaseDto>();
     	 HashMap<String, RecordBaseDto> allowedBases = ServiceConfig.getAllowedBases();    	
     	for (String baseName: allowedBases.keySet()) {
     		basesList.add(allowedBases.get(baseName));    		
     	}
         return basesList;  	
-    }
-    
-    @Override
-    public HelloReplyDto getGreeting(String alternateHello) throws ServiceException {
-        // TODO: Implement...    	
-        
-        try{ 
-        	
-        	DsStorage storage = new DsStorage();
-        
-        	
-        	storage.createNewDatabase("/home/teg/workspace/ds-storage/src/test/resources/ddl/create_ds_storage.ddl");
-        	
-        	String id ="id1";
-	    	String base="base_test";	    	
-	    	String data = "Hello";
-	    	String parentId="id_1_parent";
-	  	    /*	
-	    	DsRecord record = new DsRecord(id, base,data, parentId);
-            storage.createNewRecord(record );
-            */  
-            HelloReplyDto response = new HelloReplyDto();
-            
-        response.setMessage("KEG7Z6");
-        return response;
-        } catch (Exception e){
+        }
+        catch (Exception e){
             throw handleException(e);
         }
     
+        
     }
-
+    
   
     /**
     * This method simply converts any Exception into a Service exception
