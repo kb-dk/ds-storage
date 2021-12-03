@@ -2,6 +2,8 @@ package dk.kb.storage.api.v1.impl;
 
 import dk.kb.storage.api.v1.*;
 import dk.kb.storage.config.ServiceConfig;
+import dk.kb.storage.facade.DsStorageFacade;
+import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.ErrorDto;
 import java.io.File;
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
@@ -110,6 +113,21 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
         
     }
     
+    @Override
+	public void createOrUpdateRecordPost(@Valid DsRecordDto dsRecordDto) {
+        try{ 
+        	DsStorageFacade.createOrUpdateRecord(dsRecordDto);    	
+        }    	
+        catch (Exception e){
+            throw handleException(e);
+        }
+		
+	}
+
+
+	
+    
+    
   
     /**
     * This method simply converts any Exception into a Service exception
@@ -125,5 +143,11 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
             return new InternalServiceException(e.getMessage());
         }
     }
+
+
+
+
+
+	
 
 }

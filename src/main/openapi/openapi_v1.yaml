@@ -33,6 +33,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordBaseList'
 
+  /createOrUpdateRecord:
+    post:
+      tags:
+        - '${project.name}'    
+      summary: 'Create a new record or update and existing record.'
+      requestBody:
+        content:
+          application/json:    # Media type
+            schema:            # Request body contents
+              $ref: '#/components/schemas/DsRecord'  # Reference to an object
+            example:           # Child of media type because we use $ref above
+              # Properties of a referenced object
+              id: doms_radio_id1
+              base: doms_radio
+              data: '<xml> bla bla </xml>'
+              parentId:
+      responses:
+        '200':
+          description: OK
 
   
 components:
