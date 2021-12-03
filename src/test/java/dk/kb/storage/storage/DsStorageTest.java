@@ -70,7 +70,6 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 		String parentIdUpdated="id_2_parent";
 		long cTimeBefore = recordLoaded.getcTime(); //Must be the same
 
-		record.setDeleted(true);
 		record.setData(dataUpdate);
 		record.setParentId(parentIdUpdated);            
 
@@ -81,12 +80,28 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
 		Assertions.assertEquals(id,recordUpdated .getId());
 		Assertions.assertEquals(base,recordUpdated .getBase());
-		Assertions.assertTrue(recordUpdated.getDeleted()); //It is now deleted
 		Assertions.assertEquals(parentIdUpdated,record.getParentId());        
 		Assertions.assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
 		Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                	                           
+	   
+		//Mark record for delete				
+		storage.markRecordForDelete(id);
+		
+		DsRecordDto record_deleted = storage.loadRecord(id);
+		Assertions.assertTrue(record_deleted.getDeleted());
+	
+		//MTime must also be updated when mark for delete
+  
+		Assertions.assertTrue(recordUpdated.getmTime() < record_deleted.getmTime());		
+		
+		//Update it and deleted flag should be removed
+        record.setData("bla bla bla2");
+		storage.updateRecord(record);		
+		DsRecordDto record_updated_after_delete = storage.loadRecord(id);
+		Assertions.assertFalse(record_updated_after_delete.getDeleted());				
+	
 	}
-
+	
 	@Test
 	public void testGetModifiedAfterParentsOnly() throws Exception {	    
 		String parentId="mega_parent_id";	          	        

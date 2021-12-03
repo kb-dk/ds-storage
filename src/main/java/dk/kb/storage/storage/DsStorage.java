@@ -45,11 +45,16 @@ public class DsStorage implements AutoCloseable {
 	private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+			 
 			 DATA_COLUMN + " = ? , "+ 						 
 			 MTIME_COLUMN + " = ? , "+
-			 DELETED_COLUMN + " = ? , "+
+			 DELETED_COLUMN + " = 0 , "+
 			 PARENT_ID_COLUMN + " = ?  "+
 			 "WHERE "+
 			 ID_COLUMN + "= ?";
-
+	
+	private static String markRecordForDelete = "UPDATE " + RECORDS_TABLE + " SET  "+			 
+			 DELETED_COLUMN + " = 1,  "+
+			 MTIME_COLUMN + " = ? "+
+			 "WHERE "+
+			 ID_COLUMN + "= ?";
 	
 	
 	private static String childrenIdsStatement = "SELECT " + ID_COLUMN +" FROM " + RECORDS_TABLE +
@@ -350,6 +355,30 @@ public class DsStorage implements AutoCloseable {
 
 	}
 
+	public void markRecordForDelete(String recordId) throws Exception {
+
+		// Sanity check
+		if (recordId == null) {
+			throw new Exception("Id must not be null"); // TODO exception enum types, messages?
+		}
+
+		long nowStamp = UniqueTimestampGenerator.next();
+		//log.debug("Creating new record: " + record.getId());
+
+		try (PreparedStatement stmt = connection.prepareStatement(markRecordForDelete);) {		
+			stmt.setLong(1, nowStamp);						
+			stmt.setString(2, recordId);
+			
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			String message = "SQL Exception in markRecordForDelete  with id:" + recordId + " error:" + e.getMessage();
+			e.printStackTrace();
+			log.error(message);
+			throw new SQLException(message, e);
+		}
+
+	}
+
 	public void updateRecord(DsRecordDto record) throws Exception {
 
 		// Sanity check
@@ -366,10 +395,9 @@ public class DsStorage implements AutoCloseable {
 		try (PreparedStatement stmt = connection.prepareStatement(updateRecordStatement);) {
 		
 			stmt.setString(1, record.getData());
-			stmt.setLong(2, nowStamp);
-			stmt.setInt(3, boolToInt(record.getDeleted()));						
-			stmt.setString(4, record.getParentId());
-			stmt.setString(5, record.getId());
+			stmt.setLong(2, nowStamp);						
+			stmt.setString(3, record.getParentId());
+			stmt.setString(4, record.getId());
 			stmt.executeUpdate();
 		} catch (SQLException e) {
 			String message = "SQL Exception in updateRecord with id:" + record.getId() + " error:" + e.getMessage();
@@ -380,6 +408,8 @@ public class DsStorage implements AutoCloseable {
 
 	}
 
+	
+	
 	
 	
 	private static DsRecordDto createRecordFromRS(ResultSet rs) throws SQLException {

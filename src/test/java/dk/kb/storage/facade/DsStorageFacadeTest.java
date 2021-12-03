@@ -1,4 +1,4 @@
-package dk.kb.storage.config.facade;
+package dk.kb.storage.facade;
 
 
 import org.junit.jupiter.api.Assertions;
@@ -60,7 +60,6 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 		String parentIdUpdated="id_2_parent";
 		long cTimeBefore = recordLoaded.getcTime(); //Must be the same
 
-		record.setDeleted(true);
 		record.setData(dataUpdate);
 		record.setParentId(parentIdUpdated);            
 
@@ -70,7 +69,6 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 		DsRecordDto recordUpdated = DsStorageFacade.getRecord(id);
 		Assertions.assertEquals(id,recordUpdated .getId());
 		Assertions.assertEquals(base,recordUpdated .getBase());
-		Assertions.assertTrue(recordUpdated.getDeleted()); //It is now deleted
 		Assertions.assertEquals(parentIdUpdated,record.getParentId());        
 		Assertions.assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
 		Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                	                           

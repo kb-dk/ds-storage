@@ -33,6 +33,45 @@ paths:
               schema:
                 $ref: '#/components/schemas/RecordBaseList'
 
+
+  /getRecord:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Read a specific record by ID'
+      operationId: getRecord
+      parameters:
+        - name: id
+          in: query
+          description: 'Record ID'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'The DsRecord'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DsRecord'
+
+  /markRecordForDelete:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Mark a record with delete flag'
+      operationId: markRecordForDelete
+      parameters:
+        - name: id
+          in: query
+          description: 'Record ID'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          
   /createOrUpdateRecord:
     post:
       tags:
