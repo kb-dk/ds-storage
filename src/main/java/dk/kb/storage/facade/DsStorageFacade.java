@@ -53,12 +53,7 @@ public class DsStorageFacade {
     }
 
 
-    /*
-     * Return null if record does not exist
-     * 
-     */
-    public static ArrayList<RecordBaseCountDto> getRecordBaseStatistics() throws Exception {
-
+      public static ArrayList<RecordBaseCountDto> getRecordBaseStatistics() throws Exception {
         try (DsStorage storage = new DsStorage();) {
             try {             
                 ArrayList<RecordBaseCountDto> baseStatictics = storage.getBaseStatictics();              
@@ -74,7 +69,23 @@ public class DsStorageFacade {
 
     }
 
+     public static ArrayList<DsRecordDto> getRecordsModifiedAfter(String recordBase, long mTime, int batchSize) throws Exception {
+          try (DsStorage storage = new DsStorage();) {
+              try {             
+                  ArrayList<DsRecordDto> records= storage.getRecordsModifiedAfter(recordBase, mTime, batchSize);
+                  return records;                          
+              } catch (SQLException e) {
+                  log.error("Error in getRecordBaseStatistics :"+e.getMessage());
+                  storage.rollback();
+                  throw new InternalServiceException(e);
+              }
+          } catch (SQLException e) { //Connecting to storage failed
+              throw new InternalServiceException(e);
+          }
 
+      }
+
+      
     /*
      * Return null if record does not exist
      * 

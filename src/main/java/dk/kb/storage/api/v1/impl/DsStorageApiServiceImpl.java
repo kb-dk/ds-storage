@@ -29,6 +29,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
@@ -99,7 +100,7 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     @Override
     public List<RecordBaseDto> getBasesConfiguration() {
         try {
-
+            //TODO MOVE TO FACEDE
             List<RecordBaseDto> basesList = new ArrayList<RecordBaseDto>();
             HashMap<String, RecordBaseDto> allowedBases = ServiceConfig.getAllowedBases();
             for (String baseName : allowedBases.keySet()) {
@@ -111,7 +112,19 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
         }
 
     }
+    
+    
+    @Override
+    public List<DsRecordDto> getRecordsModifiedAfter(String recordBase, Long mTime, Integer batchSize) {
+        try {
+            log.info("getRecordsModifiedAfter calles with parameters recordBase:{} mTime:{} batchSize:{}",recordBase,mTime,batchSize);
+            return DsStorageFacade.getRecordsModifiedAfter(recordBase, mTime, batchSize);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
 
+    }
+    
     @Override
     public void createOrUpdateRecordPost(DsRecordDto dsRecordDto) {
         try {
@@ -167,6 +180,9 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
             return new InternalServiceException(e.getMessage());
         }
     }
+
+
+   
 
 
 }

@@ -102,6 +102,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RecordBaseCountList'
+
+
+  /getRecordsModifiedAfter:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Extract records from a record base after a given mTime and up to a defined batch size.'
+      operationId: getRecordsModifiedAfter  
+      parameters:
+        - name: recordBase
+          in: query
+          description: 'RecordBase'
+          required: true
+          schema:
+            type: string
+        - name: mTime
+          in: query
+          description: 'mTime'
+          required: true
+          schema:
+            type: integer
+            format: int64  
+        - name: batchSize
+          in: query
+          description: 'batch size. Values between 1 and 10000 are allowed'
+          required: true
+          schema:
+            type: integer
+            format: int32                 
+            
+      responses:
+        '200':
+          description: 'List of DsRecords'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DsRecordList'
   
   
 components:
@@ -119,6 +156,12 @@ components:
           $ref: '#/components/schemas/UpdateStrategy'        
 
 
+   
+    DsRecordList:
+      type: array
+      items: 
+        $ref: '#/components/schemas/DsRecord'
+   
     RecordBaseList:
       type: array
       items: 

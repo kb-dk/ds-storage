@@ -238,8 +238,8 @@ public class DsStorage implements AutoCloseable {
      */
     public ArrayList<DsRecordDto > getRecordsModifiedAfter(String base, long mTime, int batchSize) throws Exception {
 
-        if (batchSize <1 || batchSize > 100000) { //No doom switch
-            throw new Exception("Batchsize must be in range 1 to 100000");			
+        if (batchSize <1 || batchSize > 10000) { //No doom switch
+            throw new Exception("Batchsize must be in range 1 to 10000");			
         }
         ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement);) {
