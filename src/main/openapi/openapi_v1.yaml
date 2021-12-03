@@ -16,18 +16,15 @@ servers:
 
 paths:
   
-
-  
-
   /getBasesConfiguration:
     get:
       tags:
         - '${project.name}'
-      summary: 'Retrieve list of configured recordbases with update strategies'
+      summary: 'Retrieve list of configured record bases with update strategy'
       operationId: getBasesConfiguration
       responses:
         '200':
-          description: 'A JSON structure containing a Hello World message'
+          description: 'A list of configured record bases with update strategy'
           content:
             application/json:
               schema:
