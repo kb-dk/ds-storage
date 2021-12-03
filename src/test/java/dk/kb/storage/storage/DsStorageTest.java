@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.RecordBaseCountDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
 
@@ -90,12 +93,11 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 		DsRecordDto record_deleted = storage.loadRecord(id);
 		Assertions.assertTrue(record_deleted.getDeleted());
 	
-		//MTime must also be updated when mark for delete
-  
+		//MTime must also be updated when mark for delete  
 		Assertions.assertTrue(recordUpdated.getmTime() < record_deleted.getmTime());		
 		
 		//Update it and deleted flag should be removed
-        record.setData("bla bla bla2");
+  record.setData("bla bla bla2");
 		storage.updateRecord(record);		
 		DsRecordDto record_updated_after_delete = storage.loadRecord(id);
 		Assertions.assertFalse(record_updated_after_delete.getDeleted());				
@@ -168,7 +170,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
 		createMegaParent(parentId);	
 
-		ArrayList<DsRecordDto> list1 = storage.getModifiedAfter("test_base", before, 10000);
+		ArrayList<DsRecordDto> list1 = storage.getRecordsModifiedAfter("test_base", before, 10000);
 		assertEquals(1001, list1.size()); //100 children +1 parent	    	 	    		    
 	}	    
 
@@ -239,15 +241,24 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 		r4.setData("id4 text");   				    	
 		storage.createNewRecord(r4);
 
-
-
-
-		HashMap<String, Long> baseStatictics = storage.getBaseStatictics();
-
-		assertEquals(3,baseStatictics.size());
-		assertEquals(2,baseStatictics.get("test_base1"));
-		assertEquals(1,baseStatictics.get("test_base2"));
-		assertEquals(1,baseStatictics.get("test_base3"));	        	     
+		 ArrayList<RecordBaseCountDto> baseStatisticsList = storage.getBaseStatictics();
+		 Comparator<RecordBaseCountDto> compareByRecordbase = Comparator.comparing( RecordBaseCountDto :: getRecordBase);
+		 Collections.sort(baseStatisticsList, compareByRecordbase);
+		 assertEquals(3,baseStatisticsList.size());
+  //Sort so we know order
+		
+		 RecordBaseCountDto item0 = baseStatisticsList.get(0);
+	  assertEquals(2,item0.getCount());
+   assertEquals("test_base1",item0.getRecordBase());
+		 
+   RecordBaseCountDto item1 = baseStatisticsList.get(1);
+   assertEquals(1,item1.getCount());
+   assertEquals("test_base2",item1.getRecordBase());
+   
+   RecordBaseCountDto item2 = baseStatisticsList.get(2);
+   assertEquals(1,item2.getCount());
+   assertEquals("test_base3",item2.getRecordBase());
+	        	     
 	}
 
 

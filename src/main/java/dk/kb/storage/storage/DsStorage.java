@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.RecordBaseCountDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
 
@@ -235,7 +236,7 @@ public class DsStorage implements AutoCloseable {
      * Will extract all no matter of parent or child ids
      * 
      */
-    public ArrayList<DsRecordDto > getModifiedAfter(String base, long mTime, int batchSize) throws Exception {
+    public ArrayList<DsRecordDto > getRecordsModifiedAfter(String base, long mTime, int batchSize) throws Exception {
 
         if (batchSize <1 || batchSize > 100000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 100000");			
@@ -298,20 +299,23 @@ public class DsStorage implements AutoCloseable {
         return records;	
     }
 
-    public HashMap<String, Long> getBaseStatictics() throws SQLException {
+    public ArrayList<RecordBaseCountDto> getBaseStatictics() throws SQLException {
 
-        HashMap<String, Long> baseCount = new HashMap<String, Long>();
+        ArrayList<RecordBaseCountDto> baseCountList = new ArrayList<RecordBaseCountDto>();
         try (PreparedStatement stmt = connection.prepareStatement(baseStatisticsStatement);) {
 
             try (ResultSet rs = stmt.executeQuery();) {
                 while (rs.next()) {
+                    RecordBaseCountDto baseStats = new RecordBaseCountDto();                    
                     String base = rs.getString(BASE_COLUMN);
                     long count = rs.getLong("COUNT");
-                    baseCount.put(base, count);
+                    baseStats.setRecordBase(base);
+                    baseStats.setCount(count);
+                    baseCountList.add(baseStats);
                 }
             }
         }
-        return baseCount;
+        return baseCountList;
     }
 
     public void createNewRecord(DsRecordDto record) throws Exception {

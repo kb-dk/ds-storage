@@ -89,6 +89,20 @@ paths:
         '200':
           description: OK
 
+  /getRecordBaseStatistics:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Show how many records in each recordbase'
+      operationId: getRecordBaseStatistics    
+      responses:
+        '200':
+          description: 'Show how many records exists for each record base'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordBaseCountList'
+  
   
 components:
   schemas:
@@ -109,6 +123,23 @@ components:
       type: array
       items: 
         $ref: '#/components/schemas/RecordBase'
+
+    RecordBaseCountList:
+      type: array
+      items: 
+        $ref: '#/components/schemas/RecordBaseCount'
+
+
+    RecordBaseCount:
+      type: object
+      properties:
+        recordBase:
+          type: string
+          description: 'Name of the recordbase'
+        count:
+          type: integer
+          format: int64
+          description: 'Number of records for each record base. This will also include records marked with delete flag'
 
     DsRecord:
       type: object

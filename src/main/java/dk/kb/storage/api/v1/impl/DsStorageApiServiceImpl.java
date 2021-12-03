@@ -5,6 +5,8 @@ import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.ErrorDto;
+import dk.kb.storage.model.v1.RecordBaseCountDto;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,109 +53,120 @@ import io.swagger.annotations.Api;
  *
  */
 public class DsStorageApiServiceImpl implements DsStorageApi {
-	private Logger log = LoggerFactory.getLogger(this.toString());
+    private Logger log = LoggerFactory.getLogger(this.toString());
 
-	/*
-	 * How to access the various web contexts. See
-	 * https://cxf.apache.org/docs/jax-rs-basics.html#JAX-RSBasics-
-	 * Contextannotations
-	 */
+    /*
+     * How to access the various web contexts. See
+     * https://cxf.apache.org/docs/jax-rs-basics.html#JAX-RSBasics-
+     * Contextannotations
+     */
 
-	@Context
-	private transient UriInfo uriInfo;
+    @Context
+    private transient UriInfo uriInfo;
 
-	@Context
-	private transient SecurityContext securityContext;
+    @Context
+    private transient SecurityContext securityContext;
 
-	@Context
-	private transient HttpHeaders httpHeaders;
+    @Context
+    private transient HttpHeaders httpHeaders;
 
-	@Context
-	private transient Providers providers;
+    @Context
+    private transient Providers providers;
 
-	@Context
-	private transient Request request;
+    @Context
+    private transient Request request;
 
-	// Disabled as it is always null? TODO: Investigate when it can be not-null,
-	// then re-enable with type
-	// @Context
-	// private transient ContextResolver contextResolver;
+    // Disabled as it is always null? TODO: Investigate when it can be not-null,
+    // then re-enable with type
+    // @Context
+    // private transient ContextResolver contextResolver;
 
-	@Context
-	private transient HttpServletRequest httpServletRequest;
+    @Context
+    private transient HttpServletRequest httpServletRequest;
 
-	@Context
-	private transient HttpServletResponse httpServletResponse;
+    @Context
+    private transient HttpServletResponse httpServletResponse;
 
-	@Context
-	private transient ServletContext servletContext;
+    @Context
+    private transient ServletContext servletContext;
 
-	@Context
-	private transient ServletConfig servletConfig;
+    @Context
+    private transient ServletConfig servletConfig;
 
-	@Context
-	private transient MessageContext messageContext;
+    @Context
+    private transient MessageContext messageContext;
 
-	@Override
-	public List<RecordBaseDto> getBasesConfiguration() {
-		try {
+    @Override
+    public List<RecordBaseDto> getBasesConfiguration() {
+        try {
 
-			List<RecordBaseDto> basesList = new ArrayList<RecordBaseDto>();
-			HashMap<String, RecordBaseDto> allowedBases = ServiceConfig.getAllowedBases();
-			for (String baseName : allowedBases.keySet()) {
-				basesList.add(allowedBases.get(baseName));
-			}
-			return basesList;
-		} catch (Exception e) {
-			throw handleException(e);
-		}
+            List<RecordBaseDto> basesList = new ArrayList<RecordBaseDto>();
+            HashMap<String, RecordBaseDto> allowedBases = ServiceConfig.getAllowedBases();
+            for (String baseName : allowedBases.keySet()) {
+                basesList.add(allowedBases.get(baseName));
+            }
+            return basesList;
+        } catch (Exception e) {
+            throw handleException(e);
+        }
 
-	}
+    }
 
-	@Override
-	public void createOrUpdateRecordPost(DsRecordDto dsRecordDto) {
-		try {
-			DsStorageFacade.createOrUpdateRecord(dsRecordDto);
-		} catch (Exception e) {
-			throw handleException(e);
-		}
+    @Override
+    public void createOrUpdateRecordPost(DsRecordDto dsRecordDto) {
+        try {
+            DsStorageFacade.createOrUpdateRecord(dsRecordDto);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
 
-	}
+    }
 
-	@Override
-	public DsRecordDto getRecord(String id) {
-		try {
-			return DsStorageFacade.getRecord(id);
-		} catch (Exception e) {
-			throw handleException(e);
-		}
+    @Override
+    public DsRecordDto getRecord(String id) {
+        try {
+            return DsStorageFacade.getRecord(id);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
 
-	}
+    }
 
-	@Override
-	public void markRecordForDelete(String id) {
-		try {
-			DsStorageFacade.markRecordForDelete(id);
-		} catch (Exception e) {
-			throw handleException(e);
-		}
+    @Override
+    public void markRecordForDelete(String id) {
+        try {
+            DsStorageFacade.markRecordForDelete(id);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
 
-	}
+    
+    @Override
+    public  List<RecordBaseCountDto> getRecordBaseStatistics() {
+        try {
+         return DsStorageFacade.getRecordBaseStatistics();
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+    
+    
+    /**
+     * This method simply converts any Exception into a Service exception
+     * 
+     * @param e: Any kind of exception
+     * @return A ServiceException
+     * @see dk.kb.storage.webservice.ServiceExceptionMapper
+     */
+    private ServiceException handleException(Exception e) {
+        if (e instanceof ServiceException) {
+            return (ServiceException) e; // Do nothing - this is a declared ServiceException from within module.
+        } else {// Unforseen exception (should not happen). Wrap in internal service exception
+            log.error("ServiceException(HTTP 500):", e); // You probably want to log this.
+            return new InternalServiceException(e.getMessage());
+        }
+    }
 
-	/**
-	 * This method simply converts any Exception into a Service exception
-	 * 
-	 * @param e: Any kind of exception
-	 * @return A ServiceException
-	 * @see dk.kb.storage.webservice.ServiceExceptionMapper
-	 */
-	private ServiceException handleException(Exception e) {
-		if (e instanceof ServiceException) {
-			return (ServiceException) e; // Do nothing - this is a declared ServiceException from within module.
-		} else {// Unforseen exception (should not happen). Wrap in internal service exception
-			log.error("ServiceException(HTTP 500):", e); // You probably want to log this.
-			return new InternalServiceException(e.getMessage());
-		}
-	}
 
 }
