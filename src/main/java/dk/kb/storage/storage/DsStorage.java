@@ -67,6 +67,7 @@ public class DsStorage implements AutoCloseable {
 
 
     //SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
+   //TODO UUNITEST
     private static String recordsModifiedAfterStatement =
             "SELECT * FROM " + RECORDS_TABLE +
             " WHERE " +BASE_COLUMN +"= ?" +
@@ -243,15 +244,12 @@ public class DsStorage implements AutoCloseable {
         }
         ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement);) {
-            
-            
-            log.info("AFTER SQL:"+recordsModifiedAfterStatement);
+                       
             stmt.setString(1, base);
             stmt.setLong(2, mTime);
             stmt.setLong(3, batchSize);
             try (ResultSet rs = stmt.executeQuery();) {
                 while (rs.next()) {                    
-                    log.info("RS FOUND");
                     DsRecordDto record = createRecordFromRS(rs);
                     records.add(record);
                 }
