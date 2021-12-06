@@ -100,7 +100,15 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
   record.setData("bla bla bla2");
 		storage.updateRecord(record);		
 		DsRecordDto record_updated_after_delete = storage.loadRecord(id);
+
 		Assertions.assertFalse(record_updated_after_delete.getDeleted());				
+	
+		//test updateMtime
+		int updated = storage.updateMTimeForRecord(id);
+  Assertions.assertEquals(1,updated);
+  DsRecordDto record_after_mtime_touch = storage.loadRecord(id);
+  Assertions.assertTrue(record_after_mtime_touch.getmTime() > record_updated_after_delete.getmTime());
+ 
 	
 		//delete if marked for delete.
 		int deleted = storage.deleteMarkedForDelete("base_test");

@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.RecordBaseCountDto;
+import dk.kb.storage.model.v1.RecordBaseDto;
+import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.webservice.exception.InternalServiceException;
 import dk.kb.storage.webservice.exception.InvalidArgumentServiceException;
@@ -33,12 +35,14 @@ public class DsStorageFacade {
 
                 if (!recordExists) { //Create new record
                     log.info("Creating new record with id:"+record.getId());
-                    storage.createNewRecord(record);            		
+                    storage.createNewRecord(record);            		                                                 
                 }
                 else {
                     log.info("Updating record with id:"+record.getId());
                     storage.updateRecord(record);            		
                 }
+                updateMTimeForParentChild(storage,record.getId()); 
+                
                 storage.commit(); 
 
             } catch (SQLException e) {
@@ -93,9 +97,16 @@ public class DsStorageFacade {
     public static DsRecordDto getRecord(String recordId) throws Exception {
 
         try (DsStorage storage = new DsStorage();) {
-
             try {             
                 DsRecordDto record = storage.loadRecord(recordId);            		
+                if (record== null) {
+                  return null;                    
+                }
+                
+                if (record.getParentId() == null) { //can not have children if also has parent (1 level only hieracy)                    
+                    ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
+                    record.setChildren(childrenIds);                    
+                }                
                 return record;            	            	
             } catch (SQLException e) {
                 log.error("Error getRecord for :"+recordId +" :"+e.getMessage());
@@ -115,6 +126,7 @@ public class DsStorageFacade {
 
             try {             
                 Integer updated = storage.markRecordForDelete(recordId);   
+                updateMTimeForParentChild(storage,recordId); 
                 storage.commit();
                 return updated;                                
             } catch (SQLException e) {
@@ -130,12 +142,15 @@ public class DsStorageFacade {
       
     public static int deleteMarkedForDelete(String recordBase) throws Exception {
 
+        validateBase(recordBase);
+        
         try (DsStorage storage = new DsStorage();) {
 
             try {             
               int numberDeleted =  storage.deleteMarkedForDelete(recordBase);                                
               storage.commit();
               log.info("Delete marked for delete records for recordbase:"+recordBase +" number deleted:"+numberDeleted);
+              //We are not touching parent/children relation when deleting for real.
               return numberDeleted;
                  
             } catch (SQLException e) {
@@ -149,9 +164,51 @@ public class DsStorageFacade {
 
     }   
 
+    /*
+     * This is called when ever a record is modified (create/update/markfordelete). The recordId here
+     * has already been assigned a new mTime. Update mTime for parent and/or children according to  update strategy for that base.
+     * 
+     * This method will not commit/rollback as this is handled by the calling metod. 
+     * 
+     */
+    private static void updateMTimeForParentChild(DsStorage storage,String recordId) throws Exception{
+
+       DsRecordDto record=  storage.loadRecord(recordId); //Notice for performancing tuning, this can sometimes be given to the method. No premature optimization...
+       RecordBaseDto recordBase = ServiceConfig.getAllowedBases().get(record.getBase());       
+       UpdateStrategyDto updateStrategy = recordBase.getUpdateStrategy();
+        
+       boolean hasParent = (record.getParentId() == null);
+       
+        if (UpdateStrategyDto.NONE == updateStrategy){
+           log.info("UpdateStrategy(NONE) completed for:"+recordId);
+        }
+        else if (UpdateStrategyDto.CHILD == updateStrategy){
+            
+            
+        }
+        else if (UpdateStrategyDto.PARENT == updateStrategy){
+            if (!hasParent) {
+              return; // no parents to update  
+            }
+            
+            
+            
+            
+        }
+        else if (UpdateStrategyDto.ALL == updateStrategy){
+                        
+        }
+        else { //Sanity check
+            throw new InvalidArgumentServiceException("Update strategy not implemented:"+updateStrategy);
+            
+        }
+        
+        
+    }
+  
     
     
-    public static void validateBase(String base) throws Exception{
+    private static void validateBase(String base) throws Exception{
 
         if (ServiceConfig.getAllowedBases().get(base) == null) {      
             throw new InvalidArgumentServiceException("Unknown record base:"+base);

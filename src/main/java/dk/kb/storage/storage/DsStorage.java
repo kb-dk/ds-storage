@@ -57,7 +57,12 @@ public class DsStorage implements AutoCloseable {
             "WHERE "+
             ID_COLUMN + "= ?";
 
-
+    private static String updateMTimeForRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+    
+            MTIME_COLUMN + " = ? "+
+            "WHERE "+
+            ID_COLUMN + "= ?";
+    
+    
     private static String childrenIdsStatement = "SELECT " + ID_COLUMN +" FROM " + RECORDS_TABLE +
             " WHERE "
             + PARENT_ID_COLUMN + "= ?";
@@ -142,10 +147,9 @@ public class DsStorage implements AutoCloseable {
 
     public DsStorage() throws SQLException {
         connection = dataSource.getConnection();
-
     }
 
-    public DsRecordDto  loadRecord(String id) throws SQLException {
+    public DsRecordDto loadRecord(String id) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement);) {
             stmt.setString(1, id);
 
@@ -153,7 +157,7 @@ public class DsStorage implements AutoCloseable {
                 if (!rs.next()) {
                     return null;// Or throw exception?
                 }
-                DsRecordDto  record = createRecordFromRS(rs);
+                DsRecordDto  record = createRecordFromRS(rs);                            
                 return record;
             }
         }
@@ -356,6 +360,30 @@ public class DsStorage implements AutoCloseable {
 
     }
 
+    
+    public int updateMTimeForRecord(String recordId) throws Exception {
+        // Sanity check
+        if (recordId == null) {
+            throw new Exception("Id must not be null"); // TODO exception enum types, messages?
+        }
+
+        long nowStamp = UniqueTimestampGenerator.next();
+        //log.debug("Creating new record: " + record.getId());
+
+        try (PreparedStatement stmt = connection.prepareStatement(updateMTimeForRecordStatement);) {  
+            stmt.setLong(1, nowStamp);      
+            stmt.setString(2, recordId);
+           int numberUpdated =  stmt.executeUpdate();           
+           return numberUpdated;
+        } catch (SQLException e) {
+            String message = "SQL Exception in updateMTimeForRecord with id:" + recordId + " error:" + e.getMessage();
+            e.printStackTrace();
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+    }
+    
+    
     public int markRecordForDelete(String recordId) throws Exception {
 
         // Sanity check
