@@ -109,14 +109,37 @@ public class DsStorageFacade {
     }
 
 
-    public static void markRecordForDelete(String recordId) throws Exception {
+    public static Integer markRecordForDelete(String recordId) throws Exception {
         //TODO touch children etc.
         try (DsStorage storage = new DsStorage();) {
 
             try {             
-                storage.markRecordForDelete(recordId);            		            	            	
+                Integer updated = storage.markRecordForDelete(recordId);   
+                storage.commit();
+                return updated;                                
             } catch (SQLException e) {
-                log.error("Error getRecord for :"+recordId +" :"+e.getMessage());
+                log.error("Error markRecordForDelete for :"+recordId +" :"+e.getMessage());
+                storage.rollback();
+                throw new InternalServiceException(e);
+            }
+        } catch (SQLException e) { //Connecting to storage failed
+            throw new InternalServiceException(e);
+        }
+    }   
+
+      
+    public static int deleteMarkedForDelete(String recordBase) throws Exception {
+
+        try (DsStorage storage = new DsStorage();) {
+
+            try {             
+              int numberDeleted =  storage.deleteMarkedForDelete(recordBase);                                
+              storage.commit();
+              log.info("Delete marked for delete records for recordbase:"+recordBase +" number deleted:"+numberDeleted);
+              return numberDeleted;
+                 
+            } catch (SQLException e) {
+                log.error("Error deleteMarkedForDelete for :"+recordBase +" :"+e.getMessage());
                 storage.rollback();
                 throw new InternalServiceException(e);
             }
@@ -126,7 +149,8 @@ public class DsStorageFacade {
 
     }   
 
-
+    
+    
     public static void validateBase(String base) throws Exception{
 
         if (ServiceConfig.getAllowedBases().get(base) == null) {      

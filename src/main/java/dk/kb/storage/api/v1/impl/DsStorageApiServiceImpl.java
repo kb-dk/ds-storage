@@ -146,14 +146,23 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     }
 
     @Override
-    public void markRecordForDelete(String id) {
+    public Integer markRecordForDelete(String id) {
         try {
-            DsStorageFacade.markRecordForDelete(id);
+            return DsStorageFacade.markRecordForDelete(id);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
+    
+    @Override
+    public Integer deleteMarkedForDelete(String recordBase) {
+        try {
+            return DsStorageFacade.deleteMarkedForDelete(recordBase);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
     
     @Override
     public  List<RecordBaseCountDto> getRecordBaseStatistics() {

@@ -51,7 +51,7 @@ public class DsStorage implements AutoCloseable {
             "WHERE "+
             ID_COLUMN + "= ?";
 
-    private static String markRecordForDelete = "UPDATE " + RECORDS_TABLE + " SET  "+			 
+    private static String markRecordForDeleteStatement = "UPDATE " + RECORDS_TABLE + " SET  "+			 
             DELETED_COLUMN + " = 1,  "+
             MTIME_COLUMN + " = ? "+
             "WHERE "+
@@ -94,6 +94,8 @@ public class DsStorage implements AutoCloseable {
     private static String baseStatisticsStatement = "SELECT " + BASE_COLUMN + " ,COUNT(*) AS COUNT FROM "
             + RECORDS_TABLE + " group by " + BASE_COLUMN;
 
+    private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE "+BASE_COLUMN +" = ? AND "+DELETED_COLUMN +" = 1" ;
+    
 
     private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";			
 
@@ -354,7 +356,7 @@ public class DsStorage implements AutoCloseable {
 
     }
 
-    public void markRecordForDelete(String recordId) throws Exception {
+    public int markRecordForDelete(String recordId) throws Exception {
 
         // Sanity check
         if (recordId == null) {
@@ -364,11 +366,11 @@ public class DsStorage implements AutoCloseable {
         long nowStamp = UniqueTimestampGenerator.next();
         //log.debug("Creating new record: " + record.getId());
 
-        try (PreparedStatement stmt = connection.prepareStatement(markRecordForDelete);) {		
+        try (PreparedStatement stmt = connection.prepareStatement(markRecordForDeleteStatement);) {		
             stmt.setLong(1, nowStamp);						
             stmt.setString(2, recordId);
-
-            stmt.executeUpdate();
+           int numberUpdated =  stmt.executeUpdate();           
+           return numberUpdated;
         } catch (SQLException e) {
             String message = "SQL Exception in markRecordForDelete  with id:" + recordId + " error:" + e.getMessage();
             e.printStackTrace();
@@ -377,6 +379,29 @@ public class DsStorage implements AutoCloseable {
         }
 
     }
+    
+    public int deleteMarkedForDelete(String recordBase) throws Exception {
+
+        // Sanity check
+        if (recordBase == null) {
+            throw new Exception("Recordbase must not be null"); // TODO exception enum types, messages?
+        }
+    
+        try (PreparedStatement stmt = connection.prepareStatement(deleteMarkedForDeleteStatement);) {        
+            stmt.setString(1, recordBase);
+            int numberDeleted = stmt.executeUpdate();
+            return numberDeleted;                    
+            
+        } catch (SQLException e) {
+            String message = "SQL Exception in deleteMarkedForDelete for recordBase:" + recordBase + " error:" + e.getMessage();
+            e.printStackTrace();
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+
+    }
+
+    
 
     public void updateRecord(DsRecordDto record) throws Exception {
 

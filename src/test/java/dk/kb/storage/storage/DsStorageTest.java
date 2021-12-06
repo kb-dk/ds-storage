@@ -102,6 +102,18 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 		DsRecordDto record_updated_after_delete = storage.loadRecord(id);
 		Assertions.assertFalse(record_updated_after_delete.getDeleted());				
 	
+		//delete if marked for delete.
+		int deleted = storage.deleteMarkedForDelete("base_test");
+	 Assertions.assertEquals(0,deleted); //Was not marked for deletes
+		
+	 //Mark record for delete again
+  storage.markRecordForDelete(id);
+  deleted = storage.deleteMarkedForDelete("base_test");
+  Assertions.assertEquals(1,deleted); //Now it is deleted
+		
+  DsRecordDto deletedReally = storage.loadRecord(id);
+  Assertions.assertNull(deletedReally);
+    
 	}
 	
 	@Test

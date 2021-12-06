@@ -53,7 +53,7 @@ paths:
                 $ref: '#/components/schemas/DsRecord'
 
   /markRecordForDelete:
-    get:
+    post:
       tags:
         - '${project.name}'
       summary: 'Mark a record with delete flag'
@@ -68,7 +68,34 @@ paths:
       responses:
         '200':
           description: OK
-          
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32          
+
+  /deleteMarkedForDelete:
+    post:
+      tags:
+        - '${project.name}'
+      summary: 'Delete all records for a recordbase that has deleted flag set'
+      operationId: deleteMarkedForDelete
+      parameters:
+        - name: recordBase
+          in: query
+          description: 'recordBase'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32          
+                    
   /createOrUpdateRecord:
     post:
       tags:
