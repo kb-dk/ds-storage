@@ -53,7 +53,7 @@ paths:
                 $ref: '#/components/schemas/DsRecord'
 
   /markRecordForDelete:
-    post:
+    delete:
       tags:
         - '${project.name}'
       summary: 'Mark a record with delete flag'
@@ -75,7 +75,7 @@ paths:
                 format: int32          
 
   /deleteMarkedForDelete:
-    post:
+    delete:
       tags:
         - '${project.name}'
       summary: 'Delete all records for a recordbase that has deleted flag set'
