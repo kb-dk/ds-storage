@@ -42,7 +42,7 @@ public class DsStorageFacade {
                     storage.updateRecord(record);            		
                 }
                 updateMTimeForParentChild(storage,record.getId()); 
-                
+
                 storage.commit(); 
 
             } catch (SQLException e) {
@@ -57,11 +57,11 @@ public class DsStorageFacade {
     }
 
 
-      public static ArrayList<RecordBaseCountDto> getRecordBaseStatistics() throws Exception {
+    public static ArrayList<RecordBaseCountDto> getRecordBaseStatistics() throws Exception {
         try (DsStorage storage = new DsStorage();) {
             try {             
                 ArrayList<RecordBaseCountDto> baseStatictics = storage.getBaseStatictics();              
-                 return baseStatictics;                          
+                return baseStatictics;                          
             } catch (SQLException e) {
                 log.error("Error in getRecordBaseStatistics :"+e.getMessage());
                 storage.rollback();
@@ -73,23 +73,23 @@ public class DsStorageFacade {
 
     }
 
-     public static ArrayList<DsRecordDto> getRecordsModifiedAfter(String recordBase, long mTime, int batchSize) throws Exception {
-          try (DsStorage storage = new DsStorage();) {
-              try {             
-                  ArrayList<DsRecordDto> records= storage.getRecordsModifiedAfter(recordBase, mTime, batchSize);
-                  return records;                          
-              } catch (SQLException e) {
-                  log.error("Error in getRecordBaseStatistics :"+e.getMessage());
-                  storage.rollback();
-                  throw new InternalServiceException(e);
-              }
-          } catch (SQLException e) { //Connecting to storage failed
-              throw new InternalServiceException(e);
-          }
+    public static ArrayList<DsRecordDto> getRecordsModifiedAfter(String recordBase, long mTime, int batchSize) throws Exception {
+        try (DsStorage storage = new DsStorage();) {
+            try {             
+                ArrayList<DsRecordDto> records= storage.getRecordsModifiedAfter(recordBase, mTime, batchSize);
+                return records;                          
+            } catch (SQLException e) {
+                log.error("Error in getRecordBaseStatistics :"+e.getMessage());
+                storage.rollback();
+                throw new InternalServiceException(e);
+            }
+        } catch (SQLException e) { //Connecting to storage failed
+            throw new InternalServiceException(e);
+        }
 
-      }
+    }
 
-      
+
     /*
      * Return null if record does not exist
      * 
@@ -100,9 +100,9 @@ public class DsStorageFacade {
             try {             
                 DsRecordDto record = storage.loadRecord(recordId);            		
                 if (record== null) {
-                  return null;                    
+                    return null;                    
                 }
-                
+
                 if (record.getParentId() == null) { //can not have children if also has parent (1 level only hieracy)                    
                     ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
                     record.setChildren(childrenIds);                    
@@ -139,20 +139,20 @@ public class DsStorageFacade {
         }
     }   
 
-      
+
     public static int deleteMarkedForDelete(String recordBase) throws Exception {
 
         validateBase(recordBase);
-        
+
         try (DsStorage storage = new DsStorage();) {
 
             try {             
-              int numberDeleted =  storage.deleteMarkedForDelete(recordBase);                                
-              storage.commit();
-              log.info("Delete marked for delete records for recordbase:"+recordBase +" number deleted:"+numberDeleted);
-              //We are not touching parent/children relation when deleting for real.
-              return numberDeleted;
-                 
+                int numberDeleted =  storage.deleteMarkedForDelete(recordBase);                                
+                storage.commit();
+                log.info("Delete marked for delete records for recordbase:"+recordBase +" number deleted:"+numberDeleted);
+                //We are not touching parent/children relation when deleting for real.
+                return numberDeleted;
+
             } catch (SQLException e) {
                 log.error("Error deleteMarkedForDelete for :"+recordBase +" :"+e.getMessage());
                 storage.rollback();
@@ -170,44 +170,71 @@ public class DsStorageFacade {
      * 
      * This method will not commit/rollback as this is handled by the calling metod. 
      * 
+     * See UpdateStrategyDto
      */
     private static void updateMTimeForParentChild(DsStorage storage,String recordId) throws Exception{
 
-       DsRecordDto record=  storage.loadRecord(recordId); //Notice for performancing tuning, this can sometimes be given to the method. No premature optimization...
-       RecordBaseDto recordBase = ServiceConfig.getAllowedBases().get(record.getBase());       
-       UpdateStrategyDto updateStrategy = recordBase.getUpdateStrategy();
+        DsRecordDto record=  storage.loadRecord(recordId); //Notice for performancing tuning, this can sometimes be given to the method. No premature optimization...
+        RecordBaseDto recordBase = ServiceConfig.getAllowedBases().get(record.getBase());       
+        UpdateStrategyDto updateStrategy = recordBase.getUpdateStrategy();
+
+        boolean hasParent = (record.getParentId() == null);
+        log.info("Updating parent/child relation for recordId:"+recordId +" with updateStrategy:"+updateStrategy);
         
-       boolean hasParent = (record.getParentId() == null);
-       
         if (UpdateStrategyDto.NONE == updateStrategy){
-           log.info("UpdateStrategy(NONE) completed for:"+recordId);
+        //Do nothing
         }
-        else if (UpdateStrategyDto.CHILD == updateStrategy){
-            
-            
+        else if (UpdateStrategyDto.CHILD == updateStrategy){            
+            //update all children one at a time
+            ArrayList<String> childrenIds = storage.getChildrenIds(recordId);            
+            for (String childId : childrenIds) {
+                log.debug("Updating mTime for children:"+childId+" for parent:"+record.getParentId());
+                storage.updateMTimeForRecord(childId);                                 
+            }
+
         }
         else if (UpdateStrategyDto.PARENT == updateStrategy){
             if (!hasParent) {
-              return; // no parents to update  
-            }
-            
-            
-            
-            
+              return;  
+            }            
+             storage.updateMTimeForRecord(record.getParentId());                     
+                      
+
         }
         else if (UpdateStrategyDto.ALL == updateStrategy){
-                        
+            //Find parent and then update mTime, and update all children. 
+            //If parent or one of the children matches the record, it has already been updated with a new mTime,  so skip it.                        
+            DsRecordDto topParent = null;
+            if (!hasParent) {
+                topParent=record;
+            }
+            else {
+                topParent=storage.loadRecord(recordId);   //can be null                                                     
+            }            
+            if (topParent == null) {                   
+                return;
+            }
+
+            //TopParent can be null if record does not exist
+
+            if (!recordId.equals(topParent.getId())) {
+                storage.updateMTimeForRecord(topParent.getId());                                                  
+            }
+            //And all children
+            ArrayList<String> childrenIds = storage.getChildrenIds(recordId);                   
+            for (String childId: childrenIds) {
+                if (!recordId.equals(childId)) {
+                    storage.updateMTimeForRecord(childId);                                                  
+                }                       
+            }                   
+
         }
         else { //Sanity check
             throw new InvalidArgumentServiceException("Update strategy not implemented:"+updateStrategy);
-            
-        }
-        
-        
+
+        }                
     }
-  
-    
-    
+
     private static void validateBase(String base) throws Exception{
 
         if (ServiceConfig.getAllowedBases().get(base) == null) {      
