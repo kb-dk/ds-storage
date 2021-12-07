@@ -173,12 +173,11 @@ public class DsStorageFacade {
      * See UpdateStrategyDto
      */
     private static void updateMTimeForParentChild(DsStorage storage,String recordId) throws Exception{
-
-        DsRecordDto record=  storage.loadRecord(recordId); //Notice for performancing tuning, this can sometimes be given to the method. No premature optimization...
+        DsRecordDto record=  storage.loadRecord(recordId); //Notice for performancing tuning, recordDto this can sometimes be given to the method. No premature optimization...
         RecordBaseDto recordBase = ServiceConfig.getAllowedBases().get(record.getBase());       
         UpdateStrategyDto updateStrategy = recordBase.getUpdateStrategy();
 
-        boolean hasParent = (record.getParentId() == null);
+        boolean hasParent = (record.getParentId() != null);
         log.info("Updating parent/child relation for recordId:"+recordId +" with updateStrategy:"+updateStrategy);
         
         if (UpdateStrategyDto.NONE == updateStrategy){
@@ -197,6 +196,7 @@ public class DsStorageFacade {
             if (!hasParent) {
               return;  
             }            
+            log.info("Parentid:"+record.getParentId());
              storage.updateMTimeForRecord(record.getParentId());                     
                       
 
@@ -209,14 +209,15 @@ public class DsStorageFacade {
                 topParent=record;
             }
             else {
-                topParent=storage.loadRecord(recordId);   //can be null                                                     
+                topParent=storage.loadRecord(record.getParentId());   //can be null                                                     
+                System.out.println("parent loaded: "+topParent.getId());
             }            
+
+            //TopParent can be null if record does not exist
             if (topParent == null) {                   
                 return;
             }
-
-            //TopParent can be null if record does not exist
-
+           
             if (!recordId.equals(topParent.getId())) {
                 storage.updateMTimeForRecord(topParent.getId());                                                  
             }
