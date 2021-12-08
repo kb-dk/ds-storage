@@ -1,4 +1,4 @@
-CREATE TABLE ds_records (
+ CREATE TABLE ds_records (
 id VARCHAR(255) PRIMARY KEY,
 base VARCHAR(31), 
 deleted INTEGER,  

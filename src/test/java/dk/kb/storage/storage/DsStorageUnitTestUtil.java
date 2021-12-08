@@ -26,8 +26,8 @@ import dk.kb.storage.config.ServiceConfig;
  * 
  */
 public abstract class DsStorageUnitTestUtil {
-
-	protected static final String CREATE_TABLES_DDL_FILE = "ddl/create_ds_storage.ddl";
+                                                                
+	protected static final String CREATE_TABLES_DDL_FILE = "ddl/create_ds_storage_h2_unittest.ddl";
 
 	protected static final String DRIVER = "org.h2.Driver";
 
@@ -58,10 +58,10 @@ public abstract class DsStorageUnitTestUtil {
 
 	@AfterAll
 	public static void afterClass() {
-		// No reason to delete DB data after test, since we delete it before each test.
+		// No reason to delete DB data file after test, since we clear table it before each test.
 		// This way you can open the DB in a DB-browser after a unittest and see the result.
+	    // Just run that single test and look in the DB
 		DsStorage.shutdown();
-		doDelete(new File(TEST_CLASSES_PATH +"/h2"));
 		
 		
 	}
@@ -70,7 +70,7 @@ public abstract class DsStorageUnitTestUtil {
 	
 	protected static void createEmptyDBFromDDL() throws Exception {
 		// Delete if exists
-		doDelete(new File(TEST_CLASSES_PATH +"/h2"));
+	//	doDelete(new File(TEST_CLASSES_PATH +"/h2"));
 		try {
 			Class.forName(DRIVER); // load the driver
 		} catch (ClassNotFoundException e) {
