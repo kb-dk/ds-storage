@@ -11,28 +11,28 @@ import org.slf4j.LoggerFactory;
 
 public class UniqueTimestampGeneratorTest {
 
-	 private static final Logger log = LoggerFactory.getLogger(UniqueTimestampGeneratorTest.class);
-	  
-	   	    
-	    @Test
-	    public void testUniqueTimestamps() throws Exception {
-	     
-	    	int numberOfTimeStamps =10000; // Need at least 1000 to test nano overflow
-	    	ArrayList<Long> stamps = new ArrayList<Long> ();
-	    	
-	    	long start=System.currentTimeMillis();
-	    	
-	    	for (int i = 0;i<numberOfTimeStamps;i++) { 	    		
-	    		stamps.add(UniqueTimestampGenerator.next());	    		
-	    	}
-	    	log.info("Generated "+numberOfTimeStamps +" in "+(System.currentTimeMillis()-start +" millis"));
+    private static final Logger log = LoggerFactory.getLogger(UniqueTimestampGeneratorTest.class);
 
-	    	//Test they are different and increasing
-	    	for (int i = 0;i<numberOfTimeStamps-1;i++) { 	    		              
-	    	       Assertions.assertTrue(stamps.get(i)<stamps.get(i+1));	    			    	       
-	    	}
-	    		    		    	
-	    	
-	    }	    
-	    
+
+    @Test
+    public void testUniqueTimestamps() throws Exception {
+
+        int numberOfTimeStamps =10000; // Need at least 1000 to test nano overflow
+        ArrayList<Long> stamps = new ArrayList<Long> ();
+
+        long start=System.currentTimeMillis();
+
+        for (int i = 0;i<numberOfTimeStamps;i++) { 	    		
+            stamps.add(UniqueTimestampGenerator.next());	    		
+        }
+        log.info("Generated "+numberOfTimeStamps +" in "+(System.currentTimeMillis()-start +" millis"));
+
+        //Test they are different and increasing
+        for (int i = 0;i<numberOfTimeStamps-1;i++) { 	    		              
+            Assertions.assertTrue(stamps.get(i)<stamps.get(i+1));	    			    	       
+        }
+
+
+    }	    
+
 }
