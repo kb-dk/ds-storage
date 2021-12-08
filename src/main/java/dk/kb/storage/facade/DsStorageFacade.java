@@ -2,7 +2,6 @@ package dk.kb.storage.facade;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +76,12 @@ public class DsStorageFacade {
         try (DsStorage storage = new DsStorage();) {
             try {             
                 ArrayList<DsRecordDto> records= storage.getRecordsModifiedAfter(recordBase, mTime, batchSize);
+                //Load children. This can be optimized  in SQL, but this is much simpler.
+                // Are children even needed here? Will improve performance a lot.
+                for (DsRecordDto record : records) {
+                    record.setChildren(storage.getChildrenIds(record.getId()));                    
+                }                                
+                
                 return records;                          
             } catch (SQLException e) {
                 log.error("Error in getRecordBaseStatistics :"+e.getMessage());
@@ -187,7 +192,6 @@ public class DsStorageFacade {
             //update all children one at a time
             ArrayList<String> childrenIds = storage.getChildrenIds(recordId);            
             for (String childId : childrenIds) {
-                log.debug("Updating mTime for children:"+childId+" for parent:"+record.getParentId());
                 storage.updateMTimeForRecord(childId);                                 
             }
 
@@ -196,7 +200,6 @@ public class DsStorageFacade {
             if (!hasParent) {
               return;  
             }            
-            log.info("Parentid:"+record.getParentId());
              storage.updateMTimeForRecord(record.getParentId());                     
                       
 
@@ -210,7 +213,6 @@ public class DsStorageFacade {
             }
             else {
                 topParent=storage.loadRecord(record.getParentId());   //can be null                                                     
-                System.out.println("parent loaded: "+topParent.getId());
             }            
 
             //TopParent can be null if record does not exist

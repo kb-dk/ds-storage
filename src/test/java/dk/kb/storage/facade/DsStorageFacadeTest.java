@@ -218,9 +218,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         //update child2 and test parent is not touched.
         child2Before.setData("child2 updated");
         parentBefore = DsStorageFacade.getRecord("parent");
-        System.out.println("about to update child2");
         DsStorageFacade.createOrUpdateRecord(child2Before);     
-        System.out.println("about to update child2");
         DsRecordDto parentAfter = DsStorageFacade.getRecord("parent");
         Assertions.assertTrue(parentBefore.getmTime() < parentAfter.getmTime()); //Parent touched
     }
