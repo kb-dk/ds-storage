@@ -8,10 +8,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +67,7 @@ public abstract class DsStorageUnitTestUtil {
 
 
     protected static void createEmptyDBFromDDL() throws Exception {
-        // Delete if exists
+        //  Instead of deleting h2 database completely, we reuse the table between unittests instead.
         //	doDelete(new File(TEST_CLASSES_PATH +"/h2"));
         try {
             Class.forName(DRIVER); // load the driver
@@ -120,7 +118,7 @@ public abstract class DsStorageUnitTestUtil {
     }
 
 
-
+/*
     // file.delete does not work for a directory unless it is empty. hence this method
     protected static void doDelete(File file) {
         try {
@@ -132,7 +130,7 @@ public abstract class DsStorageUnitTestUtil {
         }
 
     }
-
+*/
 
 
 
