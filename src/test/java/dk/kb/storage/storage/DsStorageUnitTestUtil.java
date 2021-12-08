@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,6 +61,9 @@ public abstract class DsStorageUnitTestUtil {
 		// No reason to delete DB data after test, since we delete it before each test.
 		// This way you can open the DB in a DB-browser after a unittest and see the result.
 		DsStorage.shutdown();
+		doDelete(new File(TEST_CLASSES_PATH +"/h2"));
+		
+		
 	}
 
 	
@@ -118,15 +122,15 @@ public abstract class DsStorageUnitTestUtil {
 	
 	
 	// file.delete does not work for a directory unless it is empty. hence this method
-	protected static void doDelete(File path) {
-		if (path.isDirectory()) {
-			for (File child : path.listFiles()) {
-				doDelete(child);
-			}
-		}
-		if (!path.delete()) {
-			log.info("Could not delete " + path);
-		}
+	protected static void doDelete(File file) {
+	    try {
+	      FileUtils.deleteDirectory(file); //Will delete recursive
+	    }
+	    catch(Exception e) {
+	        log.error("failed to delete h2-folder from unittest.",e.getMessage());
+	        
+	    }
+	    
 	}
 
 
