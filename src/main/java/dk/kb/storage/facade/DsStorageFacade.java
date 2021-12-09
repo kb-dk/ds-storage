@@ -2,6 +2,7 @@ package dk.kb.storage.facade;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,152 +23,83 @@ public class DsStorageFacade {
     private static final Logger log = LoggerFactory.getLogger(DsStorageFacade.class);
 
 
+    public static void createOrUpdateRecord(DsRecordDto record)  {
+        performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
+            validateBaseExists(record.getBase());
 
-    public static void createOrUpdateRecord(DsRecordDto record) throws Exception {
+            boolean recordExists = storage.recordExists(record.getId());
 
-        validateBaseExists(record.getBase());
-
-        try (DsStorage storage = new DsStorage();) {
-
-            try {             
-                boolean recordExists = storage.recordExists(record.getId());
-
-                if (!recordExists) { //Create new record
-                    log.info("Creating new record with id:"+record.getId());
-                    storage.createNewRecord(record);            		                                                 
-                }
-                else {
-                    log.info("Updating record with id:"+record.getId());
-                    storage.updateRecord(record);            		
-                }
-                updateMTimeForParentChild(storage,record.getId()); 
-
-                storage.commit(); 
-
-            } catch (SQLException e) {
-                log.error("Error create or update for record:"+record.getId() +" :"+e.getMessage());
-                storage.rollback();
-                throw new InternalServiceException(e);
+            if (!recordExists) { //Create new record
+                log.info("Creating new record with id:"+record.getId());
+                storage.createNewRecord(record);
+            } else {
+                log.info("Updating record with id:"+record.getId());
+                storage.updateRecord(record);
             }
-        } catch (SQLException e) { //Connecting to storage failed
-            throw new InternalServiceException(e);
-        }
-
+            updateMTimeForParentChild(storage,record.getId());
+        });
     }
 
 
-    public static ArrayList<RecordBaseCountDto> getRecordBaseStatistics() throws Exception {
-        try (DsStorage storage = new DsStorage();) {
-            try {             
-                ArrayList<RecordBaseCountDto> baseStatictics = storage.getBaseStatictics();              
-                return baseStatictics;                          
-            } catch (SQLException e) {
-                log.error("Error in getRecordBaseStatistics :"+e.getMessage());
-                storage.rollback();
-                throw new InternalServiceException(e);
-            }
-        } catch (SQLException e) { //Connecting to storage failed
-            throw new InternalServiceException(e);
-        }
-
+    public static ArrayList<RecordBaseCountDto> getRecordBaseStatistics() {
+        return performStorageAction("getRecordBaseStatistics", DsStorage::getBaseStatictics);
     }
 
-    public static ArrayList<DsRecordDto> getRecordsModifiedAfter(String recordBase, long mTime, int batchSize) throws Exception {
-        try (DsStorage storage = new DsStorage();) {
-            try {             
-                ArrayList<DsRecordDto> records= storage.getRecordsModifiedAfter(recordBase, mTime, batchSize);
-                //Load children. This can be optimized  in SQL, but this is much simpler.
-                // Are children even needed here? Will improve performance a lot.
-                for (DsRecordDto record : records) {
-                    record.setChildren(storage.getChildrenIds(record.getId()));                    
-                }                                
-                
-                return records;                          
-            } catch (SQLException e) {
-                log.error("Error in getRecordBaseStatistics :"+e.getMessage());
-                storage.rollback();
-                throw new InternalServiceException(e);
+
+    public static ArrayList<DsRecordDto> getRecordsModifiedAfter(String recordBase, long mTime, int batchSize) {
+        String id = String.format(Locale.ROOT, "getRecordsModifiedAfter(recordBase='%s', mTime=%d, batchSize=%d)",
+                                  recordBase, mTime, batchSize);
+        return performStorageAction(id, storage -> {
+            ArrayList<DsRecordDto> records = storage.getRecordsModifiedAfter(recordBase, mTime, batchSize);
+            //Load children. This can be optimized  in SQL, but this is much simpler.
+            // Are children even needed here? Will improve performance a lot.
+            for (DsRecordDto record : records) {
+                record.setChildren(storage.getChildrenIds(record.getId()));
             }
-        } catch (SQLException e) { //Connecting to storage failed
-            throw new InternalServiceException(e);
-        }
-
+            return records;
+        });
     }
-
 
     /*
      * Return null if record does not exist
      * 
      */
-    public static DsRecordDto getRecord(String recordId) throws Exception {
-
-        try (DsStorage storage = new DsStorage();) {
-            try {             
-                DsRecordDto record = storage.loadRecord(recordId);            		
-                if (record== null) {
-                    return null;                    
-                }
-
-                if (record.getParentId() == null) { //can not have children if also has parent (1 level only hieracy)                    
-                    ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
-                    record.setChildren(childrenIds);                    
-                }                
-                return record;            	            	
-            } catch (SQLException e) {
-                log.error("Error getRecord for :"+recordId +" :"+e.getMessage());
-                storage.rollback();
-                throw new InternalServiceException(e);
+    public static DsRecordDto getRecord(String recordId) {
+        return performStorageAction("getRecord(" + recordId + ")", storage -> {
+            DsRecordDto record = storage.loadRecord(recordId);
+            if (record== null) {
+                return null;
             }
-        } catch (SQLException e) { //Connecting to storage failed
-            throw new InternalServiceException(e);
-        }
 
+            if (record.getParentId() == null) { //can not have children if also has parent (1 level only hieracy)
+                ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
+                record.setChildren(childrenIds);
+            }
+            return record;
+        });
     }
 
 
-    public static Integer markRecordForDelete(String recordId) throws Exception {
+    public static Integer markRecordForDelete(String recordId) {
         //TODO touch children etc.
-        try (DsStorage storage = new DsStorage();) {
-
-            try {             
-                Integer updated = storage.markRecordForDelete(recordId);   
-                updateMTimeForParentChild(storage,recordId); 
-                storage.commit();
-                return updated;                                
-            } catch (SQLException e) {
-                log.error("Error markRecordForDelete for :"+recordId +" :"+e.getMessage());
-                storage.rollback();
-                throw new InternalServiceException(e);
-            }
-        } catch (SQLException e) { //Connecting to storage failed
-            throw new InternalServiceException(e);
-        }
-    }   
+        return performStorageAction("markRecordForDelete(" + recordId + ")", storage -> {
+            int updated = storage.markRecordForDelete(recordId);
+            updateMTimeForParentChild(storage,recordId);
+            return updated;
+        });
+    }
 
 
-    public static int deleteMarkedForDelete(String recordBase) throws Exception {
+    public static int deleteMarkedForDelete(String recordBase) {
+        return performStorageAction("deleteMarkedForDelete(" + recordBase + ")", storage -> {
+            validateBaseExists(recordBase);
 
-        validateBaseExists(recordBase);
-
-        try (DsStorage storage = new DsStorage();) {
-
-            try {             
-                int numberDeleted =  storage.deleteMarkedForDelete(recordBase);                                
-                storage.commit();
-                log.info("Delete marked for delete records for recordbase:"+recordBase +" number deleted:"+numberDeleted);
-                //We are not touching parent/children relation when deleting for real.
-                return numberDeleted;
-
-            } catch (SQLException e) {
-                log.error("Error deleteMarkedForDelete for :"+recordBase +" :"+e.getMessage());
-                storage.rollback();
-                throw new InternalServiceException(e);
-            }
-        } catch (SQLException e) { //Connecting to storage failed
-            throw new InternalServiceException(e);
-        }
-
-    }   
+            int numberDeleted =  storage.deleteMarkedForDelete(recordBase);
+            log.info("Delete marked for delete records for recordbase:"+recordBase +" number deleted:"+numberDeleted);
+            //We are not touching parent/children relation when deleting for real.
+            return numberDeleted;
+        });
+    }
 
     /*
      * This is called when ever a record is modified (create/update/markfordelete). The recordId here
@@ -182,70 +114,184 @@ public class DsStorageFacade {
         RecordBaseDto recordBase = ServiceConfig.getAllowedBases().get(record.getBase());       
         UpdateStrategyDto updateStrategy = recordBase.getUpdateStrategy();
 
-        boolean hasParent = (record.getParentId() != null);
         log.info("Updating parent/child relation for recordId:"+recordId +" with updateStrategy:"+updateStrategy);
-        
-        if (UpdateStrategyDto.NONE == updateStrategy){
-        //Do nothing
+
+        switch (updateStrategy) {
+            case NONE:
+                // Do nothing
+                break;
+            case CHILD:
+                updateMTimeForChildren(storage, recordId);
+                break;
+            case PARENT:
+                updateMTimeForParent(storage, record);
+                break;
+            case ALL:
+                updateMTimeForAll(storage, record);
+                break;
+            default:
+                throw new InvalidArgumentServiceException("Update strategy not implemented:"+updateStrategy);
         }
-        else if (UpdateStrategyDto.CHILD == updateStrategy){            
-            //update all children one at a time
-            ArrayList<String> childrenIds = storage.getChildrenIds(recordId);            
-            for (String childId : childrenIds) {
-                storage.updateMTimeForRecord(childId);                                 
-            }
-
-        }
-        else if (UpdateStrategyDto.PARENT == updateStrategy){
-            if (!hasParent) {
-              return;  
-            }            
-             storage.updateMTimeForRecord(record.getParentId());                     
-                      
-
-        }
-        else if (UpdateStrategyDto.ALL == updateStrategy){
-            //Find parent and then update mTime, and update all children. 
-            //If parent or one of the children matches the record, it has already been updated with a new mTime,  so skip it.                        
-            DsRecordDto topParent = null;
-            if (!hasParent) {
-                topParent=record;
-            }
-            else {
-                topParent=storage.loadRecord(record.getParentId());   //can be null                                                     
-            }            
-
-            //TopParent can be null if record does not exist
-            if (topParent == null) {                   
-                return;
-            }
-           
-            if (!recordId.equals(topParent.getId())) {
-                storage.updateMTimeForRecord(topParent.getId());                                                  
-            }
-            //And all children
-            ArrayList<String> childrenIds = storage.getChildrenIds(recordId);                   
-            for (String childId: childrenIds) {
-                if (!recordId.equals(childId)) {
-                    storage.updateMTimeForRecord(childId);                                                  
-                }                       
-            }                   
-
-        }
-        else { //Sanity check
-            throw new InvalidArgumentServiceException("Update strategy not implemented:"+updateStrategy);
-
-        }                
     }
 
-    private static void validateBaseExists(String base) throws Exception{
+    /**
+     * Update mTime for all children of the Record with the given parentId.
+     * @param storage ready for updates.
+     * @param parentId the ID of the parent record.
+     * @throws Exception if updating failed.
+     */
+    private static void updateMTimeForChildren(DsStorage storage, String parentId) throws Exception {
+        //update all children one at a time
+        ArrayList<String> childrenIds = storage.getChildrenIds(parentId);
+        for (String childId : childrenIds) {
+            storage.updateMTimeForRecord(childId);
+        }
+    }
 
-        if (ServiceConfig.getAllowedBases().get(base) == null) {      
+    /**
+     * Update mTime for the parent of the Record, if it has any.
+     * @param storage ready for updates.
+     * @param record the Record to update parent mTime for.
+     * @throws Exception if updating failed.
+     */
+     private static void updateMTimeForParent(DsStorage storage, DsRecordDto record) throws Exception {
+        //Notice for performancing tuning, recordDto this can sometimes be given to the method. No premature optimization...
+        boolean hasParent = (record.getParentId() != null);
+        if (!hasParent) {
+            return;
+        }
+        storage.updateMTimeForRecord(record.getParentId());
+    }
+
+    /**
+     * Update mTime for all children and the parent of the Record, if it has any.
+     * @param storage ready for updates.
+     * @param record the Record to update children and parent mTime for.
+     * @throws Exception if updating failed.
+     */
+    private static void updateMTimeForAll(DsStorage storage, DsRecordDto record) throws Exception {
+        boolean hasParent = (record.getParentId() != null);
+        //Find parent and then update mTime, and update all children.
+        //If parent or one of the children matches the record, it has already been updated with a new mTime,  so skip it.
+        DsRecordDto topParent = null;
+        if (!hasParent) {
+            topParent= record;
+        }
+        else {
+            topParent= storage.loadRecord(record.getParentId());   //can be null
+        }
+
+        //TopParent can be null if record does not exist
+        if (topParent == null) {
+            return;
+        }
+
+        String recordId = record.getId();
+        if (!recordId.equals(topParent.getId())) {
+            storage.updateMTimeForRecord(topParent.getId());
+        }
+        //And all children
+        ArrayList<String> childrenIds = storage.getChildrenIds(recordId);
+        for (String childId: childrenIds) {
+            if (!recordId.equals(childId)) {
+                storage.updateMTimeForRecord(childId);
+            }
+        }
+    }
+
+    /**
+     * Check that the given base is defined in the setup.
+     * @param base base name.
+     */
+    private static void validateBaseExists(String base) {
+        if (ServiceConfig.getAllowedBases().get(base) == null) {
             throw new InvalidArgumentServiceException("Unknown record base:"+base);
         }
-
     }
 
 
+    /**
+     * Starts a storage transaction and performs the given action on it, returning the result from the action.
+     *
+     * If the action throws an exception, a {@link DsStorage#rollback()} is performed.
+     * If the action passes without exceptions, a {@link DsStorage#commit()} is performed.
+     * @param actionID a debug-oriented ID for the action, typically the name of the calling method.
+     * @param action the action to perform on the storage.
+     * @return return value from the action.
+     * @throws InternalServiceException if anything goes wrong.
+     */
+    private static <T> T performStorageAction(String actionID, StorageAction<T> action) {
+        try (DsStorage storage = new DsStorage();) {
+            T result;
+            try {
+                result = action.process(storage);
+            } catch (Exception e) {
+                log.warn("Exception performing action '{}'. Initiating rollback", actionID, e);
+                storage.rollback();
+                throw new InternalServiceException(e);
+            }
+
+            try {
+                storage.commit();
+            } catch (SQLException e) {
+                log.error("Exception committing after action '{}'", actionID, e);
+                throw new InternalServiceException(e);
+            }
+
+            return result;
+        } catch (SQLException e) { //Connecting to storage failed
+            log.error("SQLException performing action '{}'", actionID, e);
+            throw new InternalServiceException(e);
+        }
+    }
+
+    /**
+     * Starts a storage transaction and performs the given action on it.
+     * This is a no return value convenience wrapper for {@link #performStorageAction(String, StorageAction)}.
+     *
+     * If the action throws an exception, a {@link DsStorage#rollback()} is performed.
+     * If the action passes without exceptions, a {@link DsStorage#commit()} is performed.
+     * @param actionID a debug-oriented ID for the action, typically the name of the calling method.
+     * @param action the action to perform on the storage.
+     * @throws InternalServiceException if anything goes wrong.
+     */
+    private static void performStorageAction(String actionID, StorageActionVoid action) {
+        performStorageAction(actionID, storage -> {
+            action.process(storage);
+            return 1;
+        });
+    }
+
+    /**
+     * Callback used with {@link #performStorageAction(String, StorageAction)}.
+     * @param <T> the object returned from the {@link StorageAction#process(DsStorage)} method.
+     */
+    @FunctionalInterface
+    private interface StorageAction<T> {
+        /**
+         * Access or modify the given storage inside of a transaction.
+         * If the method throws an exception, it will be logged, a {@link DsStorage#rollback()} will be performed and
+         * a wrapping {@link dk.kb.storage.webservice.exception.ServiceException} will be thrown.
+         * @param storage a storage ready for requests and updates.
+         * @return custom return value.
+         * @throws Exception if something went wrong.
+         */
+        T process(DsStorage storage) throws Exception;
+    }
+
+    /**
+     * Callback used with {@link #performStorageAction(String, StorageAction)}.
+     */
+    @FunctionalInterface
+    private interface StorageActionVoid {
+        /**
+         * Access or modify the given storage inside of a transaction.
+         * If the method throws an exception, it will be logged, a {@link DsStorage#rollback()} will be performed and
+         * a wrapping {@link dk.kb.storage.webservice.exception.ServiceException} will be thrown.
+         * @param storage a storage ready for requests and updates.
+         * @throws Exception if something went wrong.
+         */
+        void process(DsStorage storage) throws Exception;
+    }
 
 }
