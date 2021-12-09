@@ -25,7 +25,7 @@ public class DsStorageFacade {
 
     public static void createOrUpdateRecord(DsRecordDto record) throws Exception {
 
-        validateBase(record.getBase());
+        validateBaseExists(record.getBase());
 
         try (DsStorage storage = new DsStorage();) {
 
@@ -147,7 +147,7 @@ public class DsStorageFacade {
 
     public static int deleteMarkedForDelete(String recordBase) throws Exception {
 
-        validateBase(recordBase);
+        validateBaseExists(recordBase);
 
         try (DsStorage storage = new DsStorage();) {
 
@@ -238,7 +238,7 @@ public class DsStorageFacade {
         }                
     }
 
-    private static void validateBase(String base) throws Exception{
+    private static void validateBaseExists(String base) throws Exception{
 
         if (ServiceConfig.getAllowedBases().get(base) == null) {      
             throw new InvalidArgumentServiceException("Unknown record base:"+base);

@@ -238,7 +238,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
         //3 different bases. 2 records in of them 
         DsRecordDto r1 = new DsRecordDto();
-        r1.setId("Id1");
+        r1.setId("Id1"); //TODO 
         r1.setBase("test_base1");
         r1.setData("id1 text");   				    	
         storage.createNewRecord(r1);
