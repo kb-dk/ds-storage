@@ -37,6 +37,7 @@ public class DsStorageFacade {
                 storage.updateRecord(record);
             }
             updateMTimeForParentChild(storage,record.getId());
+            return null; // Something must be returned
         });
     }
 
@@ -221,7 +222,7 @@ public class DsStorageFacade {
      * @throws InternalServiceException if anything goes wrong.
      */
     private static <T> T performStorageAction(String actionID, StorageAction<T> action) {
-        try (DsStorage storage = new DsStorage();) {
+        try (DsStorage storage = new DsStorage()) {
             T result;
             try {
                 result = action.process(storage);
@@ -246,23 +247,6 @@ public class DsStorageFacade {
     }
 
     /**
-     * Starts a storage transaction and performs the given action on it.
-     * This is a no return value convenience wrapper for {@link #performStorageAction(String, StorageAction)}.
-     *
-     * If the action throws an exception, a {@link DsStorage#rollback()} is performed.
-     * If the action passes without exceptions, a {@link DsStorage#commit()} is performed.
-     * @param actionID a debug-oriented ID for the action, typically the name of the calling method.
-     * @param action the action to perform on the storage.
-     * @throws InternalServiceException if anything goes wrong.
-     */
-    private static void performStorageAction(String actionID, StorageActionVoid action) {
-        performStorageAction(actionID, storage -> {
-            action.process(storage);
-            return 1;
-        });
-    }
-
-    /**
      * Callback used with {@link #performStorageAction(String, StorageAction)}.
      * @param <T> the object returned from the {@link StorageAction#process(DsStorage)} method.
      */
@@ -277,21 +261,6 @@ public class DsStorageFacade {
          * @throws Exception if something went wrong.
          */
         T process(DsStorage storage) throws Exception;
-    }
-
-    /**
-     * Callback used with {@link #performStorageAction(String, StorageAction)}.
-     */
-    @FunctionalInterface
-    private interface StorageActionVoid {
-        /**
-         * Access or modify the given storage inside of a transaction.
-         * If the method throws an exception, it will be logged, a {@link DsStorage#rollback()} will be performed and
-         * a wrapping {@link dk.kb.storage.webservice.exception.ServiceException} will be thrown.
-         * @param storage a storage ready for requests and updates.
-         * @throws Exception if something went wrong.
-         */
-        void process(DsStorage storage) throws Exception;
     }
 
 }
