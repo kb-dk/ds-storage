@@ -21,7 +21,6 @@ import java.util.HashMap;
 /*
  * This class will be called by the facade class. The facade class is also responsible for commit or rollback
  * 
- */
 
 public class DsStorage implements AutoCloseable {
 
@@ -229,7 +228,7 @@ public class DsStorage implements AutoCloseable {
             }
         }
         catch(Exception e) {
-            e.printStackTrace();
+            throw new Exception("SQL error getModifiedAfterParentsOn",e);
 
         }
 
@@ -263,7 +262,6 @@ public class DsStorage implements AutoCloseable {
         }
         catch(Exception e) {
             String message = "SQL Exception in getRecordsModifiedAfter";
-            e.printStackTrace();
             log.error(message);
             throw new SQLException(message, e);
         }
@@ -301,7 +299,6 @@ public class DsStorage implements AutoCloseable {
         }
         catch(Exception e) {
             String message = "SQL Exception in getModifiedAfterChildrenOnly";
-            e.printStackTrace();
             log.error(message);
             throw new SQLException(message, e);
         }
@@ -353,7 +350,6 @@ public class DsStorage implements AutoCloseable {
 
         } catch (SQLException e) {
             String message = "SQL Exception in createNewRecord with id:" + record.getId() + " error:" + e.getMessage();
-            e.printStackTrace();
             log.error(message);
             throw new SQLException(message, e);
         }
@@ -377,7 +373,6 @@ public class DsStorage implements AutoCloseable {
            return numberUpdated;
         } catch (SQLException e) {
             String message = "SQL Exception in updateMTimeForRecord with id:" + recordId + " error:" + e.getMessage();
-            e.printStackTrace();
             log.error(message);
             throw new SQLException(message, e);
         }
@@ -401,7 +396,6 @@ public class DsStorage implements AutoCloseable {
            return numberUpdated;
         } catch (SQLException e) {
             String message = "SQL Exception in markRecordForDelete  with id:" + recordId + " error:" + e.getMessage();
-            e.printStackTrace();
             log.error(message);
             throw new SQLException(message, e);
         }
@@ -422,7 +416,6 @@ public class DsStorage implements AutoCloseable {
             
         } catch (SQLException e) {
             String message = "SQL Exception in deleteMarkedForDelete for recordBase:" + recordBase + " error:" + e.getMessage();
-            e.printStackTrace();
             log.error(message);
             throw new SQLException(message, e);
         }
@@ -453,7 +446,6 @@ public class DsStorage implements AutoCloseable {
             stmt.executeUpdate();
         } catch (SQLException e) {
             String message = "SQL Exception in updateRecord with id:" + record.getId() + " error:" + e.getMessage();
-            e.printStackTrace();
             log.error(message);
             throw new SQLException(message, e);
         }
