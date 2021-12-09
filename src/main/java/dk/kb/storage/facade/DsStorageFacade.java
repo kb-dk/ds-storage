@@ -28,13 +28,12 @@ public class DsStorageFacade {
             validateBaseExists(record.getBase());
 
             boolean recordExists = storage.recordExists(record.getId());
-
-            if (!recordExists) { //Create new record
-                log.info("Creating new record with id:"+record.getId());
-                storage.createNewRecord(record);
-            } else {
+            if (recordExists) {
                 log.info("Updating record with id:"+record.getId());
                 storage.updateRecord(record);
+            } else {               
+                log.info("Creating new record with id:"+record.getId());
+                storage.createNewRecord(record);
             }
             updateMTimeForParentChild(storage,record.getId());
             return null; // Something must be returned
