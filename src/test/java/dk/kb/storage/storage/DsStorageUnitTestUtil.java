@@ -10,6 +10,7 @@ import java.sql.SQLException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,15 @@ public abstract class DsStorageUnitTestUtil {
 
     }
 
-
+    /*
+     * Delete all records between each unittest. The clearTableRecords is only called from here. 
+     * The facade class is reponsible for committing transactions. So clean up between unittests.
+     */
+    @BeforeEach
+    public void beforeEach() throws Exception {                     
+        storage.clearTableRecords();
+        storage.commit();
+    }
 
 
     @AfterAll

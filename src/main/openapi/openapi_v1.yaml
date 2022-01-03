@@ -236,6 +236,12 @@ components:
           type: integer
           format: int64
           description: 'Modification time for last create or update of the record.  Format is millis with 3 added digits'
+        cTimeHuman:
+          type: string
+          description: 'Creation time in date format YYYY-MM-DD HH:mm:ssZ'
+        mTimeHuman:
+          type: string
+          description: 'Modification time for last create or update of the record in date format YYYY-MM-DD HH:mm:ssZ'
         children:
           type: array
           items:

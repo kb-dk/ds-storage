@@ -14,15 +14,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
 
 
-    /*
-     * Delete all records between each unittest. The clearTableRecords is only called from here. 
-     * The facade class is reponsible for committing transactions. So clean up between unittests.
-     */
-    @BeforeEach
-    public void beforeEach() throws Exception {	        	    		    	
-        storage.clearTableRecords();
-        storage.commit();
-    }
+   
 
 
     @Test

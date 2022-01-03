@@ -26,13 +26,7 @@ import dk.kb.storage.util.UniqueTimestampGenerator;
 public class DsStorageTest extends DsStorageUnitTestUtil{
 
     private static final Logger log = LoggerFactory.getLogger(DsStorageTest.class);
-
-    //Storage does not commit automatic, so just rollback to get empty table for next test
-    @BeforeEach
-    public void beforeEach() throws Exception {	        	    		    	
-        storage.rollback(); //Important so each unittest has clean table
-    }
-
+  
 
     @Test
     public void testBasicCRUD() throws Exception {

@@ -13,9 +13,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 
 /*
@@ -26,6 +28,9 @@ public class DsStorage implements AutoCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorage.class);
 
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ",Locale.getDefault());
+    
+    
     private static final String RECORDS_TABLE = "ds_records";
     private static final String ID_COLUMN = "id";
     private static final String BASE_COLUMN = "base";
@@ -470,10 +475,22 @@ public class DsStorage implements AutoCloseable {
         record.setcTime(cTime);
         record.setmTime(mTime);
         record.setDeleted(deleted);
+
+        //Set the two dates as human readable
+        record.setcTimeHuman(convertToHumanDate(cTime));
+        record.setmTimeHuman(convertToHumanDate(mTime));
+        
         return record;
     }
 
-
+   /*
+   * Method is syncronized because simpledateformat is not thread safe. Faster to reuse syncronized than to construct new every time.
+   */
+    private static synchronized String convertToHumanDate(long millis_time_1000) {
+     return dateFormat.format(new Date(millis_time_1000/1000));
+        
+    }
+    
     /*
      * FOR TEST JETTY RUN ONLY!
      * 
@@ -519,7 +536,7 @@ public class DsStorage implements AutoCloseable {
         }
     }
 
-
+ /*
     private int boolToInt(Boolean isTrue) {
         if (isTrue == null) {
             return 0;
@@ -527,4 +544,5 @@ public class DsStorage implements AutoCloseable {
 
         return isTrue ? 1 : 0;
     }
+    */
 }
