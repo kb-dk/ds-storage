@@ -12,7 +12,12 @@
     <artifactId>ds-storage</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
-    <description>ds-storage by the Royal Danish Library</description>
+    <description>ds-storage(Digitale Samlinger) by the Royal Danish Library. Ds-Storage is an data storage for metadata for various collections. The metadata format is UTF-8 encoded but
+    can be anything from text,XML to JSON depending on the metadata format for that collection. The datamodel allows a single optional parent and unlimited number of children. Extracting the metadata from the collections can be both complex and time consuming for
+    some collections and API's are very different. Thus the purpose of Ds-storage is a giving a simple API access to all collection metadata. Records are creating or updated by id and the
+    collection base must match predefined recordbases(collections) defined in the Ds-Storage configuration with an update strategy when updating the hieraki transitive for that recordbase.
+    Records are extracted by recordbase and a last modification timestamp.    
+     </description>
 
     <repositories>
         <repository>
