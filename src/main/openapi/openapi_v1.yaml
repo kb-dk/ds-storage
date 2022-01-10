@@ -245,7 +245,8 @@ components:
         children:
           type: array
           items:
-            type: string     
+            type: string
+            description: 'Array of all childeren IDs'     
         parentId:
           type: string
           description: 'Id of parent record. (if exists). Only 1 level hierarchy allowed. '
