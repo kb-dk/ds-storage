@@ -2,6 +2,6 @@ TODO:
 Validation of parent does not have parent. (optimize by storing in memory?).
 create database option -C (Postgres only)
 
+billede samling OAI-PMH:
+ http://www5.kb.dk/cop/oai/?metadataPrefix=mods&set=oai:kb.dk:images:billed:2010:okt:billeder&verb=ListRecords
 
-
-Not Using autoclosable in facade since rollback can be an option and this would require 2 nested try-blocks
