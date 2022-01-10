@@ -35,7 +35,7 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Read a specific record by ID'
+      summary: 'Read a specific record by ID. Will return null if no record with the given ID exists. A record marked with delete flag will also be returned'
       operationId: getRecord
       parameters:
         - name: id
@@ -56,7 +56,7 @@ paths:
     delete:
       tags:
         - '${project.name}'
-      summary: 'Mark a record with delete flag'
+      summary: 'Mark a record with delete flag. This will not delete the record in the database but only mark it as deleted.'
       operationId: markRecordForDelete
       parameters:
         - name: id
@@ -78,7 +78,7 @@ paths:
     delete:
       tags:
         - '${project.name}'
-      summary: 'Delete all records for a recordbase that has deleted flag set'
+      summary: 'Delete all records for a recordbase that has deleted flag set. Notice that applications retrieving records from that recordbase will never know the record was deleted unless they retrieved it when it was marked with the delete flag.'
       operationId: deleteMarkedForDelete
       parameters:
         - name: recordBase
@@ -100,13 +100,13 @@ paths:
     post:
       tags:
         - '${project.name}'    
-      summary: 'Create a new record or update and existing record.'
+      summary: 'Create a new record or update and existing record. A record can only has a single optional parent and that parent must not have a parent itself (single level hierarchy)'
       requestBody:
         content:
           application/json:    # Media type
             schema:            # Request body contents
               $ref: '#/components/schemas/DsRecord'  # Reference to an object
-            example:           # Child of media type because we use $ref above
+            example:           
               # Properties of a referenced object
               id: doms_radio_id1
               base: doms_radio
@@ -135,18 +135,18 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Extract records from a record base after a given mTime and up to a defined batch size.'
+      summary: 'Extract records from a record base after a given mTime and up to a defined batch size. The records are returned in sorted order by mTime increasing.'
       operationId: getRecordsModifiedAfter  
       parameters:
         - name: recordBase
           in: query
-          description: 'RecordBase'
+          description: 'RecordBase . Will only extract records from this recordbase'
           required: true
           schema:
             type: string
         - name: mTime
           in: query
-          description: 'mTime'
+          description: 'mTime. Format is millis with 3 added digits. It is up to the caller to keep track of mTime when batching the extracting for retrieval between seperate calls'
           required: true
           schema:
             type: integer
@@ -178,7 +178,7 @@ components:
           type: string
           description: 'Name of the recordbase. IDs are prefixed with recordbase'
         updateStrategy:  
-          description: 'Update strategy defined for each recordbase'
+          description: 'Update strategy defined for each recordbase. See the update strategy types with decription'
           schema:
           $ref: '#/components/schemas/UpdateStrategy'        
 
@@ -248,7 +248,7 @@ components:
             type: string     
         parentId:
           type: string
-          description: 'Id of parent record. Is not required. '
+          description: 'Id of parent record. (if exists). Only 1 level hierarchy allowed. '
       
 
 # UpdateStrategy enums
