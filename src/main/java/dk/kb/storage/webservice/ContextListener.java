@@ -41,23 +41,23 @@ public class ContextListener implements ServletContextListener {
             String configFile = (String) ctx.lookup("java:/comp/env/application-config");
             //TODO this should not refer to something in template. Should we perhaps use reflection here?
             ServiceConfig.initialize(configFile);
-            initialiseStorage();            
-            
-            try {
-              String dbDriver = ServiceConfig.getDBDriver();
-            }
-            catch(Exception e) {
+                      
+                        
+            String dbUrl = ServiceConfig.getDBUrl();
+            if (dbUrl == null && "".contentEquals(dbUrl)){                          
                 log.error("No DB driver defined in yaml-file. If running local environment in jetty you must create a local yaml file and edit properties");
                 System.out.println("No DB driver defined in yaml-file. If running local environment in jetty you must create a local yaml file and edit properties");
                 System.out.println("Startup failed due to missing DB driver property");
-                System.exit(1);    
-                
+                System.exit(1);                    
             }
-            
-        } catch (NamingException e) {
+            initialiseStorage();  
+        }
+        catch (NamingException e) {
             throw new RuntimeException("Failed to lookup settings", e);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load settings", e);        } 
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Failed to load settings", e);
+        } 
         log.info("Service initialized.");
     }
     
@@ -89,7 +89,7 @@ public class ContextListener implements ServletContextListener {
                 Driver driver = drivers.nextElement();
                 
                 try {
-                    log.debug("deregistering jdbc driver: {}", driver);
+                   log.debug("deregistering jdbc driver: {}", driver);
                     DriverManager.deregisterDriver(driver);
                 } catch (SQLException e) {
                     log.debug("Error deregistering driver {}", driver, e);
