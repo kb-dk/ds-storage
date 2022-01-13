@@ -40,16 +40,7 @@ public class ContextListener implements ServletContextListener {
             InitialContext ctx = new InitialContext();
             String configFile = (String) ctx.lookup("java:/comp/env/application-config");
             //TODO this should not refer to something in template. Should we perhaps use reflection here?
-            ServiceConfig.initialize(configFile);
-                      
-                        
-            String dbUrl = ServiceConfig.getDBUrl();
-            if (dbUrl == null && "".contentEquals(dbUrl)){                          
-                log.error("No DB driver defined in yaml-file. If running local environment in jetty you must create a local yaml file and edit properties");
-                System.out.println("No DB driver defined in yaml-file. If running local environment in jetty you must create a local yaml file and edit properties");
-                System.out.println("Startup failed due to missing DB driver property");
-                System.exit(1);                    
-            }
+            ServiceConfig.initialize(configFile);                                                          
             initialiseStorage();  
         }
         catch (NamingException e) {
