@@ -22,9 +22,9 @@ config:
     - name: recordBase_strategy_parent
       update_strategy: PARENT
       
-  #change URL path to local h2 storage for unittest                
+  #change URL path to local h2 storage for unittest   
   db:
-   url: jdbc:h2:/home/XXX/workspace/ds-storage/target/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+ # url: jdbc:h2:/home/XXX/workspace/ds-storage/target/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
    driver: org.h2.Driver
    username: ''
    password: ''
