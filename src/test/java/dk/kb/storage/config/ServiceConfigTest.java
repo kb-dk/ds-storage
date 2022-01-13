@@ -1,7 +1,10 @@
 package dk.kb.storage.config;
 
+import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.util.Resolver;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,6 +31,9 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ServiceConfigTest {
 
+  
+    private static final Logger log = LoggerFactory.getLogger(ServiceConfigTest.class);
+    
     /*
      * This unit-test probably fails when the template is applied and a proper project is taking form.
      * That is okay. It is only here to serve as a temporary demonstration of unit-testing and configuration.
@@ -39,8 +45,14 @@ class ServiceConfigTest {
         String projectRoot = knownFile.getParent().getParent().getParent().toString();
 
         Path sampleEnvironmentSetup = Path.of(projectRoot, "conf/ds-storage-environment.yaml");
-        assertTrue(Files.exists(sampleEnvironmentSetup),
-                   "The sample setup is expected to be present at '" + sampleEnvironmentSetup + "'");
+        
+        
+        
+        if(!Files.exists(sampleEnvironmentSetup)) {
+            log.warn("You must create a local yaml-file: 'ds-storage-environment.yaml' with local values if you want to start up jetty");
+            
+        }
+        
 
         ServiceConfig.initialize(projectRoot + File.separator + "conf" + File.separator + "ds-storage*.yaml");
 
