@@ -25,11 +25,19 @@ Build with
 mvn package
 ```
 
-Test the webservice with
+## Create local yaml-file
+
+Take a copy of 'ds-storage-behaviour.yaml'  and name it'ds-storage-environment.yaml'
+
+And update the dbURL for the h2-database file to your environment. Ie. replace XXX with your user.
+
+
+
+## Test the webservice with
 ```
 mvn jetty:run
 ```
-
+## Swagger UI
 The Swagger UI is available at <http://localhost:8080/ds-storage/api/>, providing access to both the `v1` and the 
 `devel` versions of the GUI. 
 
