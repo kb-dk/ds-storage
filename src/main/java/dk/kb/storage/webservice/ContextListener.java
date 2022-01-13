@@ -43,11 +43,14 @@ public class ContextListener implements ServletContextListener {
             ServiceConfig.initialize(configFile);
             initialiseStorage();            
             
-            if (ServiceConfig.getDBDriver() == null) {
+            try {
+              String dbDriver = ServiceConfig.getDBDriver();
+            }
+            catch(Exception e) {
                 log.error("No DB driver defined in yaml-file. If running local environment in jetty you must create a local yaml file and edit properties");
                 System.out.println("No DB driver defined in yaml-file. If running local environment in jetty you must create a local yaml file and edit properties");
                 System.out.println("Startup failed due to missing DB driver property");
-                System.exit(1);
+                System.exit(1);    
                 
             }
             
