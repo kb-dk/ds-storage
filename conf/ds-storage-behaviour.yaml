@@ -24,8 +24,7 @@ config:
       
   #change URL path to local h2 storage for unittest   
   db:  
-   #url: jdbc:h2:/home/XXX/workspace/ds-storage/target/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE  <- Must be overwritten in local yaml file (change home)
-   url: 
+   url: jdbc:h2:/home/XXX/workspace/ds-storage/target/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
    driver: org.h2.Driver
    username: ''
    password: ''
