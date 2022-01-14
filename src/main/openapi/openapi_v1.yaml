@@ -231,11 +231,11 @@ components:
         cTime:
           type: integer
           format: int64
-          description: 'Creation time when the record was created first time. Format is millis with 3 added digits'
+          description: 'Creation time when the record was created first time. Format is millis with 3 added digits. This creation time value will not be changed when updating the record.'
         mTime:
           type: integer
           format: int64
-          description: 'Modification time for last create or update of the record.  Format is millis with 3 added digits'
+          description: 'Modification time for last create or update of the record. Format is millis with 3 added digits. When a record is updated, mTime for parent and child records can also be updated due to updatestrategy defined for that recordbase.'
         cTimeHuman:
           type: string
           description: 'Creation time in date format YYYY-MM-DD HH:mm:ssZ'
@@ -260,11 +260,11 @@ components:
         **Explanation of the 4 different updatestrategies.**
         
         | Enum             |  Description                                                                                 | 
-        | ---------------- | ------------------------------------------------------------------------------------------- | 
+        | ---------------- | -------------------------------------------------------------------------------------------- | 
         | NONE             |  Only the record itself should be marked as updated.                                         | 
         | ALL              |  All records in the transitive graphs originating in this object should be marked as updated.| 
         | CHILD            |  Only follow relations where the record is the parent and links points to children.          |                 
-        | PARENT           |  Only follow relations where the record is the child and links points to parents.            |
+        | PARENT           | Only follow relations where the record is the child and links points to parents.             |
       enum:
         - NONE
         - ALL
