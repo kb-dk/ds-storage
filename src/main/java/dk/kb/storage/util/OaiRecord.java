@@ -1,4 +1,4 @@
-package dk.kb.storage.facade;
+package dk.kb.storage.util;
 
 public class OaiRecord {
 private String id;

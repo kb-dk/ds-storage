@@ -23,20 +23,13 @@ import org.xml.sax.InputSource;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.storage.DsStorageUnitTestUtil;
+import dk.kb.storage.util.OaiHarvestClient;
+import dk.kb.storage.util.OaiRecord;
+import dk.kb.storage.util.OaiResponse;
 
 public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
-    public static String get(String uri) throws Exception {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-              .uri(URI.create(uri))
-              .build();
-
-        HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
-
-       return response.body();
-    }
-
+   
     
     @Test
     public void testOAI() throws Exception {
@@ -47,53 +40,15 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
        String verb="ListRecords";
        String set="oai:kb.dk:images:billed:2010:okt:billeder";
         
-        harvestOAI(baseUrl, metadataPrefix, set, verb);
+        OaiResponse oaiResponse = OaiHarvestClient.harvestOAI(baseUrl, metadataPrefix, set, verb);
+        System.out.println(oaiResponse.getRecords().size());
+        System.out.println(oaiResponse.getResumptionToken());
         
-                 
+        OaiRecord r = oaiResponse.getRecords().get(0);
+        System.out.println(r.getId());
+        System.out.println(r.getMetadata());         
         }
-       
-        public static void harvestOAI(String baseURl,String metadataPrefix,String set, String verb) throws Exception {
-                        
-            
-            String uri =baseURl+"?metadataPrefix="+metadataPrefix+"&set="+set+"&verb="+verb;
-            
-            
-            String response=get(uri);
-             
-              DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-              DocumentBuilder builder = factory.newDocumentBuilder();
-               
-              //Build Document
-              Document document = builder.parse(new InputSource(new StringReader(response)));
-
-              //Normalize the XML Structure; It's just too important !!
-              document.getDocumentElement().normalize();
-               
-              //Here comes the root node
-              Element root = document.getDocumentElement();
-              System.out.println(root.getNodeName());
-               
-              
-              String  resumptionToken=  document.getElementsByTagName("resumptionToken").item(0).getTextContent();
-              System.out.println("token:"+resumptionToken);
-              
-              
-              NodeList nList = document.getElementsByTagName("record");
-              System.out.println(nList.getLength());
-             
-              for (int i =0;i<nList.getLength();i++) {
-                  Element record =  (Element)nList.item(i);
-                           
-                 String metadata =  record.getElementsByTagName("metadata").item(0).getTextContent();            
-                 System.out.println(metadata);
-                 System.out.println("-----");
-                 
-
-            
-        }
-        
-    }
-
+      
    
 
 
