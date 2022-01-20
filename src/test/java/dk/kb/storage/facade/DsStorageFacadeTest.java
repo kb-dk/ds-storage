@@ -23,9 +23,6 @@ import org.xml.sax.InputSource;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.storage.DsStorageUnitTestUtil;
-import dk.kb.storage.util.OaiHarvestClient;
-import dk.kb.storage.util.OaiRecord;
-import dk.kb.storage.util.OaiResponse;
 
 public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
