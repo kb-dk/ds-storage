@@ -473,6 +473,10 @@
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
                     </archive>
+
+                    <!--This is really just to get an artifact containing openapi_ds-storage_v1.yaml-->
+                    <attachClasses>true</attachClasses>
+
                     <!--Enable maven filtering for the web.xml-->
                     <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
                     <webResources>
