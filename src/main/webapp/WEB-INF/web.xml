@@ -18,7 +18,7 @@
             <param-value>dk.kb.storage.webservice.Application_v1</param-value>
         </init-param>
         <init-param>
-            <!--This enables the endpoint /ds-storage/openapi.json-->
+            <!--This enables the endpoint /ds-storage/openapi_ds-storage_v1.yaml-->
             <!--This enables the (Swagger UI) endpoint /ds-storage/api-docs -->
             <param-name>jaxrs.features</param-name>
             <param-value>org.apache.cxf.jaxrs.openapi.OpenApiFeature</param-value>
@@ -29,13 +29,13 @@
             <!--THIS IS A HACK. But it seems like the simplest way to recover the original specs-->
             <param-name>static-resources-list</param-name>
             <param-value>
-                /openapi_.*\..+
+                /openapi_ds-storage_.*\..+
             </param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
-        <!--/v1 matches the server url in src/main/openapi/openapi_v1.yaml-->
+        <!--/v1 matches the server url in src/main/openapi/openapi_ds-storage_v1.yaml-->
         <servlet-name>RestServlet_v1</servlet-name>
         <url-pattern>/v1/*</url-pattern>
     </servlet-mapping>
