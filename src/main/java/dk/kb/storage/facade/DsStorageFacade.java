@@ -22,7 +22,6 @@ public class DsStorageFacade {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorageFacade.class);
 
-
     public static void createOrUpdateRecord(DsRecordDto record)  {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
             validateBaseExists(record.getBase());
