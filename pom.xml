@@ -16,7 +16,7 @@
     can be anything from text,XML to JSON depending on the metadata format for that collection. The datamodel allows a single optional parent and unlimited number of children. Extracting the metadata from the collections can be both complex and time consuming for
     some collections and API's are very different. Thus the purpose of Ds-storage is a giving a simple API access to all collection metadata. Records are creating or updated by id and the
     collection base must match predefined recordbases(collections) defined in the Ds-Storage configuration with an update strategy when updating the hieraki transitive for that recordbase.
-    Records are extracted by recordbase and a last modification timestamp.    
+    Records are extracted by recordbase and a last modification timestamp.
      </description>
 
     <repositories>
@@ -420,7 +420,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.build.outputDirectory}/openapi_v1.yaml</inputSpec>
+                            <inputSpec>${project.build.outputDirectory}/openapi_ds-storage_v1.yaml</inputSpec>
                             <ignoreFileOverride>
                                 ${project.basedir}/.openapi-codegen-ignore-api
                             </ignoreFileOverride>
@@ -444,7 +444,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.build.outputDirectory}/openapi_v1.yaml</inputSpec>
+                            <inputSpec>${project.build.outputDirectory}/openapi_ds-storage_v1.yaml</inputSpec>
                             <ignoreFileOverride>
                                 ${project.basedir}/.openapi-codegen-ignore-impl
                             </ignoreFileOverride>
@@ -458,7 +458,7 @@
                         </configuration>
                     </execution>
 
-                    
+
 
                 </executions>
             </plugin>
@@ -473,6 +473,10 @@
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
                     </archive>
+
+                    <!--This is really just to get an artifact containing openapi_ds-storage_v1.yaml-->
+                    <attachClasses>true</attachClasses>
+
                     <!--Enable maven filtering for the web.xml-->
                     <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
                     <webResources>
@@ -481,13 +485,15 @@
                             <directory>${project.build.outputDirectory}</directory>
                             <targetPath>.</targetPath>
                             <includes>
-                                <include>openapi_v1.json</include>
-                                <include>openapi_v1.yaml</include>
+                                <include>openapi_ds-storage_v1.yaml</include>
+                                <include>openapi_ds-storage_v1.yaml</include>
                             </includes>
                         </resource>
                     </webResources>
                 </configuration>
             </plugin>
+
+
 
 
             <!-- Used only for mvn jetty:run jetty:run-war -->
