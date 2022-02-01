@@ -1,13 +1,9 @@
 # ds-storage
 
-Ds-Storage is persistent storage for metadata in the 'Digitiale samlinger' project. The metadata record are extracted for different collections and added to 
-the ds-storage database. The encoding for the metadata is text UTF-8, but the format can be JSON or XML etc. dependant on the specific collection.
-The records for a specific collection can be extracted by a streaming API or with a defined batch size. The extract method will return records
-newer than the given modified data and are returned sorted by modified date. The responsibility for keeping track of the last modified data is up the
-the caller and used as argument for the next extraction call.
+Ds-Storage is persistent storage for metadata in the 'Digitiale samlinger' project. 
 
-For more information see the API description <http://localhost:8080/ds-storage/api/>.
-
+For more information about ds-storage and usage see the full description in open API <http://localhost:8080/ds-storage/api/>.
+ 
 
 Developed and maintained by the Royal Danish Library.
 
@@ -16,7 +12,8 @@ Developed and maintained by the Royal Danish Library.
 * Maven 3                                  
 * Java 11
 * Tomcat 9
-* PostGreSql
+* PostGreSql recommended (or any JDBC compliant database implementation). 
+  For local unittest as development it uses a file base H2 java database that does not require any software installation.
 
 ## Build & run
 
@@ -25,12 +22,9 @@ Build with
 mvn package
 ```
 
-## Create local yaml-file
-
-Take a copy of 'ds-storage-behaviour.yaml'  and name it'ds-storage-environment.yaml'
-
-And update the dbURL for the h2-database file to your environment. Ie. replace XXX with your user.
-
+## Setup required to  run the project local 
+Create local yaml-file: Take a copy of 'ds-storage-behaviour.yaml'  and name it'ds-storage-environment.yaml'
+Update the dbURL for the h2-database file to your environment. Ie. replace XXX with your user.
 
 
 ## Test the webservice with
@@ -40,5 +34,12 @@ mvn jetty:run
 ## Swagger UI
 The Swagger UI is available at <http://localhost:8080/ds-storage/api/>, providing access to both the `v1` and the 
 `devel` versions of the GUI. 
+
+
+## Deployment to a server (development/stage/production).
+Install Tomcat server 
+Install PostgreSql (or any JDBC database). Create a database tablespace and define the tables using the file: create_ds_storage.ddl
+Configure tomcat with the context enviroment file ds-storage.xml. Edit the two environment for ds-storage.logback.xml and ds-datahandler.yaml
+Configure ds-datahandler.yaml with the JDCB properties for the database. 
 
 See the file [DEVELOPER.md](DEVELOPER.md) for developer specific details and how to deploy to tomcat.
