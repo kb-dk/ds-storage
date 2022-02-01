@@ -42,4 +42,5 @@ Install PostgreSql (or any JDBC database). Create a database tablespace and defi
 Configure tomcat with the context enviroment file ds-storage.xml. Edit the two environment for ds-storage.logback.xml and ds-datahandler.yaml
 Configure ds-datahandler.yaml with the JDCB properties for the database. 
 
+
 See the file [DEVELOPER.md](DEVELOPER.md) for developer specific details and how to deploy to tomcat.
