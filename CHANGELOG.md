@@ -12,5 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of ds-storage
 
+
 [Unreleased](https://github.com/kb-dk/ds-storage/compare/v1.0.0...HEAD)
 [1.0.0](https://github.com/kb-dk/ds-storage/releases/tag/v1.0.0)
