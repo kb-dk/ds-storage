@@ -25,7 +25,8 @@ public class DsStorageFacade {
     public static void createOrUpdateRecord(DsRecordDto record)  {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
             validateBaseExists(record.getBase());
-
+            validateIdHasRecordBasePrefix(record.getBase(), record.getId());
+            
             boolean recordExists = storage.recordExists(record.getId());
             if (recordExists) {
                 log.info("Updating record with id:"+record.getId());
@@ -208,6 +209,17 @@ public class DsStorageFacade {
         }
     }
 
+    
+    /**
+     * Check that the recordId starts with the recordbase as prefix
+     * @param base base name.
+     */
+    private static void validateIdHasRecordBasePrefix(String base, String recordId) {
+        if (!recordId.startsWith(base)) {
+            throw new InvalidArgumentServiceException("RecordId must have recordbase as prefix. Id:"+recordId);
+        }
+    }
+    
 
     /**
      * Starts a storage transaction and performs the given action on it, returning the result from the action.

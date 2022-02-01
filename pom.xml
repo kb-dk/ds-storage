@@ -12,8 +12,20 @@
     <artifactId>ds-storage</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
-    <description>ds-storage(Digitale Samlinger) by the Royal Danish Library. Ds-Storage is an data storage for metadata for various collections. The metadata format is UTF-8 encoded but
-    can be anything from text,XML to JSON depending on the metadata format for that collection. The datamodel allows a single optional parent and unlimited number of children. Extracting the metadata from the collections can be both complex and time consuming for
+    <description>
+    # Ds-storage(Digitale Samlinger) by the Royal Danish Library. 
+    
+      
+    ## A metadata storage.
+    Ds-storage is a storage for metadata to describe objects in collections.  
+    The metadata format is UTF-8 encoded but format can be anything from text,XML,JSON etc. depending on the metadata format for that collection.
+    The basic idea behind ds-storage is a single access point to metadata describing objects belonging to many different collections. And having a simple API to 
+    store and retrieve the records. Instead of integrating to wide range of different APIs located on different servers, the ds-storage offers
+    a unified API for all of them and is optimized for retrieving a specific record very fast.
+    
+    ## Records
+    Objects in ds-storage are called records. A record holds the same metadata about (but always UTF-8 encoded)               
+    The datamodel allows a single optional parent and unlimited number of children. Extracting the metadata from the collections can be both complex and time consuming for
     some collections and API's are very different. Thus the purpose of Ds-storage is a giving a simple API access to all collection metadata. Records are creating or updated by id and the
     collection base must match predefined recordbases(collections) defined in the Ds-Storage configuration with an update strategy when updating the hieraki transitive for that recordbase.
     Records are extracted by recordbase and a last modification timestamp.
