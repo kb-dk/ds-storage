@@ -21,6 +21,9 @@ config:
       update_strategy: CHILD
     - name: recordBase_strategy_parent
       update_strategy: PARENT
+    - name: pvica_devel
+      update_strategy: ALL
+      
       
   #change URL path to local h2 storage for unittest   
   db:  
