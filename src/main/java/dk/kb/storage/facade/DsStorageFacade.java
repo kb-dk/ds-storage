@@ -111,6 +111,9 @@ public class DsStorageFacade {
      */
     private static void updateMTimeForParentChild(DsStorage storage,String recordId) throws Exception{
         DsRecordDto record=  storage.loadRecord(recordId); //Notice for performancing tuning, recordDto this can sometimes be given to the method. No premature optimization...
+        if (record==null) { //Can happen when marking records for delete and record is not in storage.            
+            return;            
+        }
         RecordBaseDto recordBase = ServiceConfig.getAllowedBases().get(record.getBase());       
         UpdateStrategyDto updateStrategy = recordBase.getUpdateStrategy();
 
