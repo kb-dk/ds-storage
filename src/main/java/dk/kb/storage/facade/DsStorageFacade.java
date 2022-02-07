@@ -85,6 +85,7 @@ public class DsStorageFacade {
         return performStorageAction("markRecordForDelete(" + recordId + ")", storage -> {
             int updated = storage.markRecordForDelete(recordId);
             updateMTimeForParentChild(storage,recordId);
+            log.info("Record marked for delete:"+recordId);
             return updated;
         });
     }
