@@ -46,9 +46,10 @@ mvn package
 
 ## Setup required to run the project local 
 Create local yaml-file: Take a copy of 'ds-storage-behaviour.yaml'  and name it'ds-storage-environment.yaml'
+
 Update the dbURL for the h2-database file to your environment. Ie. replace XXX with your user.
-The H2 will be created if does not exists and data will be persistent between sessions. Delete the h2-file if you want
-to reset the database.
+
+The H2 will be created if does not exists and data will be persistent between sessions. Delete the h2-file if you want to reset the database.
 
 
 ## Test the webservice with
@@ -62,11 +63,17 @@ The Swagger UI is available at <http://localhost:8080/ds-storage/api/>, providin
 
 ## Deployment to a server (development/stage/production).
 Install Tomcat9 server 
+
 Install PostgreSql (or any JDBC database).
+
 Create a database tablespace and define the tables using the file: resources/ddl/create_ds_storage.ddl
+
 Configure tomcat with the context enviroment file conf/ocp/ds-storage.xml. Notice it points to the location on the file system where the yaml and logback file are located.
+
 Edit  conf/ds-storage.logback.xml
+
 Make a ds-storage.yaml file. (Make a copy of /conf/ds-storage-environment.yaml rename it, and edit the properties). 
+
 Configure conf/ds-storage.yaml with the JDCB properties for the database. 
 
 
