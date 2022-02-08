@@ -32,6 +32,10 @@ config:
    username: ''
    password: ''
    
-   
+   # Example for postgres
+   #url: jdbc:postgresql://localhost:5432/ds-storage
+   #driver: org.postgresql.Driver
+   #username: username
+   #password: password
    
    
