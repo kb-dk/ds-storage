@@ -64,7 +64,7 @@ The Swagger UI is available at <http://localhost:8080/ds-storage/api/>, providin
 Install Tomcat9 server 
 Install PostgreSql (or any JDBC database).
 Create a database tablespace and define the tables using the file: resources/ddl/create_ds_storage.ddl
-Configure tomcat with the context enviroment file conf/ocp/ds-storage.xml. Notice it points to the location on the file system where the yaml and logback file are located
+Configure tomcat with the context enviroment file conf/ocp/ds-storage.xml. Notice it points to the location on the file system where the yaml and logback file are located.
 Edit  conf/ds-storage.logback.xml
 Make a ds-storage.yaml file. (Make a copy of /conf/ds-storage-environment.yaml rename it, and edit the properties). 
 Configure conf/ds-storage.yaml with the JDCB properties for the database. 

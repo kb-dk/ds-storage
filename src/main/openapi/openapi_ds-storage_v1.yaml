@@ -210,6 +210,14 @@ components:
           type: integer
           format: int64
           description: 'Number of records for each record base. This will also include records marked with delete flag'
+        latestMTime:
+          type: integer
+          format: int64
+          description: 'mTime stamp of most recent record updated or created for that recordbase'
+        lastMTimeHuman:
+          type: string
+          description: 'latestMTime in human readable format.  Date format is YYYY-MM-DD HH:mm:ssZ'
+
 
     DsRecord:
       type: object
