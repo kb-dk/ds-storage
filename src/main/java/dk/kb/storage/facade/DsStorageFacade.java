@@ -38,6 +38,10 @@ public class DsStorageFacade {
                 record.setIdError(true);
             }
             
+            if (record.getParentId() != null) { //Also normalize parentID
+                record.setParentId(normaliseId(record.getParentId()));                
+            }            
+            
             boolean recordExists = storage.recordExists(record.getId());
             if (recordExists) {
                 log.info("Updating record with id:"+record.getId());
