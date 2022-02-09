@@ -26,7 +26,11 @@ public class DsStorageFacade {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
             validateBaseExists(record.getBase());
             validateIdHasRecordBasePrefix(record.getBase(), record.getId());
-                        
+            
+            if (record.getParentId() != null) { //Parent ID must belong to same collection and also validate
+              validateIdHasRecordBasePrefix(record.getBase(), record.getParentId());
+            }
+            
             String idNorm = normaliseId(record.getId());
             if (!record.getId().equals(idNorm)) {
                 record.setOrgid(record.getId()); //set this before changing value below
@@ -237,7 +241,7 @@ public class DsStorageFacade {
      */
     private static void validateIdHasRecordBasePrefix(String base, String recordId) {
         if (!recordId.startsWith(base)) {
-            throw new InvalidArgumentServiceException("RecordId must have recordbase as prefix. Id:"+recordId);
+            throw new InvalidArgumentServiceException("Id must have recordbase as prefix. Id:"+recordId);
         }
     }
     

@@ -64,7 +64,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         String id ="doms.radio:id1";
         String base="doms.radio"; //Must be defined in yaml properties as allowed base
         String data = "Hello";
-        String parentId="id_1_parent";
+        String parentId="doms.radio:id_1_parent";
 
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
@@ -87,7 +87,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
         //Now update
         String dataUpdate = "Hello updated";
-        String parentIdUpdated="id_2_parent";
+        String parentIdUpdated="doms.radio:id_2_parent";
         long cTimeBefore = recordLoaded.getcTime(); //Must be the same
 
         record.setData(dataUpdate);
@@ -108,16 +108,15 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     @Test
     public void testUnknownBase() throws Exception {
-        String id ="unkown.base_id1";
+        String id ="unkown.base:id1";
         String base="unkown.base";	    	
         String data = "Hello";
-        String parentId="id_1_parent";
 
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
         record.setBase(base);
         record.setData(data);
-        record.setParentId(parentId);
+        
         try {
             DsStorageFacade.createOrUpdateRecord(record );
             Assertions.fail("Should fail with unknown base");				
