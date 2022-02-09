@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,9 @@ public class ServiceConfig {
 	
 	//key is basename
 	private static final HashMap<String,RecordBaseDto> allowedBases = new HashMap<String,RecordBaseDto>();
+    private static final String regexpRecordBase="([a-z0-9.]+)";
+	private static final Pattern recordBasePattern = Pattern.compile(regexpRecordBase);
+	
 	
 	/**
 	 * Besides parsing of YAML files using SnakeYAML, the YAML helper class provides convenience
@@ -52,12 +57,16 @@ public class ServiceConfig {
 		return lines;
 	}
 
-	private static void loadAllowedBases() {
+	private static void loadAllowedBases() throws IOException{
 
 		List<YAML> bases = serviceConfig.getYAMLList("config.allowed_bases");
 		//Load updtateStategy for each
 		for (YAML base: bases) {
 			String name = base.getString("name");
+			if (!validateRecordBase(name)) {
+			    throw new IOException("Configured recordBase: '"+name+"' does not match regexp:"+regexpRecordBase);			    
+			}
+			
 			String updateStrategy = base.getString("update_strategy");        
 			RecordBaseDto recordBase = new RecordBaseDto();
 			recordBase.setName(name);
@@ -95,6 +104,13 @@ public class ServiceConfig {
 		return allowedBases;
 	}
 
+	public static boolean validateRecordBase(String recordBase) {
+	    Matcher m = recordBasePattern.matcher(recordBase);	    
+        return m.matches();
+	}
+	
+	
+	
 	/**
 	 * Direct access to the backing YAML-class is used for configurations with more flexible content
 	 * and/or if the service developer prefers key-based property access.
