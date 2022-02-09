@@ -227,6 +227,12 @@ components:
         id:
           type: string
           description: 'Unique identifier for the record'
+        orgid:
+          type: string
+          description: 'Will contain the original ID if the ID format was not valid (invalid characters) and has been changed. '
+        id_error:
+          type: boolean
+          description: 'Indicate if the orgininal ID format was invalid'
         base:
           type: string
           description: 'Collection name where the record comes from'

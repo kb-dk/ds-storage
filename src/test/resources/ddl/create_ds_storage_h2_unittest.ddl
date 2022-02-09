@@ -1,6 +1,8 @@
  CREATE TABLE IF NOT EXISTS ds_records (
 id VARCHAR(255) PRIMARY KEY,
 base VARCHAR(31), 
+orgid VARCHAR(255),
+id_error INTEGER,
 deleted INTEGER,  
 data TEXT,
 ctime BIGINT,

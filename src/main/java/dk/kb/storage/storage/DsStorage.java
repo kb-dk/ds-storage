@@ -33,6 +33,8 @@ public class DsStorage implements AutoCloseable {
     
     private static final String RECORDS_TABLE = "ds_records";
     private static final String ID_COLUMN = "id";
+    private static final String ORGID_COLUMN = "orgid";
+    private static final String IDERROR_COLUMN = "id_error";
     private static final String BASE_COLUMN = "base";
     private static final String DELETED_COLUMN = "deleted";
     private static final String DATA_COLUMN = "data";
@@ -44,8 +46,8 @@ public class DsStorage implements AutoCloseable {
 
 
     private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
-            " (" + ID_COLUMN + ", " + BASE_COLUMN + ", " + DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
-            " VALUES (?,?,?,?,?,?,?)";
+            " (" + ID_COLUMN + ", " + BASE_COLUMN + ", " +ORGID_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
+            " VALUES (?,?,?,?,?,?,?,?,?)";
 
     private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+			 
             DATA_COLUMN + " = ? , "+ 						 
@@ -339,17 +341,22 @@ public class DsStorage implements AutoCloseable {
             throw new Exception("Record with id has itself as parent:" + record.getId());
         }
 
+        if (record.getIdError() == null) {
+            record.setIdError(false); // can not make default to work in open API.            
+        }
         long nowStamp = UniqueTimestampGenerator.next();
         //log.debug("Creating new record: " + record.getId());
 
         try (PreparedStatement stmt = connection.prepareStatement(createRecordStatement);) {
             stmt.setString(1, record.getId());
             stmt.setString(2, record.getBase());
-            stmt.setInt(3, 0);
-            stmt.setLong(4, nowStamp);
-            stmt.setLong(5, nowStamp);
-            stmt.setString(6, record.getData());
-            stmt.setString(7, record.getParentId());
+            stmt.setString(3, record.getOrgid());                        
+            stmt.setInt(4, boolToInt(record.getIdError()));            
+            stmt.setInt(5, 0);
+            stmt.setLong(6, nowStamp);
+            stmt.setLong(7, nowStamp);
+            stmt.setString(8, record.getData());
+            stmt.setString(9, record.getParentId());
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -460,7 +467,9 @@ public class DsStorage implements AutoCloseable {
 
         String id = rs.getString(ID_COLUMN);
         String base = rs.getString(BASE_COLUMN);
-        boolean deleted = rs.getInt(DELETED_COLUMN) == 1;		
+        boolean idError = rs.getInt(IDERROR_COLUMN) == 1;
+        String orgid = rs.getString(ORGID_COLUMN);
+        boolean deleted = rs.getInt(DELETED_COLUMN) == 1;		                
         String data = rs.getString(DATA_COLUMN);
         long cTime = rs.getLong(CTIME_COLUMN);
         long mTime = rs.getLong(MTIME_COLUMN);
@@ -469,6 +478,8 @@ public class DsStorage implements AutoCloseable {
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
         record.setBase(base);
+        record.setOrgid(orgid);
+        record.setIdError(idError);
         record.setData(data);
         record.setParentId(parentId);
         record.setcTime(cTime);
@@ -482,6 +493,14 @@ public class DsStorage implements AutoCloseable {
         return record;
     }
 
+    private static int boolToInt(Boolean isTrue) {
+        if (isTrue == null) {
+            return 0;
+        }
+
+        return isTrue ? 1 : 0;
+    }
+    
    /*
    * Method is syncronized because simpledateformat is not thread safe. Faster to reuse syncronized than to construct new every time.
    */
@@ -535,13 +554,6 @@ public class DsStorage implements AutoCloseable {
         }
     }
 
- /*
-    private int boolToInt(Boolean isTrue) {
-        if (isTrue == null) {
-            return 0;
-        }
-
-        return isTrue ? 1 : 0;
-    }
-    */
+ 
+ 
 }

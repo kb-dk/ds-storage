@@ -26,6 +26,13 @@ public class DsStorageFacade {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
             validateBaseExists(record.getBase());
             validateIdHasRecordBasePrefix(record.getBase(), record.getId());
+                        
+            String idNorm = normaliseId(record.getId());
+            if (!record.getId().equals(idNorm)) {
+                record.setOrgid(record.getId()); //set this before changing value below
+                record.setId(idNorm);                
+                record.setIdError(true);
+            }
             
             boolean recordExists = storage.recordExists(record.getId());
             if (recordExists) {
@@ -66,7 +73,8 @@ public class DsStorageFacade {
      */
     public static DsRecordDto getRecord(String recordId) {
         return performStorageAction("getRecord(" + recordId + ")", storage -> {
-            DsRecordDto record = storage.loadRecord(recordId);
+        String idNorm = normaliseId(recordId);
+            DsRecordDto record = storage.loadRecord(idNorm);
             if (record== null) {
                 return null;
             }
@@ -83,7 +91,8 @@ public class DsStorageFacade {
     public static Integer markRecordForDelete(String recordId) {
         //TODO touch children etc.
         return performStorageAction("markRecordForDelete(" + recordId + ")", storage -> {
-            int updated = storage.markRecordForDelete(recordId);
+            String idNorm = normaliseId(recordId);            
+            int updated = storage.markRecordForDelete(idNorm);
             updateMTimeForParentChild(storage,recordId);
             log.info("Record marked for delete:"+recordId);
             return updated;
@@ -212,7 +221,15 @@ public class DsStorageFacade {
             throw new InvalidArgumentServiceException("Unknown record base:"+base);
         }
     }
-
+    /**
+     * Normalise the ID. Invalid characters will be removed or replaced.
+     * @param id 
+     */
+    private static String normaliseId(String id) {
+        id=id.replace("æ","ae");
+        id=id.replace("Æ","AE");
+        return id;
+    }
     
     /**
      * Check that the recordId starts with the recordbase as prefix

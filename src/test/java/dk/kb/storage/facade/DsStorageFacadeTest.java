@@ -26,6 +26,34 @@ import dk.kb.storage.storage.DsStorageUnitTestUtil;
 
 public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
+    
+    //THIS UNTTEST MUST BE UPDATED WHEN VALIDATION RULES ARE MORE CLEAR!
+    @Test
+    public void testInvalidId() throws Exception {
+        //TODO rescribe flow below
+
+        
+        String id ="doms_radio_idÆæ123"; // Æ and æ invalid and replaced b y AE and ae
+        String base="doms_radio"; //Must be defined in yaml properties as allowed base
+        String data = "Hello";
+        
+        DsRecordDto record = new DsRecordDto();
+        record.setId(id);
+        record.setBase(base);
+        record.setData(data);
+        DsStorageFacade.createOrUpdateRecord(record );
+
+        //Load and see it is marked invalid
+        
+        DsRecordDto recordInvalid = DsStorageFacade.getRecord(id);
+        
+        
+        
+        
+    }
+    
+    
+    
     @Test
     public void testCreateAndUpdate() throws Exception {
         //TODO rescribe flow below
