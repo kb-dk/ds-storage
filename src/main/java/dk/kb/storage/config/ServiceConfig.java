@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.model.v1.RecordBaseDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
+import dk.kb.storage.util.IdNormaliser;
 import dk.kb.util.yaml.YAML;
 
 /**
@@ -25,9 +26,7 @@ public class ServiceConfig {
 	
 	//key is basename
 	private static final HashMap<String,RecordBaseDto> allowedBases = new HashMap<String,RecordBaseDto>();
-    private static final String regexpRecordBase="([a-z0-9.]+)";
-	private static final Pattern recordBasePattern = Pattern.compile(regexpRecordBase);
-	
+    
 	
 	/**
 	 * Besides parsing of YAML files using SnakeYAML, the YAML helper class provides convenience
@@ -63,8 +62,8 @@ public class ServiceConfig {
 		//Load updtateStategy for each
 		for (YAML base: bases) {
 			String name = base.getString("name");
-			if (!validateRecordBase(name)) {
-			    throw new IOException("Configured recordBase: '"+name+"' does not match regexp:"+regexpRecordBase);			    
+			if (!IdNormaliser.validateRecordBase(name)) {
+			    throw new IOException("Configured recordBase: '"+name+"' does not validate to regexp for recordbase");			    
 			}
 			
 			String updateStrategy = base.getString("update_strategy");        
@@ -104,12 +103,6 @@ public class ServiceConfig {
 		return allowedBases;
 	}
 
-	public static boolean validateRecordBase(String recordBase) {
-	    Matcher m = recordBasePattern.matcher(recordBase);	    
-        return m.matches();
-	}
-	
-	
 	
 	/**
 	 * Direct access to the backing YAML-class is used for configurations with more flexible content

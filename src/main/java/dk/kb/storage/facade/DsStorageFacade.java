@@ -28,15 +28,17 @@ public class DsStorageFacade {
             validateBaseExists(record.getBase());
             validateIdHasRecordBasePrefix(record.getBase(), record.getId());
             
+            String orgId = record.getId();
             if (record.getParentId() != null) { //Parent ID must belong to same collection and also validate
               validateIdHasRecordBasePrefix(record.getBase(), record.getParentId());
             }
             
             String idNorm = IdNormaliser.normaliseId(record.getId());
-            if (!record.getId().equals(idNorm)) {
-                record.setOrgid(record.getId()); //set this before changing value below
+            if (!orgId.equals(idNorm)) {
+                record.setOrgid(orgId); //set this before changing value below
                 record.setId(idNorm);                
                 record.setIdError(true);
+                log.warn("ID was normalized from:"+orgId + " to "+ idNorm);
             }
             
             if (record.getParentId() != null) { //Also normalize parentID
