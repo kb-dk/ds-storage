@@ -54,7 +54,7 @@ public class IdNormaliser {
 
         if (!validateID(id)) { //If this happen we probably have to fix this method
             log.error("Unable to normalize id:"+orgId);      
-            throw new InvalidArgumentServiceException("ID contains invalid characters that could not be replaced during normalisation:"+orgId);
+            throw new InvalidArgumentServiceException("ID  syntax was not valid normalisation could not correct it:"+orgId);
         }
                 
         return id;         

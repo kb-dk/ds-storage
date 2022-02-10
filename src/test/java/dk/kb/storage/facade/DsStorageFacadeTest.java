@@ -58,7 +58,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     public void testCreateAndUpdate() throws Exception {
         //TODO rescribe flow below
 
-        DsRecordDto r1 = DsStorageFacade.getRecord("does_not_exist");
+        DsRecordDto r1 = DsStorageFacade.getRecord("test.base:does_not_exist");
         Assertions.assertTrue(r1 == null);
 
         String id ="doms.radio:id1";
@@ -137,7 +137,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
      * 
      *   The 4 record bases defined in yaml used the config
      *
-    - name: recordbase.stategy.none   
+    - name: recordbase.strategy.none   
       update_strategy: NONE
 
     - name: recordbase.strategy.all    
@@ -155,25 +155,25 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     @Test
     public void testUpdateStrategy_NONE() throws Exception {
-        createTestHierachyParentAndTwoChildren("recordbase.stategy.none");
-        DsRecordDto parentBefore = DsStorageFacade.getRecord("recordbase.stategy.none:parent");
-        DsRecordDto child1Before = DsStorageFacade.getRecord("recordbase.stategy.none:child1");
-        DsRecordDto child2Before = DsStorageFacade.getRecord("recordbase.stategy.none:child2");
+        createTestHierachyParentAndTwoChildren("recordbase.strategy.none");
+        DsRecordDto parentBefore = DsStorageFacade.getRecord("recordbase.strategy.none:parent");
+        DsRecordDto child1Before = DsStorageFacade.getRecord("recordbase.strategy.none:child1");
+        DsRecordDto child2Before = DsStorageFacade.getRecord("recordbase.strategy.none:child2");
 
         //Update parent
         parentBefore.setData("parent updated");     
         DsStorageFacade.createOrUpdateRecord(parentBefore);
 
-        DsRecordDto child1After = DsStorageFacade.getRecord("recordbase.stategy.none:child1");
+        DsRecordDto child1After = DsStorageFacade.getRecord("recordbase.strategy.none:child1");
 
         //test that child1 does not have changed mTime
         Assertions.assertEquals(child1Before.getmTime(), child1After.getmTime());
 
         //update child2 and test parent is not touched.
         child2Before.setData("child2 updated");
-        parentBefore = DsStorageFacade.getRecord("recordbase.stategy.none:parent");
+        parentBefore = DsStorageFacade.getRecord("recordbase.strategy.none:parent");
         DsStorageFacade.createOrUpdateRecord(child2Before);     
-        DsRecordDto parentAfter = DsStorageFacade.getRecord("recordbase.stategy.none:parent");
+        DsRecordDto parentAfter = DsStorageFacade.getRecord("recordbase.strategy.none:parent");
         Assertions.assertEquals(parentBefore.getmTime(), parentAfter.getmTime());     
     }
 
@@ -254,8 +254,9 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     @Test
     public void testIdStartsWithRecordBase() throws Exception {
-        String id ="id1";
-        String base="recordbase.stategy.none";      
+        String id ="recordbase.unknown:id1";
+        String base="recordbase.strategy.none";      
+        
         String data = "Hello";
         
         DsRecordDto record = new DsRecordDto();
@@ -267,16 +268,17 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
             Assertions.fail("Should fail with recordId does not have recordBase as prefix");    
         }
         catch(Exception e) { //ignore   
-
         }
-         id =base+id;
+         
+        id ="recordbase.strategy.none:id1";
          record.setId(id);
          try {
             DsStorageFacade.createOrUpdateRecord(record );
           //ignore
         }
-        catch(Exception e) {    
-            Assertions.fail("Should not fail since recordId now has recordBase as prefix");
+        catch(Exception e) {
+            e.printStackTrace();
+            Assertions.fail("Should not fail since recordId now has recordBase as prefix",e);
         }
               
     }
