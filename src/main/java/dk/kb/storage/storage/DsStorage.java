@@ -102,7 +102,7 @@ public class DsStorage implements AutoCloseable {
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
 
-    private static String baseStatisticsStatement = "SELECT " + BASE_COLUMN + " ,COUNT(*) AS COUNT ,  max("+MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + BASE_COLUMN;
+    private static String baseStatisticsStatement = "SELECT " + BASE_COLUMN + " ,COUNT(*) AS COUNT , SUM("+DELETED_COLUMN+") AS deleted,  max("+MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + BASE_COLUMN;
     private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE "+BASE_COLUMN +" = ? AND "+DELETED_COLUMN +" = 1" ;   
     private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";			
 
@@ -319,9 +319,11 @@ public class DsStorage implements AutoCloseable {
                     RecordBaseCountDto baseStats = new RecordBaseCountDto();                    
                     String base = rs.getString(BASE_COLUMN);
                     long count = rs.getLong("COUNT");
+                    long deleted = rs.getLong("DELETED");
                     long lastMTime = rs.getLong("MAX");
                     baseStats.setRecordBase(base);                    
                     baseStats.setCount(count);
+                    baseStats.setDeleted(deleted);
                     baseCountList.add(baseStats);
                     baseStats.setLatestMTime(lastMTime);
                     baseStats.setLastMTimeHuman(convertToHumanDate(lastMTime));                    

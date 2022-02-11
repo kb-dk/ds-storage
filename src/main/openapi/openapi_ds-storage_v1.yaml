@@ -212,6 +212,10 @@ components:
           type: integer
           format: int64
           description: 'Number of records for each record base. This will also include records marked with delete flag'
+        deleted:
+          type: integer
+          format: int64
+          description: 'The number of records marked with deleted flag for that recordbase'
         latestMTime:
           type: integer
           format: int64
