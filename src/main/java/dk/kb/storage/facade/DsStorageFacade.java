@@ -72,7 +72,7 @@ public class DsStorageFacade {
             //Load children. This can be optimized  in SQL, but this is much simpler.
             // Are children even needed here? Will improve performance a lot.
             for (DsRecordDto record : records) {
-                record.setChildren(storage.getChildrenIds(record.getId()));
+                record.setChildrenIds(storage.getChildrenIds(record.getId()));
             }
             return records;
         });
@@ -92,7 +92,7 @@ public class DsStorageFacade {
 
             if (record.getParentId() == null) { //can not have children if also has parent (1 level only hieracy)
                 ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
-                record.setChildren(childrenIds);
+                record.setChildrenIds(childrenIds);
             }
             return record;
         });

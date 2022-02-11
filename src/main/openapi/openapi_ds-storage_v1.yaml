@@ -262,7 +262,7 @@ components:
         mTimeHuman:
           type: string
           description: 'Modification time for last create or update of the record in date format YYYY-MM-DD HH:mm:ssZ'
-        children:
+        childrenIds:
           type: array
           items:
             type: string
