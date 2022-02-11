@@ -153,9 +153,10 @@ paths:
             format: int64  
         - name: batchSize
           in: query
-          description: 'batch size. Values between 1 and 10000 are allowed'
-          required: true
+          description: 'batch size. Values between 1 and 10000 are allowed. Default is 1000'
+          required: false
           schema:
+            default: 1000
             type: integer
             format: int32                 
             
