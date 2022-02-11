@@ -147,18 +147,19 @@ paths:
         - name: mTime
           in: query
           description: 'mTime. Format is millis with 3 added digits. It is up to the caller to keep track of mTime when batching the extracting for retrieval between seperate calls'
-          required: true
+          required: false
           schema:
             type: integer
             format: int64  
+            default: 0
         - name: batchSize
           in: query
           description: 'batch size. Values between 1 and 10000 are allowed. Default is 1000'
           required: false
           schema:
-            default: 1000
             type: integer
             format: int32                 
+            default: 1000
             
       responses:
         '200':
