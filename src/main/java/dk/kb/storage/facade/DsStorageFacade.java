@@ -259,7 +259,13 @@ public class DsStorageFacade {
             T result;
             try {
                 result = action.process(storage);
-            } catch (Exception e) {
+            }
+            catch(InvalidArgumentServiceException e) {
+                log.warn("Exception performing action '{}'. Initiating rollback", actionID, e.getMessage());
+                storage.rollback();
+                throw new InvalidArgumentServiceException(e);                
+            }            
+            catch (Exception e) {
                 log.warn("Exception performing action '{}'. Initiating rollback", actionID, e);
                 storage.rollback();
                 throw new InternalServiceException(e);
