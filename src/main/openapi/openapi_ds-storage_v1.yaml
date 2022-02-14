@@ -16,7 +16,7 @@ servers:
 
 paths:
   
-  /getBasesConfiguration:
+  /bases/config/:
     get:
       tags:
         - '${project.name}'
@@ -31,7 +31,22 @@ paths:
                 $ref: '#/components/schemas/RecordBaseList'
 
 
-  /getRecord:
+  /bases/stats/:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Show how many records in each recordbase'
+      operationId: getRecordBaseStatistics    
+      responses:
+        '200':
+          description: 'Show how many records exists for each record base'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordBaseCountList'
+
+
+  /record/get/:
     get:
       tags:
         - '${project.name}'
@@ -52,7 +67,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DsRecord'
 
-  /markRecordForDelete:
+  /record/:
     delete:
       tags:
         - '${project.name}'
@@ -74,7 +89,7 @@ paths:
                 type: integer
                 format: int32          
 
-  /deleteMarkedForDelete:
+  /bases/cleanup/:
     delete:
       tags:
         - '${project.name}'
@@ -96,7 +111,7 @@ paths:
                 type: integer
                 format: int32          
                     
-  /createOrUpdateRecord:
+  /record/createOrUpdateRecord/:
     post:
       tags:
         - '${project.name}'    
@@ -116,22 +131,8 @@ paths:
         '200':
           description: OK
 
-  /getRecordBaseStatistics:
-    get:
-      tags:
-        - '${project.name}'
-      summary: 'Show how many records in each recordbase'
-      operationId: getRecordBaseStatistics    
-      responses:
-        '200':
-          description: 'Show how many records exists for each record base'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RecordBaseCountList'
-
-
-  /getRecordsModifiedAfter:
+  
+  /record/records/:
     get:
       tags:
         - '${project.name}'

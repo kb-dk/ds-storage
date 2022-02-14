@@ -126,7 +126,7 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     }
     
     @Override
-    public void createOrUpdateRecordPost(DsRecordDto dsRecordDto) {
+    public void recordCreateOrUpdateRecordPost(DsRecordDto dsRecordDto) {
         try {
             DsStorageFacade.createOrUpdateRecord(dsRecordDto);
             
@@ -192,8 +192,6 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
         }
     }
 
-
-   
 
 
 }
