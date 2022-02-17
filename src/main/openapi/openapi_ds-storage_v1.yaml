@@ -16,7 +16,7 @@ servers:
 
 paths:
   
-  /bases/config/:
+  /bases/config:
     get:
       tags:
         - '${project.name}'
@@ -31,7 +31,7 @@ paths:
                 $ref: '#/components/schemas/RecordBaseList'
 
 
-  /bases/stats/:
+  /bases/stats:
     get:
       tags:
         - '${project.name}'
@@ -46,7 +46,7 @@ paths:
                 $ref: '#/components/schemas/RecordBaseCountList'
 
 
-  /record/get/:
+  /record/get:
     get:
       tags:
         - '${project.name}'
@@ -67,7 +67,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DsRecord'
 
-  /record/:
+  /record:
     delete:
       tags:
         - '${project.name}'
@@ -111,7 +111,7 @@ paths:
                 type: integer
                 format: int32          
                     
-  /record/createOrUpdateRecord/:
+  /record/createOrUpdateRecord:
     post:
       tags:
         - '${project.name}'    
@@ -132,7 +132,7 @@ paths:
           description: OK
 
   
-  /record/records/:
+  /record/records:
     get:
       tags:
         - '${project.name}'
