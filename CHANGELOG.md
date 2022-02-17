@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.2.0] - 2022-02-XX
+### Added
+API service methods renamed (url's).
+    
+#### ID normalisation                     
+If a record contains a invalid character after the recordbase part, it will be normalised and the invalid characters will be replaced.
+The original (invalid) id will be stored in the 'orgid' field and flagged for invalid id. Having the original id will make it possible
+to track it back to the collection it came from. The record can still be retrieved and updated using the invalid id, but also by the normalised id.
+Regexp for recordbase: ([a-z0-9.]+)       
+Regexp for id: ([a-z0-9.]+):([a-zA-Z0-9:._-]+)
+    
+
+
 ## [1.1.0] - 2022-02-01
 ### Added
 Test release, nothing new
