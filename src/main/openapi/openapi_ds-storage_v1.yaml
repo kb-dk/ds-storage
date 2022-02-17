@@ -233,7 +233,7 @@ components:
       properties:
         id:
           type: string
-          description: 'Unique identifier for the record'
+          description: 'Unique identifier for the record. Id must start with the recordbase followed by : See module description for more about ID naming convention'
         orgid:
           type: string
           description: 'Will contain the original ID if the ID format was not valid (invalid characters) and has been changed. '
@@ -242,7 +242,7 @@ components:
           description: 'Indicate if the orgininal ID format was invalid'
         base:
           type: string
-          description: 'Collection name where the record comes from'
+          description: 'Collection name where the record comes from. Lower characters and dot(.) allowed only.'
         deleted:
           type: boolean
           description: 'Mark the record as deleted'
