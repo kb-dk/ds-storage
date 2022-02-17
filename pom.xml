@@ -37,7 +37,7 @@
     The id must start with the recordbase followed by colon (:). The part after recordbase must only contain of upper of lower case letters, digits and
     the following characters:  : . _ -
         
-    Regexp for recordbase:([a-z0-9.]+)
+    Regexp for recordbase: ([a-z0-9.]+)
     
     
     Regexp for id: ([a-z0-9.]+):([a-zA-Z0-9:._-]+)
