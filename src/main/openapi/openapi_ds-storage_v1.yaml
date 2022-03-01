@@ -46,7 +46,7 @@ paths:
                 $ref: '#/components/schemas/RecordBaseCountList'
 
 
-  /record:
+  /record/{id}:
     get:
       tags:
         - '${project.name}'
@@ -54,7 +54,7 @@ paths:
       operationId: getRecord
       parameters:
         - name: id
-          in: query
+          in: path
           description: 'Record ID'
           required: true
           schema:
@@ -74,7 +74,7 @@ paths:
       operationId: markRecordForDelete
       parameters:
         - name: id
-          in: query
+          in: path
           description: 'Record ID'
           required: true
           schema:
