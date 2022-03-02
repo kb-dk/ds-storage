@@ -22,7 +22,7 @@ mvn jetty:run
 ```
 
 Unit tests and local jetty server uses a H2-database  with no installation of software required. Devel/stage/prod environment 
-uses a PostGreSQL server that must be installed and have the database tables created. (resources/ddl/create_ds_storage.ddl)
+uses a PostGreSQL server that must be installed and have the database tables created. [create_ds_storage.ddl](src/test/resources/ddl/create_ds_storage.ddl)
 
 
 ## Deploy to devel server
