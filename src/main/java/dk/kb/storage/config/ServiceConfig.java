@@ -23,7 +23,9 @@ import dk.kb.util.yaml.YAML;
 public class ServiceConfig {
 
 	  private static final Logger log = LoggerFactory.getLogger(ServiceConfig.class);
-	
+
+	  public static final int DB_BATCH_SIZE_DEFAULT = 100;
+
 	//key is basename
 	private static final HashMap<String,RecordBaseDto> allowedBases = new HashMap<String,RecordBaseDto>();
     
@@ -98,7 +100,11 @@ public class ServiceConfig {
 		String dbPassword= serviceConfig.getString("config.db.password");
 		return dbPassword;
 	}
-		
+
+	public static int getDBBatchSize() {
+		return serviceConfig.getInteger("config.db.batch.size", DB_BATCH_SIZE_DEFAULT);
+	}
+
 	public static HashMap<String, RecordBaseDto> getAllowedBases() {
 		return allowedBases;
 	}

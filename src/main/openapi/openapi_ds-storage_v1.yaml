@@ -135,8 +135,9 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Extract records from a record base after a given mTime and up to a defined batch size. The records are returned in sorted order by mTime increasing. Records marked for delete will also be returned.'
+      summary: 'Extract records from a record base after a given mTime and up to a defined maximum. The records are returned in sorted order by mTime increasing. Records marked for delete will also be returned.'
       operationId: getRecordsModifiedAfter  
+      x-streamingOutput: true
       parameters:
         - name: recordBase
           in: query
@@ -151,16 +152,18 @@ paths:
           schema:
             type: integer
             format: int64  
+            example: 0
             default: 0
-        - name: batchSize
+        - name: maxRecords
           in: query
-          description: 'batch size. Values between 1 and 10000 are allowed. Default is 1000'
+          description: 'Maximum number of records to return. -1 means no limit'
           required: false
           schema:
             type: integer
-            format: int32                 
+            format: int64
+            example: 1000
             default: 1000
-            
+
       responses:
         '200':
           description: 'List of DsRecords'
