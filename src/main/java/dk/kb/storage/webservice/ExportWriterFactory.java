@@ -71,14 +71,32 @@ public class ExportWriterFactory {
                     "Unable to determine streaming export format and default was null");
         }
 
-        streamFormat.setContentType(response);
+        return wrap(output, response, streamFormat, writeNulls, rootElement);
+    }
+
+    /**
+     * Wrap the given OutputStream and return an ExportWriter, serializing to the given export format.
+     * @param output      the destination stream.
+     * @param response    used for setting the proper contentType.
+     * @param format      the format to export to.
+     * @param writeNulls  if true, null-values are exported as {@code "key":null} for JSON and JSONL.
+     *                    If false, null-values are not stated.
+     *                    For CSV export this has no effect.
+     * @param rootElement the name of the outer element containing the data elements
+     *                    {@code <outer> <inner>1</inner> <inner>2</inner> ... </outer>}
+     *                    Only used with XML.
+     * @return
+     */
+    public static ExportWriter wrap(OutputStream output, HttpServletResponse response,
+                                    FORMAT format, boolean writeNulls, String rootElement) {
+        format.setContentType(response);
         Writer writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
-        switch (streamFormat) {
+        switch (format) {
             case jsonl: return new JSONStreamWriter(writer, JSONStreamWriter.FORMAT.jsonl, writeNulls);
             case json: return new JSONStreamWriter(writer, JSONStreamWriter.FORMAT.json, writeNulls);
             case xml: return new ExportXMLStreamWriter(writer, rootElement, writeNulls);
             case csv: return new CSVStreamWriter(writer);
-            default: throw new InternalServiceException("The export format '" + streamFormat + "' is unsupported");
+            default: throw new InternalServiceException("The export format '" + format + "' is unsupported");
         }
     }
 

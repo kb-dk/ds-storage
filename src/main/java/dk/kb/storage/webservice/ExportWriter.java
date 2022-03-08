@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 
 /**
  * Streaming export oriented Writer, acting as a base for serialising Jackson annotated classes such as the
@@ -64,6 +65,14 @@ public abstract class ExportWriter extends Writer {
      * @param annotatedObject a Jackson annotated Object.
      */
     public abstract void write(Object annotatedObject);
+
+    /**
+     * Write multiple Jackson annotated Objects to the stream.
+     * @param annotatedObjects zero or more Jackson annotated Objects.
+     */
+    public void writeAll(Collection<?> annotatedObjects) {
+        annotatedObjects.forEach(this::write);
+    }
 
     /**
      * The method {@link Json#mapper()} reuses the mapper instance which is a problem when adjusting the settings
