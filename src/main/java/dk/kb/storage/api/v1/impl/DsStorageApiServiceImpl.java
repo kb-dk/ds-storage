@@ -1,50 +1,28 @@
 package dk.kb.storage.api.v1.impl;
 
-import dk.kb.storage.api.v1.*;
+import dk.kb.storage.api.v1.DsStorageApi;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.ErrorDto;
 import dk.kb.storage.model.v1.RecordBaseCountDto;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import dk.kb.storage.model.v1.RecordBaseDto;
-import dk.kb.storage.storage.DsStorage;
-
-import dk.kb.storage.webservice.exception.ServiceException;
+import dk.kb.storage.webservice.ExportWriter;
+import dk.kb.storage.webservice.ExportWriterFactory;
 import dk.kb.storage.webservice.exception.InternalServiceException;
-
+import dk.kb.storage.webservice.exception.ServiceException;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Providers;
-import javax.ws.rs.core.MediaType;
-import org.apache.cxf.jaxrs.model.wadl.Description;
-import org.apache.cxf.jaxrs.model.wadl.DocTarget;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.apache.cxf.jaxrs.ext.multipart.*;
-
-import io.swagger.annotations.Api;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * ds-storage
@@ -112,19 +90,36 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
         }
 
     }
-    
-    
+
     @Override
-    public List<DsRecordDto> getRecordsModifiedAfter(String recordBase, Long mTime, Integer batchSize) {
+    public StreamingOutput getRecordsModifiedAfter(String recordBase, Long mTime, Long maxRecords) {
         try {
-            log.info("getRecordsModifiedAfter calles with parameters recordBase:{} mTime:{} batchSize:{}",recordBase,mTime,batchSize);
-            return DsStorageFacade.getRecordsModifiedAfter(recordBase, mTime, batchSize);
-        } catch (Exception e) {
+            log.info("getRecordsModifiedAfter called with parameters recordBase:{} mTime:{} maxRecords:{} batchSize:{}",
+                     recordBase, mTime, maxRecords, ServiceConfig.getDBBatchSize());
+
+            String filename = "records_" + mTime + ".json";
+            if (maxRecords <= 2) { // The Swagger GUI is extremely sluggish for inline rendering
+                // A few records is ok to show inline in the Swagger GUI:
+                // Show inline in Swagger UI, inline when opened directly in browser
+                httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"" + filename + "\"");
+            } else {
+                // When there are a lot of records, they should not be displayed inline in the OpenAPI GUI:
+                // Show download link in Swagger UI, inline when opened directly in browser
+                // https://github.com/swagger-api/swagger-ui/issues/3832
+                httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
+            }
+
+            return output -> {
+                try (ExportWriter writer = ExportWriterFactory.wrap(
+                        output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
+                    DsStorageFacade.getRecordsModifiedAfter(writer, recordBase, mTime, maxRecords, ServiceConfig.getDBBatchSize());
+                }
+            };
+        } catch (Exception e){
             throw handleException(e);
         }
-
     }
-    
+
     @Override
     public void recordCreateOrUpdateRecordPost(DsRecordDto dsRecordDto) {
         try {

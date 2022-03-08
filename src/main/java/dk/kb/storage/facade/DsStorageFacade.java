@@ -3,7 +3,9 @@ package dk.kb.storage.facade;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 
+import dk.kb.storage.webservice.ExportWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,18 +66,27 @@ public class DsStorageFacade {
     }
 
 
-    public static ArrayList<DsRecordDto> getRecordsModifiedAfter(String recordBase, long mTime, int batchSize) {
-        String id = String.format(Locale.ROOT, "getRecordsModifiedAfter(recordBase='%s', mTime=%d, batchSize=%d)",
-                                  recordBase, mTime, batchSize);
-        return performStorageAction(id, storage -> {
-            ArrayList<DsRecordDto> records = storage.getRecordsModifiedAfter(recordBase, mTime, batchSize);
-            //Load children. This can be optimized  in SQL, but this is much simpler.
-            // Are children even needed here? Will improve performance a lot.
-            for (DsRecordDto record : records) {
-                record.setChildrenIds(storage.getChildrenIds(record.getId()));
+    public static void getRecordsModifiedAfter(
+            ExportWriter writer, String recordBase, long mTime, long maxRecords, int batchSize) {
+        String id = String.format(Locale.ROOT, "writeRecordsModifiedAfter(recordBase='%s', mTime=%d, maxRecords=%d, batchSize=%d)",
+                                  recordBase, mTime, maxRecords, batchSize);
+        long pending = maxRecords == -1 ? Long.MAX_VALUE : maxRecords; // -1 = all records
+        final AtomicLong lastMTime = new AtomicLong(mTime);
+        while (pending > 0) {
+            int request = pending < batchSize ? (int) pending : batchSize;
+            long delivered = performStorageAction(id, storage -> {
+                ArrayList<DsRecordDto> records = storage.getRecordsModifiedAfter(recordBase, lastMTime.get(), request);
+                writer.writeAll(records);
+                if (!records.isEmpty()) {
+                    lastMTime.set(records.get(records.size()-1).getmTime());
+                }
+                return (long)records.size();
+            });
+            if (delivered == 0) {
+                break;
             }
-            return records;
-        });
+            pending -= delivered;
+        }
     }
 
     /*
