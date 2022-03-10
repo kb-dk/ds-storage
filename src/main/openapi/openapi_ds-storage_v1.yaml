@@ -153,7 +153,8 @@ paths:
             type: integer
             format: int64  
             example: 0
-            default: 0
+            # Default values for longs does not work with the current version of OpenAPI generator
+            #default: 0
         - name: maxRecords
           in: query
           description: 'Maximum number of records to return. -1 means no limit'
@@ -162,7 +163,8 @@ paths:
             type: integer
             format: int64
             example: 1000
-            default: 1000
+            # Default values for longs does not work with the current version of OpenAPI generator
+            #default: 1000
 
       responses:
         '200':

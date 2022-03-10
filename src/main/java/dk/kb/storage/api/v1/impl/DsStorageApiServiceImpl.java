@@ -93,6 +93,15 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
 
     @Override
     public StreamingOutput getRecordsModifiedAfter(String recordBase, Long mTime, Long maxRecords) {
+        // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
+        // the OpenAPI generator does not support defaults for longs (int64)
+        if (mTime == null) {
+            mTime = 0L;
+        }
+        if (maxRecords == null) {
+            maxRecords = 1000L;
+        }
+        
         try {
             log.info("getRecordsModifiedAfter called with parameters recordBase:{} mTime:{} maxRecords:{} batchSize:{}",
                      recordBase, mTime, maxRecords, ServiceConfig.getDBBatchSize());
