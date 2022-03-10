@@ -93,12 +93,17 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
 
     @Override
     public StreamingOutput getRecordsModifiedAfter(String recordBase, Long mTime, Long maxRecords) {
+        // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
+        // the OpenAPI generator does not support defaults for longs (int64)
+        long finalMTime = mTime == null ? 0L : mTime;
+        long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
+
         try {
             log.info("getRecordsModifiedAfter called with parameters recordBase:{} mTime:{} maxRecords:{} batchSize:{}",
-                     recordBase, mTime, maxRecords, ServiceConfig.getDBBatchSize());
+                     recordBase, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
 
-            String filename = "records_" + mTime + ".json";
-            if (maxRecords <= 2) { // The Swagger GUI is extremely sluggish for inline rendering
+            String filename = "records_" + finalMTime + ".json";
+            if (finalMaxRecords <= 2) { // The Swagger GUI is extremely sluggish for inline rendering
                 // A few records is ok to show inline in the Swagger GUI:
                 // Show inline in Swagger UI, inline when opened directly in browser
                 httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"" + filename + "\"");
@@ -112,7 +117,7 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
                         output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
-                    DsStorageFacade.getRecordsModifiedAfter(writer, recordBase, mTime, maxRecords, ServiceConfig.getDBBatchSize());
+                    DsStorageFacade.getRecordsModifiedAfter(writer, recordBase, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
                 }
             };
         } catch (Exception e){
