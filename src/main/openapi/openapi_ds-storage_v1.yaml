@@ -113,7 +113,7 @@ paths:
 
            
                     
-  /record/createOrUpdateRecord:
+  /record:
     post:
       tags:
         - '${project.name}'    
@@ -134,7 +134,7 @@ paths:
           description: OK
 
   
-  /record/records:
+  /records:
     get:
       tags:
         - '${project.name}'
