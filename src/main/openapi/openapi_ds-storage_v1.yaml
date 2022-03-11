@@ -46,6 +46,29 @@ paths:
                 $ref: '#/components/schemas/RecordBaseCountList'
 
 
+  /bases/cleanup:
+    delete:
+      tags:
+        - '${project.name}'
+      summary: 'Delete all records for a recordbase that has deleted flag set. Notice that applications retrieving records from that recordbase will never know the record was deleted unless they retrieved it when it was marked with the delete flag.'
+      operationId: deleteMarkedForDelete
+      parameters:
+        - name: recordBase
+          in: query
+          description: 'recordBase'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+
+
   /record/{id}:
     get:
       tags:
@@ -88,27 +111,7 @@ paths:
                 type: integer
                 format: int32          
 
-  /bases/cleanup/:
-    delete:
-      tags:
-        - '${project.name}'
-      summary: 'Delete all records for a recordbase that has deleted flag set. Notice that applications retrieving records from that recordbase will never know the record was deleted unless they retrieved it when it was marked with the delete flag.'
-      operationId: deleteMarkedForDelete
-      parameters:
-        - name: recordBase
-          in: query
-          description: 'recordBase'
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int32          
+           
                     
   /record/createOrUpdateRecord:
     post:
