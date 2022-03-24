@@ -6,7 +6,7 @@ Ds-storage is a storage for metadata to describe objects in collections.
 The metadata format is UTF-8 encoded but format can be anything from text,XML,JSON etc. depending on the metadata format for that collection.
 The basic idea behind ds-storage is a single access point to metadata describing objects belonging to many different collections. Having a simple API to 
 store and retrieve the records. Instead of integrating to wide range of different APIs located on different servers, the ds-storage offers
-a unified API for all of them and is optimized for retrieving a specific record very fast.
+a unified API for all of them and is optimized for retrieving a specific record very fast. 
     
 ## Records
 Objects in ds-storage are called records. A record has a metadata field that is UTF-8 encoded. The value of the metadata will typical be same as
