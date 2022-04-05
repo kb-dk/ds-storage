@@ -29,10 +29,8 @@ public class DsStorageFacade {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
             validateBaseExists(record.getBase());
             validateIdHasRecordBasePrefix(record.getBase(), record.getId());
-
             
-//trigger compile error
-XXX X          String orgId = record.getId();
+            String orgId = record.getId();
             if (record.getParentId() != null) { //Parent ID must belong to same collection and also validate
               validateIdHasRecordBasePrefix(record.getBase(), record.getParentId());
             }
