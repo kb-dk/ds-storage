@@ -32,7 +32,7 @@ public class DsStorageFacade {
 
             
 //trigger compile error
-XXX            String orgId = record.getId();
+XXX X          String orgId = record.getId();
             if (record.getParentId() != null) { //Parent ID must belong to same collection and also validate
               validateIdHasRecordBasePrefix(record.getBase(), record.getParentId());
             }
