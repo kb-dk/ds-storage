@@ -72,7 +72,7 @@ The H2 will be created if does not exists and data will be persistent between se
 mvn jetty:run
 ```
 ## Swagger UI
-The Swagger UI is available at <http://localhost:8080/ds-storage/api/>, providing access to both the `v1` and the 
+The Swagger UI is available at <http://localhost:9072/ds-storage/api/>, providing access to both the `v1` and the 
 `devel` versions of the GUI. 
 
 
