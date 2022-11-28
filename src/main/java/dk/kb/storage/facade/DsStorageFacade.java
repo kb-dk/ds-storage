@@ -3,7 +3,9 @@ package dk.kb.storage.facade;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
 
+import dk.kb.storage.webservice.ExportWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +15,7 @@ import dk.kb.storage.model.v1.RecordBaseCountDto;
 import dk.kb.storage.model.v1.RecordBaseDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.storage.DsStorage;
+import dk.kb.storage.util.IdNormaliser;
 import dk.kb.storage.webservice.exception.InternalServiceException;
 import dk.kb.storage.webservice.exception.InvalidArgumentServiceException;
 
@@ -26,6 +29,23 @@ public class DsStorageFacade {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
             validateBaseExists(record.getBase());
             validateIdHasRecordBasePrefix(record.getBase(), record.getId());
+            
+            String orgId = record.getId();
+            if (record.getParentId() != null) { //Parent ID must belong to same collection and also validate
+              validateIdHasRecordBasePrefix(record.getBase(), record.getParentId());
+            }
+            
+            String idNorm = IdNormaliser.normaliseId(record.getId());
+            if (!orgId.equals(idNorm)) {
+                record.setOrgid(orgId); //set this before changing value below
+                record.setId(idNorm);                
+                record.setIdError(true);
+                log.warn("ID was normalized from:"+orgId + " to "+ idNorm);
+            }
+            
+            if (record.getParentId() != null) { //Also normalize parentID
+                record.setParentId(IdNormaliser.normaliseId(record.getParentId()));                
+            }            
             
             boolean recordExists = storage.recordExists(record.getId());
             if (recordExists) {
@@ -46,18 +66,27 @@ public class DsStorageFacade {
     }
 
 
-    public static ArrayList<DsRecordDto> getRecordsModifiedAfter(String recordBase, long mTime, int batchSize) {
-        String id = String.format(Locale.ROOT, "getRecordsModifiedAfter(recordBase='%s', mTime=%d, batchSize=%d)",
-                                  recordBase, mTime, batchSize);
-        return performStorageAction(id, storage -> {
-            ArrayList<DsRecordDto> records = storage.getRecordsModifiedAfter(recordBase, mTime, batchSize);
-            //Load children. This can be optimized  in SQL, but this is much simpler.
-            // Are children even needed here? Will improve performance a lot.
-            for (DsRecordDto record : records) {
-                record.setChildren(storage.getChildrenIds(record.getId()));
+    public static void getRecordsModifiedAfter(
+            ExportWriter writer, String recordBase, long mTime, long maxRecords, int batchSize) {
+        String id = String.format(Locale.ROOT, "writeRecordsModifiedAfter(recordBase='%s', mTime=%d, maxRecords=%d, batchSize=%d)",
+                                  recordBase, mTime, maxRecords, batchSize);
+        long pending = maxRecords == -1 ? Long.MAX_VALUE : maxRecords; // -1 = all records
+        final AtomicLong lastMTime = new AtomicLong(mTime);
+        while (pending > 0) {
+            int request = pending < batchSize ? (int) pending : batchSize;
+            long delivered = performStorageAction(id, storage -> {
+                ArrayList<DsRecordDto> records = storage.getRecordsModifiedAfter(recordBase, lastMTime.get(), request);
+                writer.writeAll(records);
+                if (!records.isEmpty()) {
+                    lastMTime.set(records.get(records.size()-1).getmTime());
+                }
+                return (long)records.size();
+            });
+            if (delivered == 0) {
+                break;
             }
-            return records;
-        });
+            pending -= delivered;
+        }
     }
 
     /*
@@ -66,14 +95,15 @@ public class DsStorageFacade {
      */
     public static DsRecordDto getRecord(String recordId) {
         return performStorageAction("getRecord(" + recordId + ")", storage -> {
-            DsRecordDto record = storage.loadRecord(recordId);
+        String idNorm = IdNormaliser.normaliseId(recordId);
+            DsRecordDto record = storage.loadRecord(idNorm);
             if (record== null) {
                 return null;
             }
 
             if (record.getParentId() == null) { //can not have children if also has parent (1 level only hieracy)
                 ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
-                record.setChildren(childrenIds);
+                record.setChildrenIds(childrenIds);
             }
             return record;
         });
@@ -83,8 +113,10 @@ public class DsStorageFacade {
     public static Integer markRecordForDelete(String recordId) {
         //TODO touch children etc.
         return performStorageAction("markRecordForDelete(" + recordId + ")", storage -> {
-            int updated = storage.markRecordForDelete(recordId);
+            String idNorm = IdNormaliser.normaliseId(recordId);            
+            int updated = storage.markRecordForDelete(idNorm);
             updateMTimeForParentChild(storage,recordId);
+            log.info("Record marked for delete:"+recordId);
             return updated;
         });
     }
@@ -111,6 +143,9 @@ public class DsStorageFacade {
      */
     private static void updateMTimeForParentChild(DsStorage storage,String recordId) throws Exception{
         DsRecordDto record=  storage.loadRecord(recordId); //Notice for performancing tuning, recordDto this can sometimes be given to the method. No premature optimization...
+        if (record==null) { //Can happen when marking records for delete and record is not in storage.            
+            return;            
+        }
         RecordBaseDto recordBase = ServiceConfig.getAllowedBases().get(record.getBase());       
         UpdateStrategyDto updateStrategy = recordBase.getUpdateStrategy();
 
@@ -208,15 +243,14 @@ public class DsStorageFacade {
             throw new InvalidArgumentServiceException("Unknown record base:"+base);
         }
     }
-
-    
+   
     /**
      * Check that the recordId starts with the recordbase as prefix
      * @param base base name.
      */
     private static void validateIdHasRecordBasePrefix(String base, String recordId) {
         if (!recordId.startsWith(base)) {
-            throw new InvalidArgumentServiceException("RecordId must have recordbase as prefix. Id:"+recordId);
+            throw new InvalidArgumentServiceException("Id must have recordbase as prefix. Id:"+recordId);
         }
     }
     
@@ -236,7 +270,13 @@ public class DsStorageFacade {
             T result;
             try {
                 result = action.process(storage);
-            } catch (Exception e) {
+            }
+            catch(InvalidArgumentServiceException e) {
+                log.warn("Exception performing action '{}'. Initiating rollback", actionID, e.getMessage());
+                storage.rollback();
+                throw new InvalidArgumentServiceException(e);                
+            }            
+            catch (Exception e) {
                 log.warn("Exception performing action '{}'. Initiating rollback", actionID, e);
                 storage.rollback();
                 throw new InternalServiceException(e);

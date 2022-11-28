@@ -22,7 +22,7 @@ mvn jetty:run
 ```
 
 Unit tests and local jetty server uses a H2-database  with no installation of software required. Devel/stage/prod environment 
-uses a PostGreSQL server that must be installed and have the database tables created. (resources/ddl/create_ds_storage.ddl)
+uses a PostGreSQL server that must be installed and have the database tables created. [create_ds_storage.ddl](src/test/resources/ddl/create_ds_storage.ddl)
 
 
 ## Deploy to devel server
@@ -32,7 +32,7 @@ uses a PostGreSQL server that must be installed and have the database tables cre
 ```
 
 
-The Swagger UI is available at <http://localhost:8080/ds-storage/api/>, providing access to the `v1` version of the GUI. 
+The Swagger UI is available at <http://localhost:9072/ds-storage/api/>, providing access to the `v1` version of the GUI. 
 
 ## java webapp template structure
 
@@ -55,7 +55,7 @@ repositories. To guard against this, `conf/ds-storage-environment.yaml` is added
 
 Jetty is a servlet container (like Tomcat) that is often used for testing during development.
 
-This project can be started with `mvn jetty:run`, which will expose a webserver with the implemented service at port 8080.
+This project can be started with `mvn jetty:run`, which will expose a webserver with the implemented service at port 9072.
 If it is started in debug mode from an IDE (normally IntelliJ IDEA), breakpoints and all the usual debug functionality
 will be available.
 
@@ -88,7 +88,7 @@ and also uploaded to nexus as part of the release procedure. The tar-ball contai
 
 For smaller projects or standalone web applications, it can be useful to bundle the user interface with the API 
 implementation: Files and folders added to the `src/main/webapp/` folder are served under 
-[http://localhost:8080/<application-ID>/](http://localhost:8080/<application-ID>/).
+[http://localhost:9072/<application-ID>/](http://localhost:9072/<application-ID>/).
 
 While it is possible to use [JSP](https://en.wikipedia.org/wiki/Jakarta_Server_Pages), as the sample 
 [index.jsp](./src/main/webapp/index.jsp) shows, this is considered legacy technology.
@@ -157,7 +157,7 @@ should
     `*ServiceImpl` import)
   * Add a new `servlet` and a new `servlet-mapping` for the new `Application` in `src/main/webapp/WEB-INF/web.xml`  
   * Add the path to the new OpenAPI YAML to `urls` in `webapp/api/index.html`. The first entry in the array is the
-    default when visiting the main API-page at <http://localhost:8080/ds-storage/api/>  
+    default when visiting the main API-page at <http://localhost:9072/ds-storage/api/>  
 
 After a `mvn package`, a skeleton implementation for the new version of the API class will be created in the source
 tree. The standard action is to copy the implementation for the previous version to the new one and adjust from there.  

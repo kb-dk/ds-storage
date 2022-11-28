@@ -13,6 +13,7 @@ import javax.servlet.ServletContextListener;
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.storage.DsStorage;
+import dk.kb.storage.util.H2DbUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,13 +58,30 @@ public class ContextListener implements ServletContextListener {
      * Must be called after properties are initialized
      */
     public void initialiseStorage() {
-        log.info("Initializing storage");
-    	DsStorage.initialize(
-    			ServiceConfig.getDBDriver(),
-    			ServiceConfig.getDBUrl(),
-    			ServiceConfig.getDBUserName(),
-    			ServiceConfig.getDBPassword()
-    	);                
+       log.info("Initializing storage");
+      	
+       String driver = ServiceConfig.getDBDriver();
+      	String url = ServiceConfig.getDBUrl();
+      	String user = ServiceConfig.getDBUserName();
+      	String password = ServiceConfig.getDBPassword();
+      	      	      	
+      	//If running jetty for development
+      	if ("org.h2.Driver".equals(driver)) { //Would be slightly better if we can detect it is jetty in local environment
+        	createLocalH2ForJettyEnvironment(driver, url, user, password);
+      	}
+      	
+       DsStorage.initialize(driver,url,user,password);                        
+    }
+
+
+    private void createLocalH2ForJettyEnvironment(String driver, String url, String user, String password) {
+        try {
+         log.info("Setting up H2 database under jetty in development mode");          
+      	  H2DbUtil.createEmptyH2DBFromDDL(url, driver,  user, password);
+      	}
+      	catch(Exception e) {
+      	  log.error("Unable to create local h2 database for jetty environment",e);        	    
+     	 }
     }
     
 

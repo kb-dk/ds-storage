@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
+import dk.kb.storage.util.H2DbUtil;
 import dk.kb.util.Resolver;
 
 
@@ -28,7 +29,7 @@ import dk.kb.util.Resolver;
  */
 public abstract class DsStorageUnitTestUtil {
 
-    protected static final String CREATE_TABLES_DDL_FILE = "ddl/create_ds_storage_h2_unittest.ddl";
+    
 
     protected static final String DRIVER = "org.h2.Driver";
 
@@ -47,7 +48,7 @@ public abstract class DsStorageUnitTestUtil {
     public static void beforeClass() throws Exception {
 
         ServiceConfig.initialize("conf/ds-storage*.yaml"); 	    
-        createEmptyDBFromDDL();
+        H2DbUtil.createEmptyH2DBFromDDL(URL,DRIVER,USERNAME,PASSWORD);
         DsStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
         storage = new DsStorage();
 
@@ -75,55 +76,6 @@ public abstract class DsStorageUnitTestUtil {
 
     }
 
-
-
-    protected static void createEmptyDBFromDDL() throws Exception {
-        //  Instead of deleting h2 database completely, we reuse the table between unittests instead.
-        //	doDelete(new File(TEST_CLASSES_PATH +"/h2"));
-        try {
-            Class.forName(DRIVER); // load the driver
-        } catch (ClassNotFoundException e) {
-
-            throw new SQLException(e);
-        }
-
-        try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD)){
-            File file = getFile(CREATE_TABLES_DDL_FILE);
-            log.info("Running DDL script:" + file.getAbsolutePath());
-
-            if (!file.exists()) {
-                log.error("DDL script not found:" + file.getAbsolutePath());
-                throw new RuntimeException("DDL Script file not found:" + file.getAbsolutePath());
-            }
-
-            connection.createStatement().execute("RUNSCRIPT FROM '" + file.getAbsolutePath() + "'");
-            connection.createStatement().execute("SHUTDOWN");
-        }
-        catch(Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    
-    //Use KB-util to resolve file. 
-    protected static File getFile(String resource) throws IOException {
-       return Resolver.getPathFromClasspath(resource).toFile(); 
-    }
-
-/*
-    // file.delete does not work for a directory unless it is empty. hence this method
-    protected static void doDelete(File file) {
-        try {
-            FileUtils.deleteDirectory(file); //Will delete recursive
-        }
-        catch(Exception e) {
-            log.error("failed to delete h2-folder from unittest.",e.getMessage());
-
-        }
-
-    }
-*/
 
 
 

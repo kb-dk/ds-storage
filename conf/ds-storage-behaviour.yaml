@@ -8,19 +8,22 @@
 
 config:
   # update_strategy must match enums defined in open API
+  # RecordBase names must match regexp: a-z][0-9][.] 
   allowed_bases:
-    - name: doms_radio
+    - name: doms.radio
       update_strategy: CHILD
-    - name: doms_aviser
+    - name: doms.aviser
       update_strategy: PARENT
-    - name: recordBase_stategy_none
+    - name: recordbase.strategy.none
       update_strategy: NONE
-    - name: recordBase_strategy_all
+    - name: recordbase.strategy.all
       update_strategy: ALL
-    - name: recordBase_strategy_child
+    - name: recordbase.strategy.child
       update_strategy: CHILD
-    - name: recordBase_strategy_parent
+    - name: recordbase.strategy.parent
       update_strategy: PARENT
+    - name: pvica.devel
+      update_strategy: ALL  
       
   #change URL path to local h2 storage for unittest   
   db:  
@@ -29,6 +32,10 @@ config:
    username: ''
    password: ''
    
-   
+   # Example for postgres
+   #url: jdbc:postgresql://localhost:5432/ds-storage
+   #driver: org.postgresql.Driver
+   #username: username
+   #password: password
    
    

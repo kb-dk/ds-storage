@@ -33,12 +33,12 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         //TODO rescribe flow below
 
         //Test record not exist
-        assertFalse(storage.recordExists("unknown_id"));
+        assertFalse(storage.recordExists("base:unknown"));
 
-        String id ="id1";
-        String base="base_test";	    	
+        String id ="base.test:id1";
+        String base="base.test";	    	
         String data = "Hello";
-        String parentId="id_1_parent";
+        String parentId="base.test:id_1_parent";
 
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
@@ -64,7 +64,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         //Now update
 
         String dataUpdate = "Hello updated";
-        String parentIdUpdated="id_2_parent";
+        String parentIdUpdated="base.test:id_2_parent";
         long cTimeBefore = recordLoaded.getcTime(); //Must be the same
 
         record.setData(dataUpdate);
@@ -105,12 +105,12 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
 
         //delete if marked for delete.
-        int deleted = storage.deleteMarkedForDelete("base_test");
+        int deleted = storage.deleteMarkedForDelete("base.test");
         Assertions.assertEquals(0,deleted); //Was not marked for deletes
 
         //Mark record for delete again
         storage.markRecordForDelete(id);
-        deleted = storage.deleteMarkedForDelete("base_test");
+        deleted = storage.deleteMarkedForDelete("base.test");
         Assertions.assertEquals(1,deleted); //Now it is deleted
 
         DsRecordDto deletedReally = storage.loadRecord(id);
@@ -120,71 +120,71 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
     @Test
     public void testGetModifiedAfterParentsOnly() throws Exception {	    
-        String parentId="mega_parent_id";	          	        
+        String parentId="test.base:mega_parent_id";	          	        
         long before = UniqueTimestampGenerator.next();
 
 
-        createMegaParent(parentId);	
+        createMegaParent(parentId,"test.base");	
 
-        ArrayList<DsRecordDto> list1 = storage.getModifiedAfterParentsOnly("does_not_exist", before, 100);
+        ArrayList<DsRecordDto> list1 = storage.getModifiedAfterParentsOnly("test.base:does_not_exist", before, 100);
         assertEquals(0, list1.size());
 
 
-        ArrayList<DsRecordDto> list2 = storage.getModifiedAfterParentsOnly("test_base", before, 100);
+        ArrayList<DsRecordDto> list2 = storage.getModifiedAfterParentsOnly("test.base", before, 100);
         assertEquals(1, list2.size());
 
         //Noone after last
         long lastModified = list2.get(0).getmTime();
 
-        ArrayList<DsRecordDto> list3 = storage.getModifiedAfterParentsOnly("test_base", lastModified, 100);
+        ArrayList<DsRecordDto> list3 = storage.getModifiedAfterParentsOnly("test.base", lastModified, 100);
         assertEquals(0, list3.size());	    	 	    	 	    	 
     }
 
 
     @Test
     public void testGetModifiedAfterChildrenOnly() throws Exception {	    
-        String parentId="mega_parent_id";	          	        
+        String parentId="test.base:mega_parent_id";	          	        
         long before = UniqueTimestampGenerator.next();
 
-        createMegaParent(parentId);	
+        createMegaParent(parentId,"test.base");	
 
-        ArrayList<DsRecordDto> list1 = storage.getModifiedAfterChildrenOnly("does_not_exist", before, 1000);
+        ArrayList<DsRecordDto> list1 = storage.getModifiedAfterChildrenOnly("test.base.unknown", before, 1000);
         assertEquals(0, list1.size());	    	 
 
-        ArrayList<DsRecordDto> list2 = storage.getModifiedAfterChildrenOnly("test_base", before, 1000);
+        ArrayList<DsRecordDto> list2 = storage.getModifiedAfterChildrenOnly("test.base", before, 1000);
         assertEquals(1000, list2.size());
 
         //Noone after last
         long lastModified = list2.get(999).getmTime();
 
-        ArrayList<DsRecordDto> list3 = storage.getModifiedAfterChildrenOnly("test_base", lastModified, 1000);
+        ArrayList<DsRecordDto> list3 = storage.getModifiedAfterChildrenOnly("test.base", lastModified, 1000);
         assertEquals(0, list3.size());
 
         //Test Pagination (cursor)
         //only get 500
-        ArrayList<DsRecordDto> list4 = storage.getModifiedAfterChildrenOnly("test_base", before, 500);
+        ArrayList<DsRecordDto> list4 = storage.getModifiedAfterChildrenOnly("test.base", before, 500);
         assertEquals(500, list4.size());
 
         //get next 500
         long nextTime = list4.get(499).getmTime();	    
-        ArrayList<DsRecordDto> list5 = storage.getModifiedAfterChildrenOnly("test_base", nextTime, 500);
+        ArrayList<DsRecordDto> list5 = storage.getModifiedAfterChildrenOnly("test.base", nextTime, 500);
         assertEquals(500, list5.size());
 
         //And no more
         nextTime = list5.get(499).getmTime();	    	 
-        ArrayList<DsRecordDto> list6 = storage.getModifiedAfterChildrenOnly("test_base", nextTime, 500);
+        ArrayList<DsRecordDto> list6 = storage.getModifiedAfterChildrenOnly("test.base", nextTime, 500);
         assertEquals(0, list6.size());	    	 
     }
 
 
     @Test
     public void testGetModifiedAfter() throws Exception {	    
-        String parentId="mega_parent_id";	          	        
+        String parentId="test.base:mega_parent_id";	          	        
         long before = UniqueTimestampGenerator.next();
 
-        createMegaParent(parentId);	
+        createMegaParent(parentId,"test.base");	
 
-        ArrayList<DsRecordDto> list1 = storage.getRecordsModifiedAfter("test_base", before, 10000);
+        ArrayList<DsRecordDto> list1 = storage.getRecordsModifiedAfter("test.base", before, 10000);
         assertEquals(1001, list1.size()); //100 children +1 parent	    	 	    		    
     }	    
 
@@ -194,7 +194,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     @Test
     public void testManyChildren1K() throws Exception{	    		    		   
         String parentId="mega_parent_id";	  
-        createMegaParent(parentId);
+        createMegaParent(parentId,"test.base");
 
         ArrayList<String> childIds = storage.getChildrenIds(parentId);
         assertEquals(1000, childIds.size());	        	      
@@ -203,21 +203,21 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     /*
      * Created a record with 1000 children
      */
-    private void createMegaParent(String id)  throws Exception{
+    private void createMegaParent(String id,String base)  throws Exception{
 
 
         DsRecordDto megaParent = new DsRecordDto();
         megaParent.setId(id);
-        megaParent.setBase("test_base");
-        megaParent.setData("mega parent data");
+        megaParent.setBase(base);
+        megaParent.setData("mega_parent_data");
         megaParent.setParentId(null);
 
         storage.createNewRecord(megaParent);
 
         for (int i=1;i<=1000;i++){	        
             DsRecordDto child = new DsRecordDto();
-            child.setId("child"+i);
-            child.setBase("test_base");
+            child.setId(base+":child"+i);
+            child.setBase(base);
             child.setData("child data "+i);
             child.setParentId(id);
 
