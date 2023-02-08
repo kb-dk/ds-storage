@@ -8,8 +8,7 @@ import dk.kb.storage.model.v1.RecordBaseCountDto;
 import dk.kb.storage.model.v1.RecordBaseDto;
 import dk.kb.storage.webservice.ExportWriter;
 import dk.kb.storage.webservice.ExportWriterFactory;
-import dk.kb.storage.webservice.exception.InternalServiceException;
-import dk.kb.storage.webservice.exception.ServiceException;
+import dk.kb.util.webservice.ImplBase;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,12 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +35,7 @@ import java.util.List;
  * ds-storage by the Royal Danish Library
  *
  */
-public class DsStorageApiServiceImpl implements DsStorageApi {
+public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     private Logger log = LoggerFactory.getLogger(this.toString());
 
     /*
@@ -78,6 +82,8 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     @Override
     public List<RecordBaseDto> getBasesConfiguration() {
         try {
+            log.debug("getBasesConfiguration() called with call details: {}", getCallDetails());
+
             //TODO MOVE TO FACEDE
             List<RecordBaseDto> basesList = new ArrayList<RecordBaseDto>();
             HashMap<String, RecordBaseDto> allowedBases = ServiceConfig.getAllowedBases();
@@ -93,14 +99,14 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
 
     @Override
     public StreamingOutput getRecordsModifiedAfter(String recordBase, Long mTime, Long maxRecords) {
-        // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
-        // the OpenAPI generator does not support defaults for longs (int64)
-        long finalMTime = mTime == null ? 0L : mTime;
-        long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
-
         try {
-            log.info("getRecordsModifiedAfter called with parameters recordBase:{} mTime:{} maxRecords:{} batchSize:{}",
-                     recordBase, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
+            log.debug("getRecordsModifiedAfter(recordBase='{}', mTime={}, maxRecords={}) with batchSize={} " +
+                      "called with call details: {}",
+                      recordBase, mTime, maxRecords, ServiceConfig.getDBBatchSize(), getCallDetails());
+            // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
+            // the OpenAPI generator does not support defaults for longs (int64)
+            long finalMTime = mTime == null ? 0L : mTime;
+            long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
 
             String filename = "records_" + finalMTime + ".json";
             if (finalMaxRecords <= 2) { // The Swagger GUI is extremely sluggish for inline rendering
@@ -128,9 +134,9 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     @Override
     public void recordPost(DsRecordDto dsRecordDto) {
         try {
+            log.debug("recordPost(record.base='{}', record.id='{}', ...) called with call details: {}",
+                      dsRecordDto.getBase(), dsRecordDto.getId(), getCallDetails());
             DsStorageFacade.createOrUpdateRecord(dsRecordDto);
-            
-        
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -140,6 +146,7 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     @Override
     public DsRecordDto getRecord(String id) {
         try {
+            log.debug("getRecord(id='{}') called with call details: {}", id, getCallDetails());
             return DsStorageFacade.getRecord(id);
         } catch (Exception e) {
             throw handleException(e);
@@ -150,6 +157,7 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     @Override
     public Integer markRecordForDelete(String id) {
         try {
+            log.debug("markRecordForDelete(id='{}') called with call details: {}", id, getCallDetails());
             return DsStorageFacade.markRecordForDelete(id);
         } catch (Exception e) {
             throw handleException(e);
@@ -160,6 +168,8 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     @Override
     public Integer deleteMarkedForDelete(String recordBase) {
         try {
+            log.debug("deleteMarkedForDelete(recordBase='{}') called with call details: {}",
+                      recordBase, getCallDetails());
             return DsStorageFacade.deleteMarkedForDelete(recordBase);
         } catch (Exception e) {
             throw handleException(e);
@@ -169,29 +179,11 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
     @Override
     public  List<RecordBaseCountDto> getRecordBaseStatistics() {
         try {
-         return DsStorageFacade.getRecordBaseStatistics();
+            log.debug("getRecordBaseStatistics() called with call details: {}", getCallDetails());
+            return DsStorageFacade.getRecordBaseStatistics();
         } catch (Exception e) {
             throw handleException(e);
         }
     }
-    
-    
-    /**
-     * This method simply converts any Exception into a Service exception
-     * 
-     * @param e: Any kind of exception
-     * @return A ServiceException
-     * @see dk.kb.storage.webservice.ServiceExceptionMapper
-     */
-    private ServiceException handleException(Exception e) {
-        if (e instanceof ServiceException) {
-            return (ServiceException) e; // Do nothing - this is a declared ServiceException from within module.
-        } else {// Unforseen exception (should not happen). Wrap in internal service exception
-            log.error("ServiceException(HTTP 500):", e); // You probably want to log this.
-            return new InternalServiceException(e.getMessage());
-        }
-    }
-
-
 
 }
