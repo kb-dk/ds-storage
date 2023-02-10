@@ -156,7 +156,15 @@ public class DsStorageApiServiceImpl implements DsStorageApi {
         }
     }
 
-    
+    /**
+     * Service endpoint to check if service is reachable.
+     * @return string "pong" if service is reachable
+     */
+    @Override
+    public String ping() {
+        return "pong";
+    }
+
     @Override
     public Integer deleteMarkedForDelete(String recordBase) {
         try {
