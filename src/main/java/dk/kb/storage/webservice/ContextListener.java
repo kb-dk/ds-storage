@@ -1,6 +1,9 @@
 package dk.kb.storage.webservice;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -15,6 +18,7 @@ import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.util.H2DbUtil;
 
+import dk.kb.util.BuildInfoManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +41,15 @@ public class ContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         try {
-            log.info("Initializing service v{}", getClass().getPackage().getImplementationVersion());
+            RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
+            if (mxBean.getInputArguments().stream().noneMatch(arg -> arg.startsWith("-Xmx"))) {
+                log.warn("Xmx is not specified. In stage or production this is almost always an error");
+            }
+
+            log.info("Initializing service {} {} build {} using Java {} with max heap {}MB on machine {}",
+                     BuildInfoManager.getName(), BuildInfoManager.getVersion(), BuildInfoManager.getBuildTime(),
+                     System.getProperty("java.version"), Runtime.getRuntime().maxMemory()/1048576,
+                     InetAddress.getLocalHost().getHostName());
             InitialContext ctx = new InitialContext();
             String configFile = (String) ctx.lookup("java:/comp/env/application-config");
             //TODO this should not refer to something in template. Should we perhaps use reflection here?
