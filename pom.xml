@@ -531,7 +531,7 @@
                         </manifest>
                     </archive>
 
-                    <!--This is really just to get an artifact containing ds-storage-openapi_v1.yaml-->
+                    <!-- Will generate a jar file with classes-->
                     <attachClasses>true</attachClasses>
 
                     <!--Enable maven filtering for the web.xml-->
