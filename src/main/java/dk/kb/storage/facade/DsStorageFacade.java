@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 
-import dk.kb.storage.webservice.ExportWriter;
+import dk.kb.util.webservice.stream.ExportWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +16,8 @@ import dk.kb.storage.model.v1.RecordBaseDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.util.IdNormaliser;
-import dk.kb.storage.webservice.exception.InternalServiceException;
-import dk.kb.storage.webservice.exception.InvalidArgumentServiceException;
+import dk.kb.util.webservice.exception.InternalServiceException;
+import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
 
 
 
@@ -305,7 +305,7 @@ public class DsStorageFacade {
         /**
          * Access or modify the given storage inside of a transaction.
          * If the method throws an exception, it will be logged, a {@link DsStorage#rollback()} will be performed and
-         * a wrapping {@link dk.kb.storage.webservice.exception.ServiceException} will be thrown.
+         * a wrapping {@link dk.kb.util.webservice.exception.ServiceException} will be thrown.
          * @param storage a storage ready for requests and updates.
          * @return custom return value.
          * @throws Exception if something went wrong.
