@@ -549,7 +549,7 @@
                             <directory>${project.build.outputDirectory}</directory>
                             <targetPath>.</targetPath>
                             <includes>
-                                <include>ds-storage-openapi_v1.yaml</include>
+                                <include>ds-storage-openapi_v1.json</include>
                                 <include>ds-storage-openapi_v1.yaml</include>
                             </includes>
                         </resource>
