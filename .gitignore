@@ -12,3 +12,4 @@ README_OLD.md
 conf/ds-storage-environment.yaml
 conf/ds-storage-local.yaml
 setup_project.sh
+/.openapi-generator-ignore

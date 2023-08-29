@@ -144,7 +144,7 @@ public class DsStorage implements AutoCloseable {
 
         INITDATE = new Date();
 
-        log.info("DsStorage initialized");
+        log.info("DsStorage initialized with driverName='{}', driverURL='{}'", driverName, driverUrl);
     }
 
     public DsStorage() throws SQLException {

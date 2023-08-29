@@ -24,18 +24,24 @@ config:
       update_strategy: PARENT
     - name: pvica.devel
       update_strategy: ALL  
-      
-  #change URL path to local h2 storage for unittest   
-  db:  
-   url: jdbc:h2:/home/XXX/workspace/ds-storage/target/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
-   driver: org.h2.Driver
-   username: ''
-   password: ''
+    - name : ds.samlingsbilleder
+      update_strategy: NONE
+    - name : ds.maps
+      update_strategy: NONE
+
+  db:
+    # In production this will always be PostgreSQL
+    # Only use H2 for smaller-scale (a million records max) test setups
+    url: jdbc:h2:/tmp/h2_ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    # url: jdbc:h2:/home/XXX/workspace/ds-storage/target/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    driver: org.h2.Driver
+    username: ''
+    password: ''
    
-   # Example for postgres
-   #url: jdbc:postgresql://localhost:5432/ds-storage
-   #driver: org.postgresql.Driver
-   #username: username
-   #password: password
+    # Example for postgres
+    #url: jdbc:postgresql://localhost:5432/ds-storage
+    #driver: org.postgresql.Driver
+    #username: username
+    #password: password
    
    

@@ -6,8 +6,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dk.kb.storage.config.ServiceConfig;
-import dk.kb.storage.webservice.exception.InvalidArgumentServiceException;
+import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
 
 public class IdNormaliser {
 
