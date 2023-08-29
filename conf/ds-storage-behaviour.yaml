@@ -22,7 +22,7 @@ config:
       update_strategy: CHILD
     - name: recordbase.strategy.parent
       update_strategy: PARENT
-    - name: pvica.devel
+    - name: ds.radiotv
       update_strategy: ALL  
     - name : ds.samlingsbilleder
       update_strategy: NONE
@@ -32,7 +32,7 @@ config:
   db:
     # In production this will always be PostgreSQL
     # Only use H2 for smaller-scale (a million records max) test setups
-    url: jdbc:h2:/tmp/h2_ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    url: jdbc:h2:${env:TMPDIR:-/tmp}/h2_ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
     # url: jdbc:h2:/home/XXX/workspace/ds-storage/target/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
     driver: org.h2.Driver
     username: ''
