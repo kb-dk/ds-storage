@@ -45,6 +45,7 @@ public class ServiceConfig {
 	 */
 	public static synchronized void initialize(String configFile) throws IOException {
 		serviceConfig = YAML.resolveLayeredConfigs(configFile);
+		serviceConfig.setExtrapolate(true);
 		loadAllowedBases();
 	}
 
