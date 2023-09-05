@@ -8,8 +8,8 @@
 
 config:
   # update_strategy must match enums defined in open API
-  # RecordBase names must match regexp: a-z][0-9][.] 
-  allowed_bases:
+  # Origin names must match regexp: a-z][0-9][.] 
+  allowed_origins:
     - name: doms.radio
       update_strategy: CHILD
     - name: doms.aviser

@@ -57,7 +57,7 @@ public class ServiceConfig {
 
 	private static void loadAllowedOrigins() throws IOException{
 
-		List<YAML> origins = serviceConfig.getYAMLList("config.allowed_bases");
+		List<YAML> origins = serviceConfig.getYAMLList("config.allowed_origins");
 		//Load updtateStategy for each
 		for (YAML origin: origins) {
 			String name = origin.getString("name");
@@ -70,10 +70,10 @@ public class ServiceConfig {
 			originDto.setName(name);
 			originDto.setUpdateStrategy(UpdateStrategyDto.valueOf(updateStrategy));                	
 			allowedOrigins.put(name, originDto);
-            log.info("Updatestrategy loaded for recordbase:"+originDto.getName()  +" with update strategy:"+originDto.getUpdateStrategy());
+            log.info("Updatestrategy loaded for origin:"+originDto.getName()  +" with update strategy:"+originDto.getUpdateStrategy());
 		}
 
-		log.info("Allowed bases loaded from config. Number of bases:"+allowedOrigins.size());
+		log.info("Allowed origin loaded from config. Number of origins:"+allowedOrigins.size());
 		
 	}
 
