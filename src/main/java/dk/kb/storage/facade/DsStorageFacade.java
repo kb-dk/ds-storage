@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.RecordBaseCountDto;
-import dk.kb.storage.model.v1.RecordBaseDto;
+import dk.kb.storage.model.v1.OriginCountDto;
+import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.util.IdNormaliser;
@@ -27,12 +27,12 @@ public class DsStorageFacade {
 
     public static void createOrUpdateRecord(DsRecordDto record)  {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
-            validateBaseExists(record.getBase());
-            validateIdHasRecordBasePrefix(record.getBase(), record.getId());
+            validateOriginExists(record.getOrigin());
+            validateIdHasOriginPrefix(record.getOrigin(), record.getId());
             
             String orgId = record.getId();
             if (record.getParentId() != null) { //Parent ID must belong to same collection and also validate
-              validateIdHasRecordBasePrefix(record.getBase(), record.getParentId());
+              validateIdHasOriginPrefix(record.getOrigin(), record.getParentId());
             }
             
             String idNorm = IdNormaliser.normaliseId(record.getId());
@@ -61,21 +61,21 @@ public class DsStorageFacade {
     }
 
 
-    public static ArrayList<RecordBaseCountDto> getRecordBaseStatistics() {
-        return performStorageAction("getRecordBaseStatistics", DsStorage::getBaseStatictics);
+    public static ArrayList<OriginCountDto> getOriginStatistics() {
+        return performStorageAction("getOriginStatistics", DsStorage::getOriginStatictics);
     }
 
 
     public static void getRecordsModifiedAfter(
-            ExportWriter writer, String recordBase, long mTime, long maxRecords, int batchSize) {
-        String id = String.format(Locale.ROOT, "writeRecordsModifiedAfter(recordBase='%s', mTime=%d, maxRecords=%d, batchSize=%d)",
-                                  recordBase, mTime, maxRecords, batchSize);
+            ExportWriter writer, String origin, long mTime, long maxRecords, int batchSize) {
+        String id = String.format(Locale.ROOT, "writeRecordsModifiedAfter(origin='%s', mTime=%d, maxRecords=%d, batchSize=%d)",
+                                  origin, mTime, maxRecords, batchSize);
         long pending = maxRecords == -1 ? Long.MAX_VALUE : maxRecords; // -1 = all records
         final AtomicLong lastMTime = new AtomicLong(mTime);
         while (pending > 0) {
             int request = pending < batchSize ? (int) pending : batchSize;
             long delivered = performStorageAction(id, storage -> {
-                ArrayList<DsRecordDto> records = storage.getRecordsModifiedAfter(recordBase, lastMTime.get(), request);
+                ArrayList<DsRecordDto> records = storage.getRecordsModifiedAfter(origin, lastMTime.get(), request);
                 writer.writeAll(records);
                 if (!records.isEmpty()) {
                     lastMTime.set(records.get(records.size()-1).getmTime());
@@ -122,12 +122,12 @@ public class DsStorageFacade {
     }
 
 
-    public static int deleteMarkedForDelete(String recordBase) {
-        return performStorageAction("deleteMarkedForDelete(" + recordBase + ")", storage -> {
-            validateBaseExists(recordBase);
+    public static int deleteMarkedForDelete(String origin) {
+        return performStorageAction("deleteMarkedForDelete(" + origin + ")", storage -> {
+            validateOriginExists(origin);
 
-            int numberDeleted =  storage.deleteMarkedForDelete(recordBase);
-            log.info("Delete marked for delete records for recordbase:"+recordBase +" number deleted:"+numberDeleted);
+            int numberDeleted =  storage.deleteMarkedForDelete(origin);
+            log.info("Delete marked for delete records for origin:"+origin +" number deleted:"+numberDeleted);
             //We are not touching parent/children relation when deleting for real.
             return numberDeleted;
         });
@@ -135,7 +135,7 @@ public class DsStorageFacade {
 
     /*
      * This is called when ever a record is modified (create/update/markfordelete). The recordId here
-     * has already been assigned a new mTime. Update mTime for parent and/or children according to  update strategy for that base.
+     * has already been assigned a new mTime. Update mTime for parent and/or children according to  update strategy for that origin.
      * 
      * This method will not commit/rollback as this is handled by the calling metod. 
      * 
@@ -146,8 +146,8 @@ public class DsStorageFacade {
         if (record==null) { //Can happen when marking records for delete and record is not in storage.            
             return;            
         }
-        RecordBaseDto recordBase = ServiceConfig.getAllowedBases().get(record.getBase());       
-        UpdateStrategyDto updateStrategy = recordBase.getUpdateStrategy();
+        OriginDto origin = ServiceConfig.getAllowedOrigins().get(record.getOrigin());       
+        UpdateStrategyDto updateStrategy = origin.getUpdateStrategy();
 
         log.info("Updating parent/child relation for recordId:"+recordId +" with updateStrategy:"+updateStrategy);
 
@@ -235,22 +235,24 @@ public class DsStorageFacade {
     }
 
     /**
-     * Check that the given base is defined in the setup.
-     * @param base base name.
+     * Check that the given origin is defined in the setup.
+     * @param origin name.
      */
-    private static void validateBaseExists(String base) {
-        if (ServiceConfig.getAllowedBases().get(base) == null) {
-            throw new InvalidArgumentServiceException("Unknown record base:"+base);
+    private static void validateOriginExists(String origin) {
+        if (ServiceConfig.getAllowedOrigins().get(origin) == null) {
+            System.out.println("origins:"+ServiceConfig.getAllowedOrigins());
+            
+            throw new InvalidArgumentServiceException("Unknown record origin: "+origin);
         }
     }
    
     /**
-     * Check that the recordId starts with the recordbase as prefix
-     * @param base base name.
+     * Check that the recordId starts with the origin as prefix
+     * @param origin name.
      */
-    private static void validateIdHasRecordBasePrefix(String base, String recordId) {
-        if (!recordId.startsWith(base)) {
-            throw new InvalidArgumentServiceException("Id must have recordbase as prefix. Id:"+recordId);
+    private static void validateIdHasOriginPrefix(String origin, String recordId) {
+        if (!recordId.startsWith(origin)) {
+            throw new InvalidArgumentServiceException("Id must have origin as prefix. Id:"+recordId);
         }
     }
     

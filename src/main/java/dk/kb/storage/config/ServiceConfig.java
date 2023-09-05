@@ -1,17 +1,13 @@
 package dk.kb.storage.config;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import dk.kb.storage.model.v1.RecordBaseDto;
+import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.util.IdNormaliser;
 import dk.kb.util.yaml.YAML;
@@ -26,8 +22,8 @@ public class ServiceConfig {
 
 	  public static final int DB_BATCH_SIZE_DEFAULT = 100;
 
-	//key is basename
-	private static final HashMap<String,RecordBaseDto> allowedBases = new HashMap<String,RecordBaseDto>();
+	//key is origin
+	private static final HashMap<String,OriginDto> allowedOrigins = new HashMap<String,OriginDto>();
     
 	
 	/**
@@ -46,7 +42,7 @@ public class ServiceConfig {
 	public static synchronized void initialize(String configFile) throws IOException {
 		serviceConfig = YAML.resolveLayeredConfigs(configFile);
 		serviceConfig.setExtrapolate(true);
-		loadAllowedBases();
+		loadAllowedOrigins();
 	}
 
 	/**
@@ -59,25 +55,25 @@ public class ServiceConfig {
 		return lines;
 	}
 
-	private static void loadAllowedBases() throws IOException{
+	private static void loadAllowedOrigins() throws IOException{
 
-		List<YAML> bases = serviceConfig.getYAMLList("config.allowed_bases");
+		List<YAML> origins = serviceConfig.getYAMLList("config.allowed_bases");
 		//Load updtateStategy for each
-		for (YAML base: bases) {
-			String name = base.getString("name");
-			if (!IdNormaliser.validateRecordBase(name)) {
-			    throw new IOException("Configured recordBase: '"+name+"' does not validate to regexp for recordbase");			    
+		for (YAML origin: origins) {
+			String name = origin.getString("name");
+			if (!IdNormaliser.validateOrigin(name)) {
+			    throw new IOException("Configured origin: '"+name+"' does not validate to regexp for origin");			    
 			}
 			
-			String updateStrategy = base.getString("update_strategy");        
-			RecordBaseDto recordBase = new RecordBaseDto();
-			recordBase.setName(name);
-			recordBase.setUpdateStrategy(UpdateStrategyDto.valueOf(updateStrategy));                	
-			allowedBases.put(name, recordBase);
-            log.info("Updatestrategy loaded for recordbase:"+recordBase.getName()  +" with update strategy:"+recordBase.getUpdateStrategy());
+			String updateStrategy =origin.getString("update_strategy");        
+			OriginDto originDto = new OriginDto();
+			originDto.setName(name);
+			originDto.setUpdateStrategy(UpdateStrategyDto.valueOf(updateStrategy));                	
+			allowedOrigins.put(name, originDto);
+            log.info("Updatestrategy loaded for recordbase:"+originDto.getName()  +" with update strategy:"+originDto.getUpdateStrategy());
 		}
 
-		log.info("Allowed bases loaded from config. Number of bases:"+allowedBases.size());
+		log.info("Allowed bases loaded from config. Number of bases:"+allowedOrigins.size());
 		
 	}
 
@@ -106,8 +102,8 @@ public class ServiceConfig {
 		return serviceConfig.getInteger("config.db.batch.size", DB_BATCH_SIZE_DEFAULT);
 	}
 
-	public static HashMap<String, RecordBaseDto> getAllowedBases() {
-		return allowedBases;
+	public static HashMap<String, OriginDto> getAllowedOrigins() {
+		return allowedOrigins;
 	}
 
 	

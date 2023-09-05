@@ -15,8 +15,8 @@ public class IdNormaliser {
     private static final String regexpIdPattern="([a-z0-9.]+):([a-zA-Z0-9:._-]+)";
     private static final Pattern idPattern = Pattern.compile(regexpIdPattern);
     
-    private static final String regexpRecordBase="([a-z0-9.]+)";
-    private static final Pattern recordBasePattern = Pattern.compile(regexpRecordBase);
+    private static final String regexpOrigin="([a-z0-9.]+)";
+    private static final Pattern originPattern = Pattern.compile(regexpOrigin);
     
     
     private static final Pattern NO_GO = Pattern.compile("[^a-zA-Z0-9:._-]");
@@ -65,8 +65,8 @@ public class IdNormaliser {
         return m.matches();
     }
     
-    public static boolean validateRecordBase(String recordBase) {
-        Matcher m = recordBasePattern.matcher(recordBase);      
+    public static boolean validateOrigin(String origin) {
+        Matcher m = originPattern.matcher(origin);      
         return m.matches();
     }
     

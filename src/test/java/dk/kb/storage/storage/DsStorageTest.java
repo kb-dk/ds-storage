@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
@@ -16,9 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.RecordBaseCountDto;
+import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
 
@@ -33,16 +32,16 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         //TODO rescribe flow below
 
         //Test record not exist
-        assertFalse(storage.recordExists("base:unknown"));
+        assertFalse(storage.recordExists("origin:unknown"));
 
-        String id ="base.test:id1";
-        String base="base.test";	    	
+        String id ="origin.test:id1";
+        String origin="origin.test";	    	
         String data = "Hello";
-        String parentId="base.test:id_1_parent";
+        String parentId="origin.test:id_1_parent";
 
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
-        record.setBase(base);
+        record.setOrigin(origin);
         record.setData(data);
         record.setParentId(parentId);
         storage.createNewRecord(record );
@@ -54,7 +53,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         //Load and check values are correct
         DsRecordDto recordLoaded = storage.loadRecord(id);
         Assertions.assertEquals(id,recordLoaded.getId());
-        Assertions.assertEquals(base,recordLoaded.getBase());
+        Assertions.assertEquals(origin,recordLoaded.getOrigin());
         Assertions.assertFalse(recordLoaded.getDeleted());
         Assertions.assertEquals(parentId,record.getParentId());        
         Assertions.assertTrue(recordLoaded.getmTime() > 0);
@@ -64,7 +63,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         //Now update
 
         String dataUpdate = "Hello updated";
-        String parentIdUpdated="base.test:id_2_parent";
+        String parentIdUpdated="origin.test:id_2_parent";
         long cTimeBefore = recordLoaded.getcTime(); //Must be the same
 
         record.setData(dataUpdate);
@@ -76,7 +75,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         DsRecordDto recordUpdated = storage.loadRecord(id);
 
         Assertions.assertEquals(id,recordUpdated .getId());
-        Assertions.assertEquals(base,recordUpdated .getBase());
+        Assertions.assertEquals(origin,recordUpdated .getOrigin());
         Assertions.assertEquals(parentIdUpdated,record.getParentId());        
         Assertions.assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
         Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                	                           
@@ -105,12 +104,12 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
 
         //delete if marked for delete.
-        int deleted = storage.deleteMarkedForDelete("base.test");
+        int deleted = storage.deleteMarkedForDelete("origin.test");
         Assertions.assertEquals(0,deleted); //Was not marked for deletes
 
         //Mark record for delete again
         storage.markRecordForDelete(id);
-        deleted = storage.deleteMarkedForDelete("base.test");
+        deleted = storage.deleteMarkedForDelete("origin.test");
         Assertions.assertEquals(1,deleted); //Now it is deleted
 
         DsRecordDto deletedReally = storage.loadRecord(id);
@@ -120,71 +119,71 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
     @Test
     public void testGetModifiedAfterParentsOnly() throws Exception {	    
-        String parentId="test.base:mega_parent_id";	          	        
+        String parentId="test.origin:mega_parent_id";	          	        
         long before = UniqueTimestampGenerator.next();
 
 
-        createMegaParent(parentId,"test.base");	
+        createMegaParent(parentId,"test.origin");	
 
-        ArrayList<DsRecordDto> list1 = storage.getModifiedAfterParentsOnly("test.base:does_not_exist", before, 100);
+        ArrayList<DsRecordDto> list1 = storage.getModifiedAfterParentsOnly("test.origin:does_not_exist", before, 100);
         assertEquals(0, list1.size());
 
 
-        ArrayList<DsRecordDto> list2 = storage.getModifiedAfterParentsOnly("test.base", before, 100);
+        ArrayList<DsRecordDto> list2 = storage.getModifiedAfterParentsOnly("test.origin", before, 100);
         assertEquals(1, list2.size());
 
         //Noone after last
         long lastModified = list2.get(0).getmTime();
 
-        ArrayList<DsRecordDto> list3 = storage.getModifiedAfterParentsOnly("test.base", lastModified, 100);
+        ArrayList<DsRecordDto> list3 = storage.getModifiedAfterParentsOnly("test.origin", lastModified, 100);
         assertEquals(0, list3.size());	    	 	    	 	    	 
     }
 
 
     @Test
     public void testGetModifiedAfterChildrenOnly() throws Exception {	    
-        String parentId="test.base:mega_parent_id";	          	        
+        String parentId="test.origin:mega_parent_id";	          	        
         long before = UniqueTimestampGenerator.next();
 
-        createMegaParent(parentId,"test.base");	
+        createMegaParent(parentId,"test.origin");	
 
-        ArrayList<DsRecordDto> list1 = storage.getModifiedAfterChildrenOnly("test.base.unknown", before, 1000);
+        ArrayList<DsRecordDto> list1 = storage.getModifiedAfterChildrenOnly("test.origin.unknown", before, 1000);
         assertEquals(0, list1.size());	    	 
 
-        ArrayList<DsRecordDto> list2 = storage.getModifiedAfterChildrenOnly("test.base", before, 1000);
+        ArrayList<DsRecordDto> list2 = storage.getModifiedAfterChildrenOnly("test.origin", before, 1000);
         assertEquals(1000, list2.size());
 
         //Noone after last
         long lastModified = list2.get(999).getmTime();
 
-        ArrayList<DsRecordDto> list3 = storage.getModifiedAfterChildrenOnly("test.base", lastModified, 1000);
+        ArrayList<DsRecordDto> list3 = storage.getModifiedAfterChildrenOnly("test.origin", lastModified, 1000);
         assertEquals(0, list3.size());
 
         //Test Pagination (cursor)
         //only get 500
-        ArrayList<DsRecordDto> list4 = storage.getModifiedAfterChildrenOnly("test.base", before, 500);
+        ArrayList<DsRecordDto> list4 = storage.getModifiedAfterChildrenOnly("test.origin", before, 500);
         assertEquals(500, list4.size());
 
         //get next 500
         long nextTime = list4.get(499).getmTime();	    
-        ArrayList<DsRecordDto> list5 = storage.getModifiedAfterChildrenOnly("test.base", nextTime, 500);
+        ArrayList<DsRecordDto> list5 = storage.getModifiedAfterChildrenOnly("test.origin", nextTime, 500);
         assertEquals(500, list5.size());
 
         //And no more
         nextTime = list5.get(499).getmTime();	    	 
-        ArrayList<DsRecordDto> list6 = storage.getModifiedAfterChildrenOnly("test.base", nextTime, 500);
+        ArrayList<DsRecordDto> list6 = storage.getModifiedAfterChildrenOnly("test.origin", nextTime, 500);
         assertEquals(0, list6.size());	    	 
     }
 
 
     @Test
     public void testGetModifiedAfter() throws Exception {	    
-        String parentId="test.base:mega_parent_id";	          	        
+        String parentId="test.origin:mega_parent_id";	          	        
         long before = UniqueTimestampGenerator.next();
 
-        createMegaParent(parentId,"test.base");	
+        createMegaParent(parentId,"test.origin");	
 
-        ArrayList<DsRecordDto> list1 = storage.getRecordsModifiedAfter("test.base", before, 10000);
+        ArrayList<DsRecordDto> list1 = storage.getRecordsModifiedAfter("test.origin", before, 10000);
         assertEquals(1001, list1.size()); //100 children +1 parent	    	 	    		    
     }	    
 
@@ -194,7 +193,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     @Test
     public void testManyChildren1K() throws Exception{	    		    		   
         String parentId="mega_parent_id";	  
-        createMegaParent(parentId,"test.base");
+        createMegaParent(parentId,"test.origin");
 
         ArrayList<String> childIds = storage.getChildrenIds(parentId);
         assertEquals(1000, childIds.size());	        	      
@@ -203,12 +202,12 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     /*
      * Created a record with 1000 children
      */
-    private void createMegaParent(String id,String base)  throws Exception{
+    private void createMegaParent(String id,String origin)  throws Exception{
 
 
         DsRecordDto megaParent = new DsRecordDto();
         megaParent.setId(id);
-        megaParent.setBase(base);
+        megaParent.setOrigin(origin);
         megaParent.setData("mega_parent_data");
         megaParent.setParentId(null);
 
@@ -216,8 +215,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
         for (int i=1;i<=1000;i++){	        
             DsRecordDto child = new DsRecordDto();
-            child.setId(base+":child"+i);
-            child.setBase(base);
+            child.setId(origin+":child"+i);
+            child.setOrigin(origin);
             child.setData("child data "+i);
             child.setParentId(id);
 
@@ -228,50 +227,50 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     }
 
     @Test
-    public void testBaseStatistics() throws Exception{
+    public void testOriginStatistics() throws Exception{
 
-        //3 different bases. 2 records in of them 
+        //3 different origins. 2 records in of them 
         DsRecordDto r1 = new DsRecordDto();
         r1.setId("Id1"); //TODO 
-        r1.setBase("test_base1");
+        r1.setOrigin("test_origin1");
         r1.setData("id1 text");   				    	
         storage.createNewRecord(r1);
 
         DsRecordDto r2 = new DsRecordDto();
         r2.setId("Id2");
-        r2.setBase("test_base1");
+        r2.setOrigin("test_origin1");
         r2.setData("id2 text");   				    	
         storage.createNewRecord(r2);
 
         DsRecordDto r3 = new DsRecordDto();
         r3.setId("Id3");
-        r3.setBase("test_base2");
+        r3.setOrigin("test_origin2");
         r3.setData("id3 text");   				    	
         storage.createNewRecord(r3);
 
         DsRecordDto r4 = new DsRecordDto();
         r4.setId("Id4");
-        r4.setBase("test_base3");
+        r4.setOrigin("test_origin3");
         r4.setData("id4 text");   				    	
         storage.createNewRecord(r4);
 
-        ArrayList<RecordBaseCountDto> baseStatisticsList = storage.getBaseStatictics();
-        Comparator<RecordBaseCountDto> compareByRecordbase = Comparator.comparing( RecordBaseCountDto :: getRecordBase);
-        Collections.sort(baseStatisticsList, compareByRecordbase);
-        assertEquals(3,baseStatisticsList.size());
+        ArrayList<OriginCountDto> originStatisticsList = storage.getOriginStatictics();
+        Comparator<OriginCountDto> compareByOrigin = Comparator.comparing( OriginCountDto :: getOrigin);
+        Collections.sort(originStatisticsList, compareByOrigin);
+        assertEquals(3,originStatisticsList.size());
         //Sort so we know order
 
-        RecordBaseCountDto item0 = baseStatisticsList.get(0);
+        OriginCountDto item0 = originStatisticsList.get(0);
         assertEquals(2,item0.getCount());
-        assertEquals("test_base1",item0.getRecordBase());
+        assertEquals("test_origin1",item0.getOrigin());
 
-        RecordBaseCountDto item1 = baseStatisticsList.get(1);
+        OriginCountDto item1 = originStatisticsList.get(1);
         assertEquals(1,item1.getCount());
-        assertEquals("test_base2",item1.getRecordBase());
+        assertEquals("test_origin2",item1.getOrigin());
 
-        RecordBaseCountDto item2 = baseStatisticsList.get(2);
+        OriginCountDto item2 = originStatisticsList.get(2);
         assertEquals(1,item2.getCount());
-        assertEquals("test_base3",item2.getRecordBase());
+        assertEquals("test_origin3",item2.getOrigin());
 
     }
 

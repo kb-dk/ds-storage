@@ -14,13 +14,13 @@ config:
       update_strategy: CHILD
     - name: doms.aviser
       update_strategy: PARENT
-    - name: recordbase.strategy.none
+    - name: origin.strategy.none
       update_strategy: NONE
-    - name: recordbase.strategy.all
+    - name: origin.strategy.all
       update_strategy: ALL
-    - name: recordbase.strategy.child
+    - name: origin.strategy.child
       update_strategy: CHILD
-    - name: recordbase.strategy.parent
+    - name: origin.strategy.parent
       update_strategy: PARENT
     - name: ds.radiotv
       update_strategy: ALL  
