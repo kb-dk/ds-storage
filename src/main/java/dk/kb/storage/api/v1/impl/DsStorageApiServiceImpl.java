@@ -4,8 +4,8 @@ import dk.kb.storage.api.v1.DsStorageApi;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.RecordBaseCountDto;
-import dk.kb.storage.model.v1.RecordBaseDto;
+import dk.kb.storage.model.v1.OriginCountDto;
+import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.util.webservice.stream.ExportWriter;
 import dk.kb.util.webservice.stream.ExportWriterFactory;
 import dk.kb.util.webservice.ImplBase;
@@ -80,17 +80,17 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     private transient MessageContext messageContext;
 
     @Override
-    public List<RecordBaseDto> getBasesConfiguration() {
+    public List<OriginDto> getOriginConfiguration() {
         try {
-            log.debug("getBasesConfiguration() called with call details: {}", getCallDetails());
+            log.debug("getOriginConfiguration() called with call details: {}", getCallDetails());
 
             //TODO MOVE TO FACEDE
-            List<RecordBaseDto> basesList = new ArrayList<RecordBaseDto>();
-            HashMap<String, RecordBaseDto> allowedBases = ServiceConfig.getAllowedBases();
-            for (String baseName : allowedBases.keySet()) {
-                basesList.add(allowedBases.get(baseName));
+            List<OriginDto> originList = new ArrayList<OriginDto>();
+            HashMap<String, OriginDto> allowedOrigins = ServiceConfig.getAllowedOrigins();
+            for (String originName : allowedOrigins.keySet()) {
+                originList.add(allowedOrigins.get(originName));
             }
-            return basesList;
+            return originList;
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -98,11 +98,11 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     }
 
     @Override
-    public StreamingOutput getRecordsModifiedAfter(String recordBase, Long mTime, Long maxRecords) {
+    public StreamingOutput getRecordsModifiedAfter(String origin, Long mTime, Long maxRecords) {
         try {
-            log.debug("getRecordsModifiedAfter(recordBase='{}', mTime={}, maxRecords={}) with batchSize={} " +
+            log.debug("getRecordsModifiedAfter(origin='{}', mTime={}, maxRecords={}) with batchSize={} " +
                       "called with call details: {}",
-                      recordBase, mTime, maxRecords, ServiceConfig.getDBBatchSize(), getCallDetails());
+                      origin, mTime, maxRecords, ServiceConfig.getDBBatchSize(), getCallDetails());
             // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
             // the OpenAPI generator does not support defaults for longs (int64)
             long finalMTime = mTime == null ? 0L : mTime;
@@ -123,7 +123,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
                         output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
-                    DsStorageFacade.getRecordsModifiedAfter(writer, recordBase, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
+                    DsStorageFacade.getRecordsModifiedAfter(writer, origin, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
                 }
             };
         } catch (Exception e){
@@ -134,8 +134,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     @Override
     public void recordPost(DsRecordDto dsRecordDto) {
         try {
-            log.debug("recordPost(record.base='{}', record.id='{}', ...) called with call details: {}",
-                      dsRecordDto.getBase(), dsRecordDto.getId(), getCallDetails());
+            log.debug("recordPost(Origin='{}', record.id='{}', ...) called with call details: {}",
+                      dsRecordDto.getOrigin(), dsRecordDto.getId(), getCallDetails());
             DsStorageFacade.createOrUpdateRecord(dsRecordDto);
         } catch (Exception e) {
             throw handleException(e);
@@ -165,21 +165,21 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     }
 
     @Override
-    public Integer deleteMarkedForDelete(String recordBase) {
+    public Integer deleteMarkedForDelete(String origin) {
         try {
-            log.debug("deleteMarkedForDelete(recordBase='{}') called with call details: {}",
-                      recordBase, getCallDetails());
-            return DsStorageFacade.deleteMarkedForDelete(recordBase);
+            log.debug("deleteMarkedForDelete(origin'{}') called with call details: {}",
+                      origin, getCallDetails());
+            return DsStorageFacade.deleteMarkedForDelete(origin);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
     
     @Override
-    public  List<RecordBaseCountDto> getRecordBaseStatistics() {
+    public  List<OriginCountDto> getOriginStatistics() {
         try {
-            log.debug("getRecordBaseStatistics() called with call details: {}", getCallDetails());
-            return DsStorageFacade.getRecordBaseStatistics();
+            log.debug("getOriginStatistics() called with call details: {}", getCallDetails());
+            return DsStorageFacade.getOriginStatistics();
         } catch (Exception e) {
             throw handleException(e);
         }

@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.RecordBaseCountDto;
+import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
 
@@ -35,7 +35,7 @@ public class DsStorage implements AutoCloseable {
     private static final String ID_COLUMN = "id";
     private static final String ORGID_COLUMN = "orgid";
     private static final String IDERROR_COLUMN = "id_error";
-    private static final String BASE_COLUMN = "base";
+    private static final String ORIGIN_COLUMN = "origin";
     private static final String DELETED_COLUMN = "deleted";
     private static final String DATA_COLUMN = "data";
     private static final String CTIME_COLUMN = "ctime";
@@ -46,7 +46,7 @@ public class DsStorage implements AutoCloseable {
 
 
     private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
-            " (" + ID_COLUMN + ", " + BASE_COLUMN + ", " +ORGID_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
+            " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " +ORGID_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
             " VALUES (?,?,?,?,?,?,?,?,?)";
 
     private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+			 
@@ -81,14 +81,14 @@ public class DsStorage implements AutoCloseable {
    //TODO UUNITEST
     private static String recordsModifiedAfterStatement =
             "SELECT * FROM " + RECORDS_TABLE +
-            " WHERE " +BASE_COLUMN +"= ?" +
+            " WHERE " +ORIGIN_COLUMN +"= ?" +
             " AND "+MTIME_COLUMN+" > ?" +
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
     //SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 AND PARENTID IS NOT NULL ORDER BY mtime ASC LIMIT 100
     private static String recordsModifiedAfterChildrenOnlyStatement =
             "SELECT * FROM " + RECORDS_TABLE +
-            " WHERE +"+BASE_COLUMN +"= ?" +
+            " WHERE +"+ORIGIN_COLUMN +"= ?" +
             " AND "+MTIME_COLUMN+" > ?" +
             " AND "+PARENT_ID_COLUMN+" IS NOT NULL"+
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
@@ -96,14 +96,14 @@ public class DsStorage implements AutoCloseable {
     //SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 AND parentId IS NULL ORDER BY mtime ASC LIMIT 100	
     private static String recordsModifiedAfterParentsOnlyStatement =
             "SELECT * FROM " + RECORDS_TABLE +
-            " WHERE +"+BASE_COLUMN +"= ?" +
+            " WHERE +"+ORIGIN_COLUMN +"= ?" +
             " AND "+MTIME_COLUMN+" > ?" +
             " AND "+PARENT_ID_COLUMN+" IS NULL"+
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
 
-    private static String baseStatisticsStatement = "SELECT " + BASE_COLUMN + " ,COUNT(*) AS COUNT , SUM("+DELETED_COLUMN+") AS deleted,  max("+MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + BASE_COLUMN;
-    private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE "+BASE_COLUMN +" = ? AND "+DELETED_COLUMN +" = 1" ;   
+    private static String baseStatisticsStatement = "SELECT " + ORIGIN_COLUMN + " ,COUNT(*) AS COUNT , SUM("+DELETED_COLUMN+") AS deleted,  max("+MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + ORIGIN_COLUMN;
+    private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE "+ORIGIN_COLUMN +" = ? AND "+DELETED_COLUMN +" = 1" ;   
     private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";			
 
 
@@ -309,19 +309,19 @@ public class DsStorage implements AutoCloseable {
         return records;	
     }
 
-    public ArrayList<RecordBaseCountDto> getBaseStatictics() throws SQLException {
+    public ArrayList<OriginCountDto> getOriginStatictics() throws SQLException {
 
-        ArrayList<RecordBaseCountDto> baseCountList = new ArrayList<RecordBaseCountDto>();
+        ArrayList<OriginCountDto> baseCountList = new ArrayList<OriginCountDto>();
         try (PreparedStatement stmt = connection.prepareStatement(baseStatisticsStatement);) {
             
             try (ResultSet rs = stmt.executeQuery();) {
                 while (rs.next()) {
-                    RecordBaseCountDto baseStats = new RecordBaseCountDto();                    
-                    String base = rs.getString(BASE_COLUMN);
+                    OriginCountDto baseStats = new OriginCountDto();                    
+                    String base = rs.getString(ORIGIN_COLUMN);
                     long count = rs.getLong("COUNT");
                     long deleted = rs.getLong("DELETED");
                     long lastMTime = rs.getLong("MAX");
-                    baseStats.setRecordBase(base);                    
+                    baseStats.setOrigin(base);                    
                     baseStats.setCount(count);
                     baseStats.setDeleted(deleted);
                     baseCountList.add(baseStats);
@@ -351,7 +351,7 @@ public class DsStorage implements AutoCloseable {
 
         try (PreparedStatement stmt = connection.prepareStatement(createRecordStatement);) {
             stmt.setString(1, record.getId());
-            stmt.setString(2, record.getBase());
+            stmt.setString(2, record.getOrigin());
             stmt.setString(3, record.getOrgid());                        
             stmt.setInt(4, boolToInt(record.getIdError()));            
             stmt.setInt(5, 0);
@@ -468,7 +468,7 @@ public class DsStorage implements AutoCloseable {
     private static DsRecordDto createRecordFromRS(ResultSet rs) throws SQLException {
 
         String id = rs.getString(ID_COLUMN);
-        String base = rs.getString(BASE_COLUMN);
+        String origin = rs.getString(ORIGIN_COLUMN);
         boolean idError = rs.getInt(IDERROR_COLUMN) == 1;
         String orgid = rs.getString(ORGID_COLUMN);
         boolean deleted = rs.getInt(DELETED_COLUMN) == 1;		                
@@ -479,7 +479,7 @@ public class DsStorage implements AutoCloseable {
 
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
-        record.setBase(base);
+        record.setOrigin(origin);
         record.setOrgid(orgid);
         record.setIdError(idError);
         record.setData(data);
