@@ -77,7 +77,7 @@ public class DsStorage implements AutoCloseable {
 
 
 
-    //SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
+    //SELECT * FROM  ds_records  WHERE origin= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
    //TODO UUNITEST
     private static String recordsModifiedAfterStatement =
             "SELECT * FROM " + RECORDS_TABLE +
@@ -85,7 +85,7 @@ public class DsStorage implements AutoCloseable {
             " AND "+MTIME_COLUMN+" > ?" +
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
-    //SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 AND PARENTID IS NOT NULL ORDER BY mtime ASC LIMIT 100
+    //SELECT * FROM  ds_records  WHERE origin= 'test_origin' AND mtime  > 1637237120476001 AND PARENTID IS NOT NULL ORDER BY mtime ASC LIMIT 100
     private static String recordsModifiedAfterChildrenOnlyStatement =
             "SELECT * FROM " + RECORDS_TABLE +
             " WHERE +"+ORIGIN_COLUMN +"= ?" +
@@ -93,7 +93,7 @@ public class DsStorage implements AutoCloseable {
             " AND "+PARENT_ID_COLUMN+" IS NOT NULL"+
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
-    //SELECT * FROM  ds_records  WHERE base= 'test_base' AND mtime  > 1637237120476001 AND parentId IS NULL ORDER BY mtime ASC LIMIT 100	
+    //SELECT * FROM  ds_records  WHERE origin= 'test_origin' AND mtime  > 1637237120476001 AND parentId IS NULL ORDER BY mtime ASC LIMIT 100	
     private static String recordsModifiedAfterParentsOnlyStatement =
             "SELECT * FROM " + RECORDS_TABLE +
             " WHERE +"+ORIGIN_COLUMN +"= ?" +
@@ -102,7 +102,7 @@ public class DsStorage implements AutoCloseable {
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
 
-    private static String baseStatisticsStatement = "SELECT " + ORIGIN_COLUMN + " ,COUNT(*) AS COUNT , SUM("+DELETED_COLUMN+") AS deleted,  max("+MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + ORIGIN_COLUMN;
+    private static String originsStatisticsStatement = "SELECT " + ORIGIN_COLUMN + " ,COUNT(*) AS COUNT , SUM("+DELETED_COLUMN+") AS deleted,  max("+MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + ORIGIN_COLUMN;
     private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE "+ORIGIN_COLUMN +" = ? AND "+DELETED_COLUMN +" = 1" ;   
     private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";			
 
@@ -211,7 +211,7 @@ public class DsStorage implements AutoCloseable {
      * Only parents posts (those that have children) will be load or only children (those that have parent)
      * 
      */
-    public ArrayList<DsRecordDto > getModifiedAfterParentsOnly(String base, long mTime, int batchSize) throws Exception {
+    public ArrayList<DsRecordDto > getModifiedAfterParentsOnly(String origin, long mTime, int batchSize) throws Exception {
 
         if (batchSize <1 || batchSize > 100000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 100000");			
@@ -219,7 +219,7 @@ public class DsStorage implements AutoCloseable {
         ArrayList<DsRecordDto > records = new ArrayList<DsRecordDto >();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterParentsOnlyStatement);) {
 
-            stmt.setString(1, base);
+            stmt.setString(1, origin);
             stmt.setLong(2, mTime);
             stmt.setLong(3, batchSize);
             try (ResultSet rs = stmt.executeQuery();) {
@@ -245,7 +245,7 @@ public class DsStorage implements AutoCloseable {
      * Will extract all no matter of parent or child ids
      * 
      */
-    public ArrayList<DsRecordDto > getRecordsModifiedAfter(String base, long mTime, int batchSize) throws Exception {
+    public ArrayList<DsRecordDto > getRecordsModifiedAfter(String origin, long mTime, int batchSize) throws Exception {
 
         if (batchSize <1 || batchSize > 10000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 10000");			
@@ -253,7 +253,7 @@ public class DsStorage implements AutoCloseable {
         ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement);) {
                        
-            stmt.setString(1, base);
+            stmt.setString(1, origin);
             stmt.setLong(2, mTime);
             stmt.setLong(3, batchSize);
             try (ResultSet rs = stmt.executeQuery();) {
@@ -281,7 +281,7 @@ public class DsStorage implements AutoCloseable {
      * Will only fetch children records. That is those that has a parent.
      * 
      */
-    public ArrayList<DsRecordDto>  getModifiedAfterChildrenOnly(String base, long mTime, int batchSize) throws Exception {
+    public ArrayList<DsRecordDto>  getModifiedAfterChildrenOnly(String origin, long mTime, int batchSize) throws Exception {
 
         if (batchSize <1 || batchSize > 100000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 100000");			
@@ -289,7 +289,7 @@ public class DsStorage implements AutoCloseable {
         ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterChildrenOnlyStatement);) {
 
-            stmt.setString(1, base);
+            stmt.setString(1, origin);
             stmt.setLong(2, mTime);
             stmt.setLong(3, batchSize);
             try (ResultSet rs = stmt.executeQuery();) {
@@ -311,26 +311,26 @@ public class DsStorage implements AutoCloseable {
 
     public ArrayList<OriginCountDto> getOriginStatictics() throws SQLException {
 
-        ArrayList<OriginCountDto> baseCountList = new ArrayList<OriginCountDto>();
-        try (PreparedStatement stmt = connection.prepareStatement(baseStatisticsStatement);) {
+        ArrayList<OriginCountDto> originCountList = new ArrayList<OriginCountDto>();
+        try (PreparedStatement stmt = connection.prepareStatement(originsStatisticsStatement);) {
             
             try (ResultSet rs = stmt.executeQuery();) {
                 while (rs.next()) {
-                    OriginCountDto baseStats = new OriginCountDto();                    
-                    String base = rs.getString(ORIGIN_COLUMN);
+                    OriginCountDto originStats = new OriginCountDto();                    
+                    String origin = rs.getString(ORIGIN_COLUMN);
                     long count = rs.getLong("COUNT");
                     long deleted = rs.getLong("DELETED");
                     long lastMTime = rs.getLong("MAX");
-                    baseStats.setOrigin(base);                    
-                    baseStats.setCount(count);
-                    baseStats.setDeleted(deleted);
-                    baseCountList.add(baseStats);
-                    baseStats.setLatestMTime(lastMTime);
-                    baseStats.setLastMTimeHuman(convertToHumanDate(lastMTime));                    
+                    originStats.setOrigin(origin);                    
+                    originStats.setCount(count);
+                    originStats.setDeleted(deleted);
+                    originCountList.add(originStats);
+                    originStats.setLatestMTime(lastMTime);
+                    originStats.setLastMTimeHuman(convertToHumanDate(lastMTime));                    
                 }
             }
         }
-        return baseCountList;
+        return originCountList;
     }
 
     public void createNewRecord(DsRecordDto record) throws Exception {
@@ -415,20 +415,20 @@ public class DsStorage implements AutoCloseable {
 
     }
     
-    public int deleteMarkedForDelete(String recordBase) throws Exception {
+    public int deleteMarkedForDelete(String origin) throws Exception {
 
         // Sanity check
-        if (recordBase == null) {
-            throw new Exception("Recordbase must not be null"); // TODO exception enum types, messages?
+        if (origin == null) {
+            throw new Exception("Origin must not be null"); // TODO exception enum types, messages?
         }
     
         try (PreparedStatement stmt = connection.prepareStatement(deleteMarkedForDeleteStatement);) {        
-            stmt.setString(1, recordBase);
+            stmt.setString(1, origin);
             int numberDeleted = stmt.executeUpdate();
             return numberDeleted;                    
             
         } catch (SQLException e) {
-            String message = "SQL Exception in deleteMarkedForDelete for recordBase:" + recordBase + " error:" + e.getMessage();
+            String message = "SQL Exception in deleteMarkedForDelete for origin:" + origin + " error:" + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }

@@ -1,7 +1,5 @@
 package dk.kb.storage.facade;
 
-
-
 import java.io.StringReader;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -34,7 +32,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
         
         String id ="doms.radio:idÆæ123"; // Æ and æ invalid and replaced b y AE and ae
-        String origin="doms.radio"; //Must be defined in yaml properties as allowed base
+        String origin="doms.radio"; //Must be defined in yaml properties as allowed origin
         String data = "Hello";
         
         DsRecordDto record = new DsRecordDto();
@@ -58,11 +56,11 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     public void testCreateAndUpdate() throws Exception {
         //TODO rescribe flow below
 
-        DsRecordDto r1 = DsStorageFacade.getRecord("test.base:does_not_exist");
+        DsRecordDto r1 = DsStorageFacade.getRecord("test.origin:does_not_exist");
         Assertions.assertTrue(r1 == null);
 
         String id ="doms.radio:id1";
-        String origin="doms.radio"; //Must be defined in yaml properties as allowed base
+        String origin="doms.radio"; //Must be defined in yaml properties as allowed origin
         String data = "Hello";
         String parentId="doms.radio:id_1_parent";
 
@@ -107,7 +105,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     }
 
     @Test
-    public void testUnknownBase() throws Exception {
+    public void testUnknownOrigin() throws Exception {
         String id ="unkown.origin:id1";
         String origin="unkown.origin";	    	
         String data = "Hello";
@@ -133,7 +131,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
      *   child1id: child1
      *   child2id: child2
      *   
-     *   Each test will use a recordbase that has defined that update strategy:
+     *   Each test will use an origin that has defined that update strategy:
      * 
      *   The 4 record origin defined in yaml used the config
      *
