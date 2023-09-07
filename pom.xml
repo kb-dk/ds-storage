@@ -9,7 +9,7 @@
 
     <groupId>dk.kb.storage</groupId>
     <artifactId>ds-storage</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2</version>
     <packaging>war</packaging>
     <description>
     # Ds-storage(Digitale Samlinger) by the Royal Danish Library. 
@@ -75,7 +75,7 @@
         <url>https://github.com/kb-dk/ds-storage</url>
         <connection>scm:git:git@github.com:kb-dk/ds-storage.git</connection>
         <developerConnection>scm:git:git@github.com:kb-dk/ds-storage.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>ds-storage-1.2</tag>
     </scm>
 
     <licenses>
