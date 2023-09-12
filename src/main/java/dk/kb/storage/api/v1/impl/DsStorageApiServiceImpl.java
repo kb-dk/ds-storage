@@ -151,6 +151,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             log.debug("getRecord(id='{}') called with call details: {}", id, getCallDetails());
             DsRecordDto record= DsStorageFacade.getRecord(id);
             if (record== null) {
+                log.warn("No record found for id:"+id);
               throw new NotFoundServiceException("");                    
             }
             
