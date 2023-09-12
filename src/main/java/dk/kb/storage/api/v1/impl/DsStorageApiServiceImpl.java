@@ -9,6 +9,8 @@ import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.util.webservice.stream.ExportWriter;
 import dk.kb.util.webservice.stream.ExportWriterFactory;
 import dk.kb.util.webservice.ImplBase;
+import dk.kb.util.webservice.exception.NotFoundServiceException;
+
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +149,12 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     public DsRecordDto getRecord(String id) {
         try {
             log.debug("getRecord(id='{}') called with call details: {}", id, getCallDetails());
-            return DsStorageFacade.getRecord(id);
+            DsRecordDto record= DsStorageFacade.getRecord(id);
+            if (record== null) {
+              throw new NotFoundServiceException("");                    
+            }
+            
+            return record;
         } catch (Exception e) {
             throw handleException(e);
         }
