@@ -96,11 +96,12 @@ public class DsStorageFacade {
     public static DsRecordDto getRecord(String recordId) {
         return performStorageAction("getRecord(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);
-            DsRecordDto record = storage.loadRecord(idNorm);
-            if (record== null) {
+           DsRecordDto record = storage.loadRecord(idNorm);
+                      
+           if (record== null) {
                 return null;
             }
-
+            
             if (record.getParentId() == null) { //can not have children if also has parent (1 level only hieracy)
                 ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
                 record.setChildrenIds(childrenIds);
