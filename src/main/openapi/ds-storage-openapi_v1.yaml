@@ -331,13 +331,13 @@ components:
           type: string
           description: 'Id of parent record. (if exists). Only 1 level hierarchy allowed. '       
    
-    DsRecordLocalHieracyTree:
+    DsRecordLocalHierarchyTree:
       type: object
       properties:
-        primary:
+        primaryRecord:
           schema:
           $ref: '#/components/schemas/DsRecord'        
-          description: 'Name of the origin. IDs are prefixed with origin'
+          description: 'This is the record request from the recordId'
         parentRecord:
           schema:
           $ref: '#/components/schemas/DsRecord'        
