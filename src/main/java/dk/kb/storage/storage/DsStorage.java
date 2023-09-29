@@ -40,7 +40,7 @@ public class DsStorage implements AutoCloseable {
     private static final String DATA_COLUMN = "data";
     private static final String CTIME_COLUMN = "ctime";
     private static final String MTIME_COLUMN = "mtime";
-    private static final String PARENT_ID_COLUMN = "parentId";
+    private static final String PARENT_ID_COLUMN = "parentid";
 
     private static String clearTableRecordsStatement = "DELETE FROM " + RECORDS_TABLE;
 
