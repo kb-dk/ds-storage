@@ -329,8 +329,25 @@ components:
             description: 'Array of all childeren IDs'     
         parentId:
           type: string
-          description: 'Id of parent record. (if exists). Only 1 level hierarchy allowed. '
-      
+          description: 'Id of parent record. (if exists). Only 1 level hierarchy allowed. '       
+   
+    DsRecordLocalHieracyTree:
+      type: object
+      properties:
+        primary:
+          schema:
+          $ref: '#/components/schemas/DsRecord'        
+          description: 'Name of the origin. IDs are prefixed with origin'
+        parentRecord:
+          schema:
+          $ref: '#/components/schemas/DsRecord'        
+          description: 'Parent Record if it exists'
+        childrenRecords:          
+          schema:
+          $ref: '#/components/schemas/DsRecordList'        
+          description: 'All children records'  
+                           
+        
            
     UpdateStrategy:
       type: string
