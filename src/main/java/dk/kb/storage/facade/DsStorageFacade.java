@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.DsRecordLocalHierarchyTreeDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
@@ -110,6 +111,37 @@ public class DsStorageFacade {
         });
     }
 
+    
+    /*
+     * Return null if record does not exist
+     * 
+     */
+    public static DsRecordLocalHierarchyTreeDto getRecordTree(String recordId) {
+     
+        DsRecordLocalHierarchyTreeDto localTree= new DsRecordLocalHierarchyTreeDto();
+        
+        
+        return performStorageAction("getRecord(" + recordId + ")", storage -> {
+        
+            
+           String idNorm = IdNormaliser.normaliseId(recordId);
+           DsRecordDto record = storage.loadRecord(idNorm);
+                      
+           if (record== null) {
+                return null;
+            }
+           localTree.setPrimaryRecord(record); 
+           
+           /*
+            if (record.getParentId() == null) { //can not have children if also has parent (1 level only hieracy)
+                ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
+                record.setChildrenIds(childrenIds);
+            }
+            */
+            return localTree;
+        });
+    }
+    
 
     public static Integer markRecordForDelete(String recordId) {
         //TODO touch children etc.
