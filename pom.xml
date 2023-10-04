@@ -530,7 +530,7 @@
                             <configOptions>
                                 <apiPackage>${project.package}.api.v1</apiPackage>
                                 <modelPackage>${project.package}.model.v1</modelPackage>
-                                <generateOperationBody>true</generateOperationBody>
+                                <generateOperationBody>false</generateOperationBody><!-- To avoid stack overflow for DsRecord -->
                             </configOptions>
                             <skipOverwrite>true</skipOverwrite>
                         </configuration>

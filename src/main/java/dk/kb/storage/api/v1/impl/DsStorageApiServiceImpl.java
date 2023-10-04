@@ -4,7 +4,6 @@ import dk.kb.storage.api.v1.DsStorageApi;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.DsRecordLocalHierarchyTreeDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.util.webservice.stream.ExportWriter;
@@ -192,13 +191,6 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         } catch (Exception e) {
             throw handleException(e);
         }
-    }
-
-    @Override
-    public DsRecordLocalHierarchyTreeDto getRecordTree(String id) {
-        log.debug("getOriginStatistics() called with call details: {}", getCallDetails());
-        return DsStorageFacade.getRecordTree(id);
-        
     }
 
 }
