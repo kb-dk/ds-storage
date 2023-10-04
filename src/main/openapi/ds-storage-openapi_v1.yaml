@@ -130,7 +130,7 @@ paths:
         content:
           application/json:    # Media type
             schema:            # Request body contents
-              $ref: '#/components/schemas/DsRecordOld'  # Reference to an object
+              $ref: '#/components/schemas/DsRecord'  # Reference to an object
             example:           
               # Properties of a referenced object
               id: doms_radio_id1
@@ -183,7 +183,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DsRecordOldList'
+                $ref: '#/components/schemas/DsRecordList'
 
   # The ping service should be in all projects, should not do any advanced processing
   # and should respond quickly with a simple message, e.g. "pong".
@@ -248,9 +248,8 @@ components:
           type: string
           description: 'Name of the origin. IDs are prefixed with origin'
         updateStrategy:  
+          $ref: '#/components/schemas/UpdateStrategy'
           description: 'Update strategy defined for each origin. See the update strategy types with decription'
-          schema:
-          $ref: '#/components/schemas/UpdateStrategy'        
 
     DsRecord:
       type: object
@@ -289,30 +288,21 @@ components:
         mTimeHuman:
           type: string
           description: 'Modification time for last create or update of the record in date format YYYY-MM-DD HH:mm:ssZ'
+        parentId:
+          type: string
+          description: 'Id of parent record. (if exists). Only 1 level hierarchy allowed. '
         childrenIds:
           type: array
           items:
             type: string
             description: 'Array of all childeren IDs'             
-        parentId:
-          type: string
-          description: 'Id of parent record. (if exists). Only 1 level hierarchy allowed. '                     
         parent:
           $ref: '#/components/schemas/DsRecord'
-          description: A reference to the DTO itself.
-        childrenRecords:          
-          schema:
-          $ref: '#/components/schemas/DsRecordList'        
+          description: 'Parent record'
+        children:
+          $ref: '#/components/schemas/DsRecordList'
           description: 'All children records'  
-   
-   
-   
-    DsRecordOldList:
-      type: array
-      items: 
-        $ref: '#/components/schemas/DsRecordOld'
 
- 
     DsRecordList:
       type: array
       items: 
@@ -327,7 +317,6 @@ components:
       type: array
       items: 
         $ref: '#/components/schemas/OriginCount'
-
 
     OriginCount:
       type: object
@@ -351,56 +340,6 @@ components:
           type: string
           description: 'latestMTime in human readable format.  Date format is YYYY-MM-DD HH:mm:ssZ'
 
-
-    DsRecordOld:
-      type: object
-      required:
-        - id
-      properties:
-        id:
-          type: string
-          description: 'Unique identifier for the record. Id must start with the origin followed by : See module description for more about ID naming convention'
-        orgid:
-          type: string
-          description: 'Will contain the original ID if the ID format was not valid (invalid characters) and has been changed. '
-        id_error:
-          type: boolean
-          description: 'Indicate if the orgininal ID format was invalid'
-        origin:
-          type: string
-          description: 'Collection name where the record comes from. Lower characters and dot(.) allowed only.'
-        deleted:
-          type: boolean
-          description: 'Mark the record as deleted'
-        data:
-          type: string
-          description: 'The payload of the record. Text in UTF-8'
-        cTime:
-          type: integer
-          format: int64
-          description: 'Creation time when the record was created first time. Format is millis with 3 added digits. This creation time value will not be changed when updating the record.'
-        mTime:
-          type: integer
-          format: int64
-          description: 'Modification time for last create or update of the record. Format is millis with 3 added digits. When a record is updated, mTime for parent and child records can also be updated due to updatestrategy defined for that origin.'
-        cTimeHuman:
-          type: string
-          description: 'Creation time in date format YYYY-MM-DD HH:mm:ssZ'
-        mTimeHuman:
-          type: string
-          description: 'Modification time for last create or update of the record in date format YYYY-MM-DD HH:mm:ssZ'
-        childrenIds:
-          type: array
-          items:
-            type: string
-            description: 'Array of all childeren IDs'             
-        parentId:
-          type: string
-          description: 'Id of parent record. (if exists). Only 1 level hierarchy allowed. '                
-   
-                           
-        
-           
     UpdateStrategy:
       type: string
       nullable: false
