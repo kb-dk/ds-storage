@@ -1,29 +1,14 @@
 package dk.kb.storage.facade;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-import java.io.StringReader;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.storage.DsStorageUnitTestUtil;
+
 
 public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
@@ -31,7 +16,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     //THIS UNTTEST MUST BE UPDATED WHEN VALIDATION RULES ARE MORE CLEAR!
     @Test
     public void testInvalidId() throws Exception {
-        //TODO rescribe flow below
+        //TODO describe flow below
 
         
         String id ="doms.radio:idÆæ123"; // Æ and æ invalid and replaced b y AE and ae
@@ -54,7 +39,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     @Test
     public void testCreateAndUpdate() throws Exception {
-        //TODO rescribe flow below
+        //TODO describe flow below
 
         DsRecordDto r1 = DsStorageFacade.getRecord("test.origin:does_not_exist");
         Assertions.assertTrue(r1 == null);
@@ -297,22 +282,22 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         
         
         //Check it is parent we have
-        assertEquals(parentId,record.getId());        
-        assertTrue(record.getParent() == null);        
+        Assertions.assertEquals(parentId,record.getId());        
+        Assertions.assertTrue(record.getParent() == null);        
         //Check children loaded as records
-        assertEquals(record.getChildren().size(), 2);               
-        assertEquals(record.getChildren().get(0).getId(), "doms.aviser:child1");
-        assertEquals(record.getChildren().get(1).getId(), "doms.aviser:child2");
+        Assertions.assertEquals(record.getChildren().size(), 2);               
+        Assertions.assertEquals(record.getChildren().get(0).getId(), "doms.aviser:child1");
+        Assertions.assertEquals(record.getChildren().get(1).getId(), "doms.aviser:child2");
        
         //Test2:        
         DsRecordDto recordChild = DsStorageFacade.getRecordTree("doms.aviser:child1");        
         System.out.println(record.hashCode());
         //Test the parent is now set
-        assertEquals(recordChild.getParentId(), parentId);        
+        Assertions.assertEquals(recordChild.getParentId(), parentId);        
         DsRecordDto parent = recordChild.getParent();        
-        assertEquals(parent.getId(),parentId);
-        assertEquals(parent.getChildrenIds().size(),2); //ID list         
-        assertEquals(parent.getChildren().size(),2); //Record objects               
+        Assertions.assertEquals(parent.getId(),parentId);
+        Assertions.assertEquals(parent.getChildrenIds().size(),2); //ID list         
+        Assertions.assertEquals(parent.getChildren().size(),2); //Record objects               
     }
     
 
