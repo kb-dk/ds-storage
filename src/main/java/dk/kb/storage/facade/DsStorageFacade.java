@@ -2,6 +2,7 @@ package dk.kb.storage.facade;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -110,36 +111,65 @@ public class DsStorageFacade {
         });
     }
 
-    
-    /*
-     * Return null if record does not exist
+    /**
+     *   Will load full object tree. 
+     *  It is assumed we only have 2 levels in the object tree
      * 
+     *  Logic: Find top parent recursive and load children.'
+     *  If the record asked for is one of the children, it will be added to the list so it is the same object as returned.
+     * 
+     *  @param recordId The full object tree will be return. Point will be to this recordId which can be parent or one of the children.  
+     * 
+     *  Return null if record does not exist.
      */
-//    public static DsRecordLocalHierarchyTreeDto getRecordTree(String recordId) {
-//
-//        DsRecordLocalHierarchyTreeDto localTree= new DsRecordLocalHierarchyTreeDto();
-//
-//
-//        return performStorageAction("getRecord(" + recordId + ")", storage -> {
-//
-//
-//           String idNorm = IdNormaliser.normaliseId(recordId);
-//           DsRecordDto record = storage.loadRecord(idNorm);
-//
-//           if (record== null) {
-//                return null;
-//            }
-//           localTree.setPrimaryRecord(record);
-//
-//           /*
-//            if (record.getParentId() == null) { //can not have children if also has parent (1 level only hieracy)
-//                ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
-//                record.setChildrenIds(childrenIds);
-//            }
-//            */
-//            return localTree;
-//        });
-//    }
+    public static DsRecordDto getRecordTree(String recordId) {
+      
+        
+        return performStorageAction("getRecord(" + recordId + ")", storage -> {
+        String idNorm = IdNormaliser.normaliseId(recordId);          
+        DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children
+        
+        if (record== null) {
+            return record;
+        }
+        DsRecordDto topParent = getTopParent(record);
+                          
+        // now we just load all children.
+        //Notice this code has to have another level of recurssion if we need to support depth =>2 trees.                
+        List<String> childrenIds = topParent.getChildrenIds();   
+        List<DsRecordDto> childrenRecords = new ArrayList<DsRecordDto>();
+        topParent.setChildren(childrenRecords);
+                
+        for (String childId : childrenIds) {
+            if (childId.equals(record.getId())) { //This is the child we already have loaded. Use it instead of loading a new object. Also point to the object is kept.
+                childrenRecords.add(record);
+                record.setParent(topParent);
+            }
+            else {
+                childrenRecords.add(getRecord(childId));                
+            }                        
+        }
+        
+            return record;
+        });
+    }
+    
+    
+    //will follow parent recursive until there is no parent. (root)
+    //So far we only have 1 level of children, but this method is prepared if that changes.
+    private static DsRecordDto getTopParent(DsRecordDto record) {
+      DsRecordDto topParent = record;
+      while (topParent.getParentId() != null) {          
+          if (topParent.getParentId().equals(topParent.getId())) {
+              log.error("Invalid record, has itself as parent, id:"+topParent.getId());
+              return topParent; //No need to throw exception.
+          }          
+          topParent = getRecord(topParent.getParentId());                                 
+          
+      }
+      return topParent;        
+    }
+    
     
 
     public static Integer markRecordForDelete(String recordId) {
