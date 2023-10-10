@@ -89,6 +89,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DsRecord'
+    delete:
+      tags:
+        - '${project.name}'
+      summary: 'Mark a record with delete flag. This will not delete the record in the database but only mark it as deleted.'
+      operationId: markRecordForDelete
+      parameters:
+        - name: id
+          in: path
+          description: 'Record ID'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32          
+              
               
 
   /recordTree/{id}:
@@ -111,28 +132,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DsRecord'              
-  
-    delete:
-      tags:
-        - '${project.name}'
-      summary: 'Mark a record with delete flag. This will not delete the record in the database but only mark it as deleted.'
-      operationId: markRecordForDelete
-      parameters:
-        - name: id
-          in: path
-          description: 'Record ID'
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int32          
-
            
                     
   /record:
