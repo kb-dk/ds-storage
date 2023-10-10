@@ -1,5 +1,8 @@
 package dk.kb.storage.facade;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.StringReader;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -43,10 +46,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
         //Load and see it is marked invalid
         
-        DsRecordDto recordInvalid = DsStorageFacade.getRecord(id);
-        
-        
-        
+        DsRecordDto recordInvalid = DsStorageFacade.getRecord(id);                
         
     }
     
@@ -278,14 +278,43 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
             e.printStackTrace();
             Assertions.fail("Should not fail since recordId now has origin as prefix",e);
         }
-              
+      
     }
     
-
-
-
-
-
+    @Test
+    public void testRecordTree() throws Exception {        
+        //Datastructure is a parent with two children.
+        //Test 1: Load parent and test tree is correct
+        //Test 2: Load of the children and test tree is correct
+        
+        //Test1:
+        String parentId="doms.aviser:parent";
+        createTestHierachyParentAndTwoChildren("doms.aviser");
+        
+        //Load parent first
+        DsRecordDto record = DsStorageFacade.getRecordTree(parentId);       
+        
+        
+        
+        //Check it is parent we have
+        assertEquals(parentId,record.getId());        
+        assertTrue(record.getParent() == null);        
+        //Check children loaded as records
+        assertEquals(record.getChildren().size(), 2);               
+        assertEquals(record.getChildren().get(0).getId(), "doms.aviser:child1");
+        assertEquals(record.getChildren().get(1).getId(), "doms.aviser:child2");
+       
+        //Test2:        
+        DsRecordDto recordChild = DsStorageFacade.getRecordTree("doms.aviser:child1");        
+        System.out.println(record.hashCode());
+        //Test the parent is now set
+        assertEquals(recordChild.getParentId(), parentId);        
+        DsRecordDto parent = recordChild.getParent();        
+        assertEquals(parent.getId(),parentId);
+        assertEquals(parent.getChildrenIds().size(),2); //ID list         
+        assertEquals(parent.getChildren().size(),2); //Record objects               
+    }
+    
 
     private void createTestHierachyParentAndTwoChildren(String origin) throws Exception {
         String parentId="parent";
