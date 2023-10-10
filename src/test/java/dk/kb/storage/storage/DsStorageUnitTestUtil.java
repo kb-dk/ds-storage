@@ -1,13 +1,6 @@
 package dk.kb.storage.storage;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.util.H2DbUtil;
-import dk.kb.util.Resolver;
+
 
 
 /*
