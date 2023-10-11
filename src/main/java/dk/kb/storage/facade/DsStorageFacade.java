@@ -146,7 +146,10 @@ public class DsStorageFacade {
                 record.setParent(topParent);
             }
             else {
-                childrenRecords.add(getRecord(childId));                
+                DsRecordDto child=getRecord(childId);                
+                //child.setParent(topParent);
+                childrenRecords.add(child);                
+            
             }                        
         }
         
