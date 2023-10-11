@@ -274,6 +274,8 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         
         //Test1:
         String parentId="doms.aviser:parent";
+        String child1Id="doms.aviser:child1";
+        String child2Id="doms.aviser:child2";
         createTestHierachyParentAndTwoChildren("doms.aviser");
         
         //Load parent first
@@ -286,18 +288,28 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         Assertions.assertTrue(record.getParent() == null);        
         //Check children loaded as records
         Assertions.assertEquals(record.getChildren().size(), 2);               
-        Assertions.assertEquals(record.getChildren().get(0).getId(), "doms.aviser:child1");
-        Assertions.assertEquals(record.getChildren().get(1).getId(), "doms.aviser:child2");
+        Assertions.assertEquals(record.getChildren().get(0).getId(), child1Id);
+        Assertions.assertEquals(record.getChildren().get(1).getId(), child2Id);
        
         //Test2:        
-        DsRecordDto recordChild = DsStorageFacade.getRecordTree("doms.aviser:child1");        
-        System.out.println(record.hashCode());
+        DsRecordDto child1 = DsStorageFacade.getRecordTree(child1Id);        
+        
         //Test the parent is now set
-        Assertions.assertEquals(recordChild.getParentId(), parentId);        
-        DsRecordDto parent = recordChild.getParent();        
+        Assertions.assertEquals(child1.getParentId(), parentId);        
+        DsRecordDto parent = child1.getParent();        
+        //System.out.println("parentid"+parent.getId());
         Assertions.assertEquals(parent.getId(),parentId);
         Assertions.assertEquals(parent.getChildrenIds().size(),2); //ID list         
         Assertions.assertEquals(parent.getChildren().size(),2); //Record objects               
+
+        //Go from parent down to other child
+        DsRecordDto child2 =parent.getChildren().get(1);
+        Assertions.assertEquals(child2.getId(), child2Id);
+        DsRecordDto parentFromChild2 = child2.getParent();
+        Assertions.assertEquals(parentFromChild2.getId(),parentId);
+        
+        
+    
     }
     
 

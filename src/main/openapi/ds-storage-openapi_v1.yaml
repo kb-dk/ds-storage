@@ -308,13 +308,13 @@ components:
           type: array
           items:
             type: string
-            description: 'Array of all childeren IDs'             
+            description: 'Array of all child IDs'             
         parent:
           $ref: '#/components/schemas/DsRecord'
           description: 'Parent record'
         children:
           $ref: '#/components/schemas/DsRecordList'
-          description: 'All children records'  
+          description: 'All child records'  
 
     DsRecordList:
       type: array
