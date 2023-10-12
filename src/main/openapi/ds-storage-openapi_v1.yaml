@@ -73,7 +73,7 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Read a specific record by ID. Will return null if no record with the given ID exists. Only IDs for parent and children is loaded, not the objects. A record marked with delete flag will also be returned'
+      summary: 'Read a specific record by ID. Will return null if no record with the given ID exists. Only IDs for parent and children is loaded, not the parent object or children objects. A record marked with delete flag will also be returned'
       operationId: getRecord
       parameters:
         - name: id
@@ -116,7 +116,7 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Read a specific record by ID. Will return null if no record with the given ID exists. A record marked with delete flag will also be returned. Do NOT call toString() on the object return due to OpenAPi infinite loop'
+      summary: 'Return a full object tree with this id. The record return will be a pointer to this record in the tree. Will return null if no record with the given ID exists. A record marked with delete flag will also be returned. Do NOT call toString() or hashCode() on the object return due to OpenAPi infinite loop'
       operationId: getRecordTree
       parameters:
         - name: id
@@ -138,7 +138,7 @@ paths:
     post:
       tags:
         - '${project.name}'    
-      summary: 'Create a new record or update and existing record. A record can only has a single optional parent and that parent must not have a parent itself (single level hierarchy)'
+      summary: 'Create a new record or update and existing record. A record can only has a single optional parent but many children)'
       requestBody:
         content:
           application/json:    # Media type
@@ -303,7 +303,7 @@ components:
           description: 'Modification time for last create or update of the record in date format YYYY-MM-DD HH:mm:ssZ'
         parentId:
           type: string
-          description: 'Id of parent record. (if exists). Only 1 level hierarchy allowed. '
+          description: 'Id of parent record. (if exists).'
         childrenIds:
           type: array
           items:
@@ -311,7 +311,7 @@ components:
             description: 'Array of all child IDs'             
         parent:
           $ref: '#/components/schemas/DsRecord'
-          description: 'Parent record'
+          description: 'Parent record as object.  '
         children:
           $ref: '#/components/schemas/DsRecordList'
           description: 'All child records'  

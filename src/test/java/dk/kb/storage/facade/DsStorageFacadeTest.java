@@ -266,49 +266,77 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
       
     }
     
+    
+   
+    
     @Test
     public void testRecordTree() throws Exception {        
-        //Datastructure is a parent with two children.
+        //Datastructure is a tree with 5 nodes and depth=2. (See method for visualization)       
         //Test 1: Load parent and test tree is correct
-        //Test 2: Load of the children and test tree is correct
+        //Test 2: Load of the children at depth 1 and test tree is correct
+        //Test 3: Load of the children at depth 2 and test tree is correct
         
-        //Test1:
-        String parentId="doms.aviser:parent";
-        String child1Id="doms.aviser:child1";
-        String child2Id="doms.aviser:child2";
-        createTestHierachyParentAndTwoChildren("doms.aviser");
+        //Setup
+        String parentId="doms.aviser:p";
+        String child1Id="doms.aviser:c1";
+        String child2Id="doms.aviser:c2";
+        String child1_1Id="doms.aviser:c1_1";
+        String child1_2Id="doms.aviser:c1_2";
         
-        //Load parent first
+        createTestDepth2Tree("doms.aviser"); // See this method for visualization of the tree.
+        
+      
+        //Test1, top load parent
+     
         DsRecordDto record = DsStorageFacade.getRecordTree(parentId);       
-        
-        
         
         //Check it is parent we have
         Assertions.assertEquals(parentId,record.getId());        
         Assertions.assertTrue(record.getParent() == null);        
+      
         //Check children loaded as records
         Assertions.assertEquals(record.getChildren().size(), 2);               
         Assertions.assertEquals(record.getChildren().get(0).getId(), child1Id);
         Assertions.assertEquals(record.getChildren().get(1).getId(), child2Id);
        
-        //Test2:        
-        DsRecordDto child1 = DsStorageFacade.getRecordTree(child1Id);        
+        //Check child has parent loaded, both in ID list and as object
+        Assertions.assertEquals(record.getChildren().get(0).getParentId(), record.getId());
+        Assertions.assertEquals(record.getChildren().get(0).getParent().getId(), record.getId());
         
+       // Check depth=2
+        Assertions.assertEquals(record.getChildren().get(0).getChildren().get(0).getId(), child1_1Id);
+        Assertions.assertEquals(record.getChildren().get(0).getChildren().get(0).getParent().getId(), child1Id);
+        
+        //Test2, load depth=1 record      
+        DsRecordDto child1 = DsStorageFacade.getRecordTree(child1Id);        
+ 
         //Test the parent is now set
         Assertions.assertEquals(child1.getParentId(), parentId);        
-        DsRecordDto parent = child1.getParent();        
-        //System.out.println("parentid"+parent.getId());
-        Assertions.assertEquals(parent.getId(),parentId);
-        Assertions.assertEquals(parent.getChildrenIds().size(),2); //ID list         
-        Assertions.assertEquals(parent.getChildren().size(),2); //Record objects               
+        DsRecordDto parent = child1.getParent();      
+        Assertions.assertEquals(parentId,parent.getId());
+        Assertions.assertEquals(2,parent.getChildrenIds().size()); //ID list         
+        Assertions.assertEquals(2,parent.getChildren().size()); //Record objects               
 
         //Go from parent down to other child
         DsRecordDto child2 =parent.getChildren().get(1);
-        Assertions.assertEquals(child2.getId(), child2Id);
+        Assertions.assertEquals(child2Id,child2.getId());
         DsRecordDto parentFromChild2 = child2.getParent();
-        Assertions.assertEquals(parentFromChild2.getId(),parentId);
+        Assertions.assertEquals(parentId,parentFromChild2.getId());
         
+                
+        // Test3, load depth=3 record 
+        DsRecordDto child1_1 = DsStorageFacade.getRecordTree(child1_1Id);
+        DsRecordDto parent1_1 = child1_1.getParent(); 
+        Assertions.assertEquals(child1Id,parent1_1.getId());
+
+       
+        Assertions.assertEquals(2,parent1_1.getChildrenIds().size());   
+        Assertions.assertEquals(2,parent1_1.getChildren().size());
         
+    
+        DsRecordDto topParent = parent1_1.getParent();
+        Assertions.assertEquals(parentId,topParent.getId());
+        Assertions.assertEquals(2,topParent.getChildren().size());
     
     }
     
@@ -339,6 +367,64 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     }
 
+    
+    /* Create a depth=2 tree
+     *  
+     * Data structure:
+     * The node names  are the Ids in the test. 
+     * 
+     *           
+     *                     p
+     *                 /       \
+     *               c1        c2
+     *               /  \
+     *           c1_2     c1_1   
+     * 
+     */
+    private void createTestDepth2Tree(String origin) throws Exception {
+        String parentId="p";
+
+        DsRecordDto p = new DsRecordDto();
+        
+        p.setId(origin+":"+parentId);
+        p.setOrigin(origin);
+        p.setData("parent data");
+
+        DsRecordDto c1 = new DsRecordDto();
+        c1.setId(origin+":"+"c1");
+        c1.setOrigin(origin);
+        c1.setData("c1 data");
+        c1.setParentId(origin+":"+parentId);
+
+        DsRecordDto c2 = new DsRecordDto();
+        c2.setId(origin+":"+"c2");
+        c2.setOrigin(origin);
+        c2.setData("child2 data");
+        c2.setParentId(origin+":"+parentId);
+
+        
+        DsRecordDto c1_1 = new DsRecordDto();
+        c1_1.setId(origin+":"+"c1_1");
+        c1_1.setOrigin(origin);
+        c1_1.setData("c1_1 data");
+        c1_1.setParentId(c1.getId()); //c1 as parent
+        
+        DsRecordDto c1_2 = new DsRecordDto();
+        c1_2.setId(origin+":"+"c1_2");
+        c1_2.setOrigin(origin);
+        c1_2.setData("c1_2 data");
+        c1_2.setParentId(c1.getId()); // c1 as parent
+        
+        
+        DsStorageFacade.createOrUpdateRecord(p);
+        DsStorageFacade.createOrUpdateRecord(c1);
+        DsStorageFacade.createOrUpdateRecord(c2);
+        DsStorageFacade.createOrUpdateRecord(c1_1);
+        DsStorageFacade.createOrUpdateRecord(c1_2);
+
+    }
+
+    
 
 
 }

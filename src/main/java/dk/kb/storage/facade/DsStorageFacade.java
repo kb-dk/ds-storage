@@ -2,6 +2,7 @@ package dk.kb.storage.facade;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
@@ -103,22 +104,20 @@ public class DsStorageFacade {
                 return null;
             }
             
-            if (record.getParentId() == null) { //can not have children if also has parent (1 level only hieracy)
-                ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
-                record.setChildrenIds(childrenIds);
-            }
+
+           ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
+           record.setChildrenIds(childrenIds);
+
             return record;
         });
     }
 
     /**
-     *   Will load full object tree. 
-     *  It is assumed we only have 2 levels in the object tree
+     *   Will load full object tree. The DsDecordDto return will a pointer the record with the recordId in the tree
+     *       
+     *  Logic: Find top parent recursive and load children.
      * 
-     *  Logic: Find top parent recursive and load children.'
-     *  If the record asked for is one of the children, it will be added to the list so it is the same object as returned.
-     * 
-     *  @param recordId The full object tree will be return. Point will be to this recordId which can be parent or one of the children.  
+     *  @param recordId The full object tree will be returned with a pointer to this record   
      * 
      *  Return null if record does not exist.
      */
@@ -132,43 +131,33 @@ public class DsStorageFacade {
         if (record== null) {
             return record;
         }
-        DsRecordDto topParent = getTopParent(record);
-                          
-        // now we just load all children.
-        //Notice this code has to have another level of recurssion if we need to support depth =>2 trees.                
-        List<String> childrenIds = topParent.getChildrenIds();   
-        List<DsRecordDto> childrenRecords = new ArrayList<DsRecordDto>();
-        topParent.setChildren(childrenRecords);
-                
-        for (String childId : childrenIds) {
-            if (childId.equals(record.getId())) { //This is the child we already have loaded. Use it instead of loading a new object. Also point to the object is kept.
-                childrenRecords.add(record);
-                record.setParent(topParent);
-            }
-            else {
-                DsRecordDto child=getRecord(childId);                
-                //child.setParent(topParent);
-                childrenRecords.add(child);                
-            
-            }                        
-        }
-        
-            return record;
+         DsRecordDto topParent = getTopParent(record); //this will also detect a cycle.              
+         
+         List<DsRecordDto> xList = new ArrayList<DsRecordDto>();
+         
+         loadAndSetChildRelations(topParent,null, recordId, xList); //Resursive method     
+                   
+         //Sanity check, just in case..
+          if (xList.size() !=1) {
+              log.error("Logic error loading recordTree with id:"+recordId);
+              throw new InternalServiceException("Logic error loading recordTree with id:"+recordId);
+          }
+          
+         return xList.get(0);
+         
         });
     }
     
     
-    //will follow parent recursive until there is no parent. (root)
-    //So far we only have 1 level of children, but this method is prepared if that changes.
+    //Will follow parent recursive until there no longer exists a parent. (root of object tree)
     private static DsRecordDto getTopParent(DsRecordDto record) {
       DsRecordDto topParent = record;
       while (topParent.getParentId() != null) {          
           if (topParent.getParentId().equals(topParent.getId())) {
               log.error("Invalid record, has itself as parent, id:"+topParent.getId());
-              return topParent; //No need to throw exception.
+              return topParent; // Throw exception instead?
           }          
-          topParent = getRecord(topParent.getParentId());                                 
-          
+          topParent = getRecord(topParent.getParentId());                                           
       }
       return topParent;        
     }
@@ -304,9 +293,7 @@ public class DsStorageFacade {
      * @param origin name.
      */
     private static void validateOriginExists(String origin) {
-        if (ServiceConfig.getAllowedOrigins().get(origin) == null) {
-            System.out.println("origins:"+ServiceConfig.getAllowedOrigins());
-            
+        if (ServiceConfig.getAllowedOrigins().get(origin) == null) {            
             throw new InvalidArgumentServiceException("Unknown record origin: "+origin);
         }
     }
@@ -363,6 +350,54 @@ public class DsStorageFacade {
         }
     }
 
+    
+    /**
+     * This method will call itself recursively
+     * The callstack length will only be equal to depth of tree, so not an issue.
+     * Call this method with top-parent of the record tree to get the full tree.
+     * 
+     * @param parentRecord Top record in the object tree. The tree will only be loaded from this node and down.
+     * @param Internal parameter to keep track of cycles. Just call with null
+     * @param recordId This is the recordId that will be put into the returnObject   
+     * @param returnObject This List will always has 1 element matching the recordId  
+     */
+    
+    private static void loadAndSetChildRelations(DsRecordDto parentRecord, HashSet<String> previousIdsForCycleDetection, String recordId, List<DsRecordDto> returnObject) throws SQLException {
+        
+        if (previousIdsForCycleDetection== null){
+            previousIdsForCycleDetection = new HashSet<>();
+        }
+
+        if(recordId.equals(parentRecord.getId())) { // Will happen only if parentRecord is the id recordId
+            returnObject.add(parentRecord);
+        }
+        
+        List<String> childrenIds = parentRecord.getChildrenIds();                
+        List<DsRecordDto> childrenRecords = new ArrayList<DsRecordDto>(); 
+        for (String childId: childrenIds) {
+                        
+            DsRecordDto child = getRecord(childId);          
+            child.setParent(parentRecord);
+            childrenRecords.add(child);
+            
+            if(recordId.equals(child.getId())) { // The recordId has been found
+                returnObject.add(child);                
+            }
+            
+            if(previousIdsForCycleDetection.contains(child.getId())){
+                log.error( "Parent-child cycle detected for id (stopped loading rest of hierachy tree): ", child.getId());
+                break; //Show it throw exception?
+            }
+            previousIdsForCycleDetection.add(child.getId());
+            loadAndSetChildRelations(child, previousIdsForCycleDetection,recordId,returnObject); //This is the recursive call
+        }             
+       
+        parentRecord.setChildren(childrenRecords);
+        
+    }
+
+    
+    
     /**
      * Callback used with {@link #performStorageAction(String, StorageAction)}.
      * @param <T> the object returned from the {@link StorageAction#process(DsStorage)} method.
