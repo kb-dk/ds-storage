@@ -48,8 +48,9 @@
     to track it back to the collection it came from. The record can still be retrieved and updated using the invalid id, but also by the normalised id.                      
                                           
     ## Record hierarchy                 
-    The datamodel allows a single optional parent and unlimited number of children. Every origin is configured with a transitive 
-    update strategy that makes sense for the origin. When a record is created or update it can update the mTime of parent and all children
+    The datamodel is a tree structure with a single parent but no limit on number of children. The tree can be several levels deep (tree depth).
+    Due to the tree structre, there can not exist a cycle in the graph.    
+    Every origin is configured with a transitive  update strategy that makes sense for the origin. When a record is created or update it can update the mTime of parent and all children
     if defined for the origin. The possible updatestrategies are: NONE, ALL, PARENT, CHILDREN.  (see #updatestrategy schema)
         
     ## API   
