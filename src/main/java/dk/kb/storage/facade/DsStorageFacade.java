@@ -365,25 +365,23 @@ public class DsStorageFacade {
      * The callstack length will only be equal to depth of tree, so not an issue.
      * Call this method with top-parent of the record tree to get the full tree.
      * 
-     * @param parentRecord Top record in the object tree. The tree will only be loaded from this node and down.
+     * @param currentRecord Top record in the object tree. The tree will only be loaded from this node and down.
      * @param previousIdsForCycleDetection Set to keep track of cycles. When calling this method supply it with a new empty HashSet
      * @param recordId This is the recordId that will be put into the returnObject   
      * @param returnObject This List will always has 1 element matching the recordId  
      */
     
-    private static void loadAndSetChildRelations(DsRecordDto parentRecord, HashSet<String> previousIdsForCycleDetection, DsRecordDto origo) throws SQLException {
+    private static void loadAndSetChildRelations(DsRecordDto currentRecord, HashSet<String> previousIdsForCycleDetection, DsRecordDto origo) throws SQLException {
        
                 
-        List<String> childrenIds = parentRecord.getChildrenIds();                
+        List<String> childrenIds = currentRecord.getChildrenIds();                
         List<DsRecordDto> childrenRecords = new ArrayList<DsRecordDto>(); 
         for (String childId: childrenIds) {
                         
             //DsRecordDto child = getRecord(childId);          
             DsRecordDto child = childId.equals(origo.getId()) ? origo: getRecord(childId);
-            child.setParent(parentRecord);
+            child.setParent(currentRecord);
             childrenRecords.add(child);
-
-            
             
             if(previousIdsForCycleDetection.contains(child.getId())){
                 log.error("Parent-child cycle detected for id (stopped loading rest of hierarchy tree): {} ", child.getId());
@@ -393,7 +391,7 @@ public class DsStorageFacade {
             loadAndSetChildRelations(child, previousIdsForCycleDetection,origo); //This is the recursive call
         }             
        
-        parentRecord.setChildren(childrenRecords);
+        currentRecord.setChildren(childrenRecords);
         
     }
 
