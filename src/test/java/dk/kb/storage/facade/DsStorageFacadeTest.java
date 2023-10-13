@@ -1,6 +1,10 @@
 package dk.kb.storage.facade;
 
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.storage.DsStorageUnitTestUtil;
+import dk.kb.util.webservice.exception.InternalServiceException;
 
 
 public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
@@ -41,8 +46,14 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     public void testCreateAndUpdate() throws Exception {
         //TODO describe flow below
 
-        DsRecordDto r1 = DsStorageFacade.getRecord("test.origin:does_not_exist");
-        Assertions.assertTrue(r1 == null);
+        try {
+          DsRecordDto r1 = DsStorageFacade.getRecord("test.origin:does_not_exist");
+          fail(); 
+        }
+        catch (Exception e) {
+         //ignore    
+        }
+        
 
         String id ="doms.radio:id1";
         String origin="doms.radio"; //Must be defined in yaml properties as allowed origin
@@ -57,15 +68,15 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         DsStorageFacade.createOrUpdateRecord(record );
 
         DsRecordDto recordLoaded = DsStorageFacade.getRecord(id);
-        Assertions.assertTrue(recordLoaded != null);
+        assertTrue(recordLoaded != null);
 
         //Load and check values are correct
-        Assertions.assertEquals(id,recordLoaded.getId());
-        Assertions.assertEquals(origin,recordLoaded.getOrigin());
-        Assertions.assertFalse(recordLoaded.getDeleted());
-        Assertions.assertEquals(parentId,record.getParentId());        
-        Assertions.assertTrue(recordLoaded.getmTime() > 0);
-        Assertions.assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
+        assertEquals(id,recordLoaded.getId());
+        assertEquals(origin,recordLoaded.getOrigin());
+        assertFalse(recordLoaded.getDeleted());
+        assertEquals(parentId,record.getParentId());        
+        assertTrue(recordLoaded.getmTime() > 0);
+        assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
 
 
         //Now update
@@ -80,11 +91,11 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
         //Check new updated record is correct.
         DsRecordDto recordUpdated = DsStorageFacade.getRecord(id);
-        Assertions.assertEquals(id,recordUpdated .getId());
-        Assertions.assertEquals(origin,recordUpdated .getOrigin());
-        Assertions.assertEquals(parentIdUpdated,record.getParentId());        
-        Assertions.assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
-        Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                	                           
+        assertEquals(id,recordUpdated.getId());
+        assertEquals(origin,recordUpdated .getOrigin());
+        assertEquals(parentIdUpdated,record.getParentId());        
+        assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
+        assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                	                           
 
 
     }
@@ -102,7 +113,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         
         try {
             DsStorageFacade.createOrUpdateRecord(record );
-            Assertions.fail("Should fail with unknown origin");				
+            fail("Should fail with unknown origin");				
         }
         catch(Exception e) { //ignore			
 
@@ -150,14 +161,14 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         DsRecordDto child1After = DsStorageFacade.getRecord("origin.strategy.none:child1");
 
         //test that child1 does not have changed mTime
-        Assertions.assertEquals(child1Before.getmTime(), child1After.getmTime());
+        assertEquals(child1Before.getmTime(), child1After.getmTime());
 
         //update child2 and test parent is not touched.
         child2Before.setData("child2 updated");
         parentBefore = DsStorageFacade.getRecord("origin.strategy.none:parent");
         DsStorageFacade.createOrUpdateRecord(child2Before);     
         DsRecordDto parentAfter = DsStorageFacade.getRecord("origin.strategy.none:parent");
-        Assertions.assertEquals(parentBefore.getmTime(), parentAfter.getmTime());     
+        assertEquals(parentBefore.getmTime(), parentAfter.getmTime());     
     }
 
 
@@ -175,14 +186,14 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         DsRecordDto child1After = DsStorageFacade.getRecord("origin.strategy.parent:child1");
 
         //test that child1 does not have changed mTime
-        Assertions.assertEquals(child1Before.getmTime(), child1After.getmTime());
+        assertEquals(child1Before.getmTime(), child1After.getmTime());
 
         //update child2 and test parent is touched
         child2Before.setData("child2 updated");
         parentBefore = DsStorageFacade.getRecord("origin.strategy.parent:parent");
         DsStorageFacade.createOrUpdateRecord(child2Before);     
         DsRecordDto parentAfter = DsStorageFacade.getRecord("origin.strategy.parent:parent");
-        Assertions.assertTrue(parentBefore.getmTime() < parentAfter.getmTime()); //Parent has been touched as expected!
+        assertTrue(parentBefore.getmTime() < parentAfter.getmTime()); //Parent has been touched as expected!
     }
 
     @Test
@@ -197,16 +208,16 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         DsStorageFacade.createOrUpdateRecord(parentBefore);
 
         DsRecordDto child1After = DsStorageFacade.getRecord("origin.strategy.child:child1");
-
+        
         //test that child11 has new mTime
-        Assertions.assertTrue(child1Before.getmTime() < child1After.getmTime());
+        assertTrue(child1Before.getmTime() < child1After.getmTime());
 
         //update child2 and test parent is not touched.
         child2Before.setData("child2 updated");
         parentBefore = DsStorageFacade.getRecord("origin.strategy.child:parent");
         DsStorageFacade.createOrUpdateRecord(child2Before);     
         DsRecordDto parentAfter = DsStorageFacade.getRecord("origin.strategy.child:parent");
-        Assertions.assertEquals(parentBefore.getmTime(), parentAfter.getmTime()); //Not changed
+        assertEquals(parentBefore.getmTime(), parentAfter.getmTime()); //Not changed
     }
 
 
@@ -224,14 +235,14 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         DsRecordDto child1After = DsStorageFacade.getRecord("origin.strategy.all:child1");
 
         //test that child11 has new mTime
-        Assertions.assertTrue(child1Before.getmTime() < child1After.getmTime());
+        assertTrue(child1Before.getmTime() < child1After.getmTime());
 
         //update child2 and test parent is not touched.
         child2Before.setData("child2 updated");
         parentBefore = DsStorageFacade.getRecord("origin.strategy.all:parent");
         DsStorageFacade.createOrUpdateRecord(child2Before);     
         DsRecordDto parentAfter = DsStorageFacade.getRecord("origin.strategy.all:parent");
-        Assertions.assertTrue(parentBefore.getmTime() < parentAfter.getmTime()); //Parent touched
+        assertTrue(parentBefore.getmTime() < parentAfter.getmTime()); //Parent touched
     }
     
 
@@ -248,7 +259,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         record.setData(data);        
         try {
             DsStorageFacade.createOrUpdateRecord(record );
-            Assertions.fail("Should fail with recordId does not have origin as prefix");    
+            fail("Should fail with recordId does not have origin as prefix");    
         }
         catch(Exception e) { //ignore   
         }
@@ -261,12 +272,24 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         }
         catch(Exception e) {
             e.printStackTrace();
-            Assertions.fail("Should not fail since recordId now has origin as prefix",e);
+            fail("Should not fail since recordId now has origin as prefix",e);
         }
       
     }
     
-    
+    @Test
+    public void testParentCycle() throws Exception {
+        //Datastructure is a tree with 3 nodes and depth=2. Node at deepth2  points back to top node.        
+        
+        createParentCycle("doms.aviser");
+        try {
+        DsRecordDto record = DsStorageFacade.getRecordTree("doms.aviser:p3");       
+        fail("Cycle should have been detected");
+        }
+        catch (InternalServiceException e) {
+            //Expected
+        }
+    }
    
     
     @Test
@@ -291,52 +314,53 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         DsRecordDto record = DsStorageFacade.getRecordTree(parentId);       
         
         //Check it is parent we have
-        Assertions.assertEquals(parentId,record.getId());        
-        Assertions.assertTrue(record.getParent() == null);        
+        assertEquals(parentId,record.getId());        
+        assertTrue(record.getParent() == null);        
       
         //Check children loaded as records
-        Assertions.assertEquals(record.getChildren().size(), 2);               
-        Assertions.assertEquals(record.getChildren().get(0).getId(), child1Id);
-        Assertions.assertEquals(record.getChildren().get(1).getId(), child2Id);
+        assertEquals(record.getChildren().size(), 2);               
+        assertEquals(record.getChildren().get(0).getId(), child1Id);
+        assertEquals(record.getChildren().get(1).getId(), child2Id);
        
         //Check child has parent loaded, both in ID list and as object
-        Assertions.assertEquals(record.getChildren().get(0).getParentId(), record.getId());
-        Assertions.assertEquals(record.getChildren().get(0).getParent().getId(), record.getId());
+        assertEquals(record.getChildren().get(0).getParentId(), record.getId());
+        assertEquals(record.getChildren().get(0).getParent().getId(), record.getId());
         
        // Check depth=2
-        Assertions.assertEquals(record.getChildren().get(0).getChildren().get(0).getId(), child1_1Id);
-        Assertions.assertEquals(record.getChildren().get(0).getChildren().get(0).getParent().getId(), child1Id);
+        assertEquals(record.getChildren().get(0).getChildren().get(0).getId(), child1_1Id);
+        assertEquals(record.getChildren().get(0).getChildren().get(0).getParent().getId(), child1Id);
+        assertEquals(record.getChildren().get(0).getChildren().get(1).getId(), child1_2Id);
         
         //Test2, load depth=1 record      
         DsRecordDto child1 = DsStorageFacade.getRecordTree(child1Id);        
  
         //Test the parent is now set
-        Assertions.assertEquals(child1.getParentId(), parentId);        
+        assertEquals(child1.getParentId(), parentId);        
         DsRecordDto parent = child1.getParent();      
-        Assertions.assertEquals(parentId,parent.getId());
-        Assertions.assertEquals(2,parent.getChildrenIds().size()); //ID list         
-        Assertions.assertEquals(2,parent.getChildren().size()); //Record objects               
+        assertEquals(parentId,parent.getId());
+        assertEquals(2,parent.getChildrenIds().size()); //ID list         
+        assertEquals(2,parent.getChildren().size()); //Record objects               
 
         //Go from parent down to other child
         DsRecordDto child2 =parent.getChildren().get(1);
-        Assertions.assertEquals(child2Id,child2.getId());
+        assertEquals(child2Id,child2.getId());
         DsRecordDto parentFromChild2 = child2.getParent();
-        Assertions.assertEquals(parentId,parentFromChild2.getId());
+        assertEquals(parentId,parentFromChild2.getId());
         
                 
         // Test3, load depth=3 record 
         DsRecordDto child1_1 = DsStorageFacade.getRecordTree(child1_1Id);
         DsRecordDto parent1_1 = child1_1.getParent(); 
-        Assertions.assertEquals(child1Id,parent1_1.getId());
+        assertEquals(child1Id,parent1_1.getId());
 
        
-        Assertions.assertEquals(2,parent1_1.getChildrenIds().size());   
-        Assertions.assertEquals(2,parent1_1.getChildren().size());
+        assertEquals(2,parent1_1.getChildrenIds().size());   
+        assertEquals(2,parent1_1.getChildren().size());
         
     
         DsRecordDto topParent = parent1_1.getParent();
-        Assertions.assertEquals(parentId,topParent.getId());
-        Assertions.assertEquals(2,topParent.getChildren().size());
+        assertEquals(parentId,topParent.getId());
+        assertEquals(2,topParent.getChildren().size());
     
     }
     
@@ -367,6 +391,44 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     }
 
+    
+    
+    /*
+     *   Data structure:
+     *   
+     *                     p1----->
+     *                      |     |
+     *                     p2     |
+     *                      |     |
+     *                     p3-----<
+     * 
+     * 
+     */
+    private void createParentCycle(String origin) throws Exception {
+        DsRecordDto parentRecord = new DsRecordDto();
+        parentRecord.setId(origin+":p1");
+        parentRecord.setOrigin(origin);
+        parentRecord.setData("p1 data");
+        parentRecord.setParentId(origin+":p3");
+        
+        DsRecordDto child1 = new DsRecordDto();
+        child1.setId(origin+":p2");
+        child1.setOrigin(origin);
+        child1.setData("p2 data");
+        child1.setParentId(origin+":p1");
+
+        DsRecordDto child2 = new DsRecordDto();
+        child2.setId(origin+":p3");
+        child2.setOrigin(origin);
+        child2.setData("p3 data");
+        child2.setParentId(origin+":p1"); // This is the loop
+                
+        DsStorageFacade.createOrUpdateRecord(parentRecord);
+        DsStorageFacade.createOrUpdateRecord(child1);
+        DsStorageFacade.createOrUpdateRecord(child2);        
+    }
+    
+    
     
     /* Create a depth=2 tree
      *  

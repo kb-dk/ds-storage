@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 
 import dk.kb.util.webservice.stream.ExportWriter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,7 @@ import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.util.IdNormaliser;
 import dk.kb.util.webservice.exception.InternalServiceException;
 import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
+import dk.kb.util.webservice.exception.NotFoundServiceException;
 
 
 
@@ -101,7 +103,7 @@ public class DsStorageFacade {
            DsRecordDto record = storage.loadRecord(idNorm);
                       
            if (record== null) {
-                return null;
+               throw new NotFoundServiceException("No record with id:"+recordId);
             }
             
 
@@ -129,34 +131,41 @@ public class DsStorageFacade {
         DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children
         
         if (record== null) {
-            return record;
+            throw new NotFoundServiceException("No record with id:"+recordId);             
         }
+        
          DsRecordDto topParent = getTopParent(record); //this will also detect a cycle.              
          
-         List<DsRecordDto> xList = new ArrayList<DsRecordDto>();
          
-         loadAndSetChildRelations(topParent,null, recordId, xList); //Resursive method     
+         loadAndSetChildRelations(topParent,new HashSet<>(), record); //Resursive method     
                    
-         //Sanity check, just in case..
-          if (xList.size() !=1) {
-              log.error("Logic error loading recordTree with id:"+recordId);
-              throw new InternalServiceException("Logic error loading recordTree with id:"+recordId);
-          }
+         
           
-         return xList.get(0);
+         return record;
          
         });
     }
     
+    /**
+     * Will recursive go up in the tree to find the top parent.
+     * Throws an exception if a cycle is detected.
+     *  
+     * @param record
+     * @throws InternalServiceException If a cycle is detected.
+     * @return
+     */
+    private static DsRecordDto getTopParent(DsRecordDto record) throws InternalServiceException{
     
-    //Will follow parent recursive until there no longer exists a parent. (root of object tree)
-    private static DsRecordDto getTopParent(DsRecordDto record) {
+      HashSet<String> ids = new HashSet<String>();   
       DsRecordDto topParent = record;
       while (topParent.getParentId() != null) {          
-          if (topParent.getParentId().equals(topParent.getId())) {
-              log.error("Invalid record, has itself as parent, id:"+topParent.getId());
-              return topParent; // Throw exception instead?
+      
+          if (ids.contains(topParent.getId())) {
+              log.error("Cycle detected for recordId:"+topParent.getId());
+              throw new InternalServiceException("Cycle detected for recordId:"+topParent.getId());
+              
           }          
+          ids.add(topParent.getId());
           topParent = getRecord(topParent.getParentId());                                           
       }
       return topParent;        
@@ -357,39 +366,31 @@ public class DsStorageFacade {
      * Call this method with top-parent of the record tree to get the full tree.
      * 
      * @param parentRecord Top record in the object tree. The tree will only be loaded from this node and down.
-     * @param Internal parameter to keep track of cycles. Just call with null
+     * @param previousIdsForCycleDetection Set to keep track of cycles. When calling this method supply it with a new empty HashSet
      * @param recordId This is the recordId that will be put into the returnObject   
      * @param returnObject This List will always has 1 element matching the recordId  
      */
     
-    private static void loadAndSetChildRelations(DsRecordDto parentRecord, HashSet<String> previousIdsForCycleDetection, String recordId, List<DsRecordDto> returnObject) throws SQLException {
-        
-        if (previousIdsForCycleDetection== null){
-            previousIdsForCycleDetection = new HashSet<>();
-        }
-
-        if(recordId.equals(parentRecord.getId())) { // Will happen only if parentRecord is the id recordId
-            returnObject.add(parentRecord);
-        }
-        
+    private static void loadAndSetChildRelations(DsRecordDto parentRecord, HashSet<String> previousIdsForCycleDetection, DsRecordDto origo) throws SQLException {
+       
+                
         List<String> childrenIds = parentRecord.getChildrenIds();                
         List<DsRecordDto> childrenRecords = new ArrayList<DsRecordDto>(); 
         for (String childId: childrenIds) {
                         
-            DsRecordDto child = getRecord(childId);          
+            //DsRecordDto child = getRecord(childId);          
+            DsRecordDto child = childId.equals(origo.getId()) ? origo: getRecord(childId);
             child.setParent(parentRecord);
             childrenRecords.add(child);
+
             
-            if(recordId.equals(child.getId())) { // The recordId has been found
-                returnObject.add(child);                
-            }
             
             if(previousIdsForCycleDetection.contains(child.getId())){
-                log.error( "Parent-child cycle detected for id (stopped loading rest of hierachy tree): ", child.getId());
-                break; //Show it throw exception?
+                log.error("Parent-child cycle detected for id (stopped loading rest of hierarchy tree): {} ", child.getId());
+                throw new InternalServiceException("Parent-child cycle detected for id:"+child.getId());
             }
             previousIdsForCycleDetection.add(child.getId());
-            loadAndSetChildRelations(child, previousIdsForCycleDetection,recordId,returnObject); //This is the recursive call
+            loadAndSetChildRelations(child, previousIdsForCycleDetection,origo); //This is the recursive call
         }             
        
         parentRecord.setChildren(childrenRecords);
