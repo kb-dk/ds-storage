@@ -73,7 +73,7 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Read a specific record by ID. Will return null if no record with the given ID exists. Only IDs for parent and children is loaded, not the parent object or children objects. A record marked with delete flag will also be returned'
+      summary: 'Read a specific record by ID. Will throw exception if record is not found. Only IDs for parent and children is loaded, not the parent object or children objects. A record marked with delete flag will also be returned'
       operationId: getRecord
       parameters:
         - name: id
@@ -116,7 +116,7 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Return a full object tree with this id. The record return will be a pointer to this record in the tree. Will return null if no record with the given ID exists. A record marked with delete flag will also be returned. Do NOT call toString() or hashCode() on the object return due to OpenAPi infinite loop'
+      summary: 'Return the record with the full record tree loaded as parent/child object. Will return throw exception if no record with the given ID exists. A record marked with delete flag will also be returned.'
       operationId: getRecordTree
       parameters:
         - name: id
