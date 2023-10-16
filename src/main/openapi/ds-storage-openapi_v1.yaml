@@ -111,28 +111,30 @@ paths:
                 format: int32          
               
               
-
-  /recordTree/{id}:
-    get:
-      tags:
-        - '${project.name}'
-      summary: 'Return the record with the full record tree loaded as parent/child object. Will return throw exception if no record with the given ID exists. A record marked with delete flag will also be returned.'
-      operationId: getRecordTree
-      parameters:
-        - name: id
-          in: path
-          description: 'Record ID'
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: 'The DsRecord'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DsRecord'              
-           
+ 
+ 
+#  This method can not be exposed by openAPI due to reference cycle
+#  /recordTree/{id}:
+#    get:
+#      tags:
+#        - '${project.name}'
+#      summary: 'Return the record with the full record tree loaded as parent/child object. Will return throw exception if no record with the given ID exists. A record marked with delete flag will also be returned.'
+#      operationId: getRecordTree
+#      parameters:
+#        - name: id
+#          in: path
+#          description: 'Record ID'
+#          required: true
+#          schema:
+#            type: string
+#      responses:
+#        '200':
+#          description: 'The DsRecord'
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/DsRecord'                       
+  
                     
   /record:
     post:
