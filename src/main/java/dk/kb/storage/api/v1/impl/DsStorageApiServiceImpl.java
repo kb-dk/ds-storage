@@ -161,7 +161,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         }
 
     }
-    @Override
+    //@Override Not overwrite. Method removed from openAPI
     public DsRecordDto getRecordTree(String id) {
         try {
             log.debug("getRecordTree(id='{}') called with call details: {}", id, getCallDetails());
