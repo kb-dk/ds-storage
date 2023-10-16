@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -364,7 +364,49 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     }
     
+    @Test
+    public void testLocalRecordTree() throws Exception {        
+        //Datastructure is a tree with 5 nodes and depth=2. (See method for visualization)       
+        //Test 1: Load c1 
+        //Test 2: Load p
+        //Test 3: Load c1_1
+        
+        //Setup
+        String parentId="doms.aviser:p";
+        String child1Id="doms.aviser:c1";
+        String child2Id="doms.aviser:c2";
+        String child1_1Id="doms.aviser:c1_1";
+        String child1_2Id="doms.aviser:c1_2";
+        
+        createTestDepth2Tree("doms.aviser"); // See this method for visualization of the tree.
+        
+        //Test 1
+        DsRecordDto child1 = DsStorageFacade.getRecordTreeLocal(child1Id);       
+        assertEquals(child1Id,child1.getId()); //Test record itself
+        assertEquals(parentId,child1.getParentId());    //Test Parent id
+        assertEquals(parentId,child1.getParent().getId());    //Test Parent object        
+        assertNull(child1.getParent().getChildren());    //Important, do not load children from parent        
+        assertEquals(2,child1.getChildren().size()); //Test both children are loaded
+        assertNull(child1.getChildren().get(0).getParent());    //Important, do not load parent from child
+                
+        //Test 2
+        DsRecordDto parent = DsStorageFacade.getRecordTreeLocal(parentId);
+        assertNull(parent.getParent());//No parent
+        assertNull(parent.getParentId()); //no parent
+        assertEquals(2,child1.getChildren().size()); //Test both children are loaded
+        assertNull(child1.getChildren().get(0).getParent());    //Important, do not load parent from child
+        
+        //Test 3
+        DsRecordDto child1_1= DsStorageFacade.getRecordTreeLocal(child1_1Id);
+        assertEquals(0,child1_1.getChildren().size());  //no further children
+        assertEquals(child1Id, child1_1.getParentId());
+        assertEquals(child1Id, child1_1.getParent().getId());
+        assertNull(child1_1.getParent().getChildren()); //Parent do not point back down.
+        assertEquals(2, child1_1.getParent().getChildrenIds().size()); //But id's to children must be there
+    }
 
+    
+    
     private void createTestHierachyParentAndTwoChildren(String origin) throws Exception {
         String parentId="parent";
 

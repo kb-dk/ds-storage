@@ -121,7 +121,7 @@ public class DsStorageFacade {
      * 
      *  @param recordId The full object tree will be returned with a pointer to this record   
      * 
-     *  Return null if record does not exist.
+     *  @Throws NotFoundServiceException if record is not found
      */
     public static DsRecordDto getRecordTree(String recordId) {
       
@@ -145,7 +145,38 @@ public class DsStorageFacade {
          
         });
     }
+  
+
+    /**
+     *  Will load the local tree for the given record. Parent will be loaded and all children. Siblings will not be loaded. The tree will only point one way
+     *  from the record.
+     *  1) If there is a parent record, the given record will point to it, but the parent will not point back to this child
+     *  2) Children will be loaded, but the children will not point back to this parent record.      
+     * 
+     *  @param recordId The local object tree will be returned with a pointer to this record   
+     * 
+     *  @Throws NotFoundServiceException if record is not found
+     */
+    public static DsRecordDto getRecordTreeLocal(String recordId) {
+           
+        return performStorageAction("getRecord(" + recordId + ")", storage -> {
+        String idNorm = IdNormaliser.normaliseId(recordId);          
+        DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children
+        
+        if (record== null) {
+            throw new NotFoundServiceException("No record with id:"+recordId);             
+        }
+               
+        
+        setLocalTreeForRecord(record);                                     
+        return record;
+         
+        });
+    }
     
+    
+    
+  
     /**
      * Will recursive go up in the tree to find the top parent.
      * Throws an exception if a cycle is detected.
@@ -395,6 +426,37 @@ public class DsStorageFacade {
         
     }
 
+    
+    /**
+     * This method will load the local tree around the given record. It will
+     * 1) Load the parent if it exists, and this will be set as parent. Parent will not point down to this child
+     * 2) Load all children and set them as children. The children will not point back to this parent.   
+     * 
+     * @param record The input record with the local tree set     *      
+     */
+    
+    private static void setLocalTreeForRecord(DsRecordDto record) throws SQLException {
+       
+        //Set parent
+        String parentId=record.getParentId();
+        if (parentId != null) {
+            DsRecordDto parent = getRecord(parentId);
+            record.setParent(parent);
+        }
+
+        //Set children     
+         List<String> childrenIds = record.getChildrenIds();
+         List<DsRecordDto> childrenRecords = new ArrayList<DsRecordDto>();
+         record.setChildren(childrenRecords); 
+
+         for (String childrenId : childrenIds) {
+             DsRecordDto child = getRecord(childrenId);
+             record.getChildren().add(child);             
+         }                      
+        //childrenIds.forEach( c -> record.getChildren().add(getRecord(c))); // Just to make Toke happy, but only as a comment instead of the for-loop        
+    }
+
+    
     
     
     /**
