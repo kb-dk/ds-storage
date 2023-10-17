@@ -150,11 +150,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         try {
             log.debug("getRecord(id='{}') called with call details: {}", id, getCallDetails());
             DsRecordDto record= DsStorageFacade.getRecord(id);
-            if (record== null) {
-                log.warn("No record found for id:"+id);
-              throw new NotFoundServiceException("");                    
-            }
-            
+                      
             return record;
         } catch (Exception e) {
             throw handleException(e);
@@ -165,11 +161,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     public DsRecordDto getRecordTree(String id) {
         try {
             log.debug("getRecordTree(id='{}') called with call details: {}", id, getCallDetails());
-            DsRecordDto record= DsStorageFacade.getRecordTree(id);
-            if (record== null) {
-                log.warn("No record found for id:"+id);
-              throw new NotFoundServiceException("");                    
-            }
+            DsRecordDto record= DsStorageFacade.getRecordTree(id);       
             
             return record;
         } catch (Exception e) {
@@ -182,12 +174,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     public DsRecordDto getRecordTreeLocal(String id) {
         try {
             log.debug("getRecordTree(id='{}') called with call details: {}", id, getCallDetails());
-            DsRecordDto record= DsStorageFacade.getRecordTreeLocal(id);
-            if (record== null) {
-                log.warn("No record found for id:"+id);
-              throw new NotFoundServiceException("");                    
-            }
-            
+            DsRecordDto record= DsStorageFacade.getRecordTreeLocal(id);            
             return record;
         } catch (Exception e) {
             throw handleException(e);

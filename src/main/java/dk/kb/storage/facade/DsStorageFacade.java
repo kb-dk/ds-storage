@@ -128,12 +128,8 @@ public class DsStorageFacade {
         
         return performStorageAction("getRecord(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);          
-        DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children
-        
-        if (record== null) {
-            throw new NotFoundServiceException("No record with id:"+recordId);             
-        }
-        
+        DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children. Throw exception if not found
+                
          DsRecordDto topParent = getTopParent(record); //this will also detect a cycle.              
          
          
@@ -431,9 +427,7 @@ public class DsStorageFacade {
             record.setParent(parent);
         }
 
-         List<DsRecordDto> children = new ArrayList<DsRecordDto>();
-         record.setChildren(children);
-      
+       
          record.getChildrenIds().stream()
          .map(DsStorageFacade::getRecord)
          .forEach(record::addChildrenItem);
