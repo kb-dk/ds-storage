@@ -6,10 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.3.0] - 2023-09-05
+## [1.3.0] - 2023-10-18
 ### Added
 - Client for ds-storage
-- refactoring 
+- refactoring
+- method to get record with local tree as object, immedient parent and children only. 
+
 
 ## [1.2.0] - 2022-02-XX
 ### Added
