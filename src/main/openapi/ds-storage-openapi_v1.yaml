@@ -115,7 +115,7 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Return the record with local record tree. The local record will only has parent and children loaded as object. The parent object reference will be loaded and so will the children from this record. Will return throw exception if no record with the given ID exists. A record marked with delete flag will also be returned.'
+      summary: 'Return the record with local record tree. The DsRecord including immediate parent and children records as objects. Will return throw exception if no record with the given ID exists. A record marked with delete flag will also be returned.'
       operationId: getRecordTreeLocal
       parameters:
         - name: id
@@ -126,7 +126,7 @@ paths:
             type: string
       responses:
         '200':
-          description: 'The DsRecord'
+          description: 'The DsRecord including immediate parent and children records as objects.'
           content:
             application/json:
               schema:
