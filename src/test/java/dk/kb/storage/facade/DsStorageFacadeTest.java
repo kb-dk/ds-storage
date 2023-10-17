@@ -399,7 +399,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         
         //Test 3
         DsRecordDto child1_1= DsStorageFacade.getRecordTreeLocal(child1_1Id);
-        assertEquals(0,child1_1.getChildren().size());  //no further children
+        assertNull(child1_1.getChildren());  //no further children
         assertEquals(child1Id, child1_1.getParentId());
         assertEquals(child1Id, child1_1.getParent().getId());
         assertNull(child1_1.getParent().getChildren()); //Parent do not point back down.
