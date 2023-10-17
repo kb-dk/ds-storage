@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.storage.DsStorageUnitTestUtil;
 import dk.kb.util.webservice.exception.InternalServiceException;

@@ -159,22 +159,14 @@ public class DsStorageFacade {
      */
     public static DsRecordDto getRecordTreeLocal(String recordId) {
            
-        return performStorageAction("getRecord(" + recordId + ")", storage -> {
+        return performStorageAction("getRecordTreeLocal(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);          
-        DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children
-        
-        if (record== null) {
-            throw new NotFoundServiceException("No record with id:"+recordId);             
-        }
-               
-        
+        DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children as id's. Throw exception if record is not found
         setLocalTreeForRecord(record);                                     
         return record;
          
         });
     }
-    
-    
     
   
     /**
@@ -307,12 +299,7 @@ public class DsStorageFacade {
             topParent= record;
         }
         else {
-            topParent= storage.loadRecord(record.getParentId());   //can be null
-        }
-
-        //TopParent can be null if record does not exist
-        if (topParent == null) {
-            return;
+            topParent= storage.loadRecord(record.getParentId());   // will throw exception if not found
         }
 
         String recordId = record.getId();
@@ -444,15 +431,15 @@ public class DsStorageFacade {
             record.setParent(parent);
         }
 
-        //Set children     
-         List<String> childrenIds = record.getChildrenIds();
-         List<DsRecordDto> childrenRecords = new ArrayList<DsRecordDto>();
-         record.setChildren(childrenRecords); 
-
-         for (String childrenId : childrenIds) {
-             DsRecordDto child = getRecord(childrenId);
-             record.getChildren().add(child);             
-         }                      
+         List<DsRecordDto> children = new ArrayList<DsRecordDto>();
+         record.setChildren(children);
+      
+         record.getChildrenIds().stream()
+         .map(DsStorageFacade::getRecord)
+         .forEach(record::addChildrenItem);
+      
+         
+        //just alternative method                  
         //childrenIds.forEach( c -> record.getChildren().add(getRecord(c))); // Just to make Toke happy, but only as a comment instead of the for-loop        
     }
 
