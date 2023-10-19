@@ -161,7 +161,7 @@ paths:
     post:
       tags:
         - '${project.name}'    
-      summary: 'Create a new record or update and existing record. A record can only has a single optional parent but many children)'
+      summary: 'Create a new record or update an existing record. A record can only has a single optional parent but many children)'
       requestBody:
         content:
           application/json:    # Media type
@@ -174,8 +174,8 @@ paths:
               data: '<xml> bla bla </xml>'
               parentId:
       responses:
-        '200':
-          description: OK
+        '204':
+          description: No Content - The request has been executed correct and the server did not deliver any content.
 
   
   /records:
