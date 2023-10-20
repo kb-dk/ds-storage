@@ -20,7 +20,12 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Retrieve list of configured origin with update strategy'
+      summary: 'Retrieve a list of configured origins with their respective update strategy'
+      description: >
+        This endpoint delivers a list of all configured origins. An origin defines which collection data comes from.
+        This could for instance be the Radio & TV collection at The Royal Danish Library, which has the origin defined
+        as 'ds.radiotv'. The update strategy defines how data from the specific origin is updated, when a record is
+        added, modified or deleted.
       operationId: getOriginConfiguration
       responses:
         '200':
@@ -35,7 +40,7 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Show how many records in each origin'
+      summary: 'Show amount of records in each origin'
       operationId: getOriginStatistics    
       responses:
         '200':
@@ -50,12 +55,15 @@ paths:
     delete:
       tags:
         - '${project.name}'
-      summary: 'Delete all records for an origin that has deleted flag set. Notice that applications retrieving records from that origin will never know the record was deleted unless they retrieved it when it was marked with the delete flag.'
+      summary: Delete all records for an origin that has deleted flag set.
+      description: >
+        Notice that applications retrieving records from the deleted origin never will know that the records were deleted
+        unless the application retrieves the records after they have been marked with the delete flag.
       operationId: deleteMarkedForDelete
       parameters:
         - name: origin
           in: query
-          description: 'origin'
+          description: 'The origin to delete records from.'
           required: true
           schema:
             type: string
@@ -73,7 +81,11 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Read a specific record by ID. Will throw exception if record is not found. Only IDs for parent and children is loaded, not the parent object or children objects. A record marked with delete flag will also be returned'
+      summary: 'Read a specific record by ID.'
+      description: >
+        If a record is not found in ds-storage, the endpoint will throw an exception. Records can be related to other
+        records, when this is the case, this endpoint delivers the IDs for related records. If the data for related 
+        records is needed use the ´recordTreeLocal´-endpoint instead. A record marked with delete flag will also be returned.
       operationId: getRecord
       parameters:
         - name: id
@@ -92,7 +104,9 @@ paths:
     delete:
       tags:
         - '${project.name}'
-      summary: 'Mark a record with delete flag. This will not delete the record in the database but only mark it as deleted.'
+      summary: 'Mark a record with delete flag.'
+      description: >
+        This will not delete the record in the database but only mark it as deleted.
       operationId: markRecordForDelete
       parameters:
         - name: id
@@ -115,7 +129,12 @@ paths:
     get:
       tags:
         - '${project.name}'
-      summary: 'Return the record with local record tree. The DsRecord including immediate parent and children records as objects. Will return throw exception if no record with the given ID exists. A record marked with delete flag will also be returned.'
+      summary: 'Return record with local record tree.'
+      description: >
+        The local record tree consists of the queried record, all of its children and its single parent. This endpoint
+        delivers these records as full objects, not just IDs which is achieved with the endpoint ´/record/{id}´.
+        The endpoint throws an exception if no record with the given ID exists. 
+        A record marked with delete flag will also be returned.
       operationId: getRecordTreeLocal
       parameters:
         - name: id
@@ -156,12 +175,13 @@ paths:
 #              schema:
 #                $ref: '#/components/schemas/DsRecord'                       
   
-                    
+  # TODO: Add childrenId to example.
   /record:
     post:
       tags:
         - '${project.name}'    
-      summary: 'Create a new record or update and existing record. A record can only has a single optional parent but many children)'
+      summary: 'Create a new record or update an existing record.'
+      description: A record can have a single optional parent and may have multiple children'
       requestBody:
         content:
           application/json:    # Media type
@@ -172,29 +192,34 @@ paths:
               id: doms_radio_id1
               origin: doms_radio
               data: '<xml> bla bla </xml>'
-              parentId:
+              parentId: parentID123
       responses:
-        '200':
-          description: OK
+        '204':
+          description: No Content - The request has been executed correct and the server did not deliver any content.
 
   
   /records:
     get:
       tags:
         - '${project.name}'
-      summary: 'Extract records from an origin after a given mTime and up to a defined maximum. The records are returned in sorted order by mTime increasing. Records marked for delete will also be returned.'
-      operationId: getRecordsModifiedAfter  
+      summary: 'Extract X records from a origin.'
+      description: >
+        Extract X records from a specified origin after a given mTime and up to a defined maximum mTime. 
+        The records are returned in sorted order by mTime increasing. Records marked for delete will also be returned.
+      operationId: getRecordsModifiedAfter
       x-streamingOutput: true
       parameters:
         - name: origin
           in: query
-          description: 'Origin . Will only extract records from this origin'
+          description: 'Origin. Will only extract records from this origin'
           required: true
           schema:
             type: string
         - name: mTime
           in: query
-          description: 'mTime. Format is millis with 3 added digits. It is up to the caller to keep track of mTime when batching the extracting for retrieval between seperate calls'
+          description: >
+            Format is milliseconds with 3 added digits. It is up to the caller to keep track of 
+            mTime when batching the extracting for retrieval between separate calls.
           required: false
           schema:
             type: integer
@@ -204,7 +229,7 @@ paths:
             #default: 0
         - name: maxRecords
           in: query
-          description: 'Maximum number of records to return. -1 means no limit'
+          description: 'Maximum number of records to return. -1 means no limit.'
           required: false
           schema:
             type: integer
