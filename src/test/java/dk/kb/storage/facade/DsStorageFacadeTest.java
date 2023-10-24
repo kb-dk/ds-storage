@@ -34,7 +34,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         record.setId(id);
         record.setOrigin(origin);
         record.setData(data);
-        record.setRecordType(RecordTypeDto.METADATA);
+        record.setRecordType(RecordTypeDto.MANIFESTATION);
         DsStorageFacade.createOrUpdateRecord(record );
 
         //Load and see it is marked invalid
@@ -68,7 +68,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         record.setOrigin(origin);
         record.setData(data);
         record.setParentId(parentId);
-        record.setRecordType(RecordTypeDto.METADATA);
+        record.setRecordType(RecordTypeDto.MANIFESTATION);
         DsStorageFacade.createOrUpdateRecord(record );
 
         DsRecordDto recordLoaded = DsStorageFacade.getRecord(id);
@@ -114,7 +114,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         record.setId(id);
         record.setOrigin(origin);
         record.setData(data);
-        record.setRecordType(RecordTypeDto.METADATA);
+        record.setRecordType(RecordTypeDto.MANIFESTATION);
         
         try {
             DsStorageFacade.createOrUpdateRecord(record );
@@ -262,7 +262,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         record.setId(id);
         record.setOrigin(origin);
         record.setData(data);     
-        record.setRecordType(RecordTypeDto.METADATA);
+        record.setRecordType(RecordTypeDto.MANIFESTATION);
         try {
             DsStorageFacade.createOrUpdateRecord(record );
             fail("Should fail with recordId does not have origin as prefix");    
@@ -427,14 +427,14 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         child1.setOrigin(origin);
         child1.setData("child1 data");
         child1.setParentId(origin+":"+parentId);
-        child1.setRecordType(RecordTypeDto.METADATA);
+        child1.setRecordType(RecordTypeDto.MANIFESTATION);
         
         DsRecordDto child2 = new DsRecordDto();
         child2.setId(origin+":"+"child2");
         child2.setOrigin(origin);
         child2.setData("child2 data");
         child2.setParentId(origin+":"+parentId);
-        child2.setRecordType(RecordTypeDto.METADATA);
+        child2.setRecordType(RecordTypeDto.MANIFESTATION);
         
         DsStorageFacade.createOrUpdateRecord(parentRecord);
         DsStorageFacade.createOrUpdateRecord(child1);
@@ -469,14 +469,14 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         child1.setOrigin(origin);
         child1.setData("p2 data");
         child1.setParentId(origin+":p1");
-        child1.setRecordType(RecordTypeDto.METADATA);
+        child1.setRecordType(RecordTypeDto.MANIFESTATION);
         
         DsRecordDto child2 = new DsRecordDto();
         child2.setId(origin+":p3");
         child2.setOrigin(origin);
         child2.setData("p3 data");
         child2.setParentId(origin+":p1"); // This is the loop
-        child2.setRecordType(RecordTypeDto.METADATA);  
+        child2.setRecordType(RecordTypeDto.MANIFESTATION);  
         
         DsStorageFacade.createOrUpdateRecord(parentRecord);
         DsStorageFacade.createOrUpdateRecord(child1);
@@ -513,28 +513,28 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         c1.setOrigin(origin);
         c1.setData("c1 data");
         c1.setParentId(origin+":"+parentId);
-        c1.setRecordType(RecordTypeDto.METADATA);
+        c1.setRecordType(RecordTypeDto.MANIFESTATION);
         
         DsRecordDto c2 = new DsRecordDto();
         c2.setId(origin+":"+"c2");
         c2.setOrigin(origin);
         c2.setData("child2 data");
         c2.setParentId(origin+":"+parentId);
-        c2.setRecordType(RecordTypeDto.METADATA);
+        c2.setRecordType(RecordTypeDto.MANIFESTATION);
         
         DsRecordDto c1_1 = new DsRecordDto();
         c1_1.setId(origin+":"+"c1_1");
         c1_1.setOrigin(origin);
         c1_1.setData("c1_1 data");
         c1_1.setParentId(c1.getId()); //c1 as parent
-        c1_1.setRecordType(RecordTypeDto.METADATA);
+        c1_1.setRecordType(RecordTypeDto.MANIFESTATION);
         
         DsRecordDto c1_2 = new DsRecordDto();
         c1_2.setId(origin+":"+"c1_2");
         c1_2.setOrigin(origin);
         c1_2.setData("c1_2 data");
         c1_2.setParentId(c1.getId()); // c1 as parent
-        c1_2.setRecordType(RecordTypeDto.METADATA);
+        c1_2.setRecordType(RecordTypeDto.MANIFESTATION);
         
         DsStorageFacade.createOrUpdateRecord(p);
         DsStorageFacade.createOrUpdateRecord(c1);
