@@ -39,14 +39,14 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         String origin="origin.test";	    	
         String data = "Hello";
         String parentId="origin.test:id_1_parent";
-        RecordTypeDto recordType=RecordTypeDto.METADATA;
+        RecordTypeDto recordType=RecordTypeDto.MANIFESTATION;
         
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
         record.setOrigin(origin);
         record.setData(data);
         record.setParentId(parentId);
-        record.setRecordType(RecordTypeDto.METADATA);
+        record.setRecordType(RecordTypeDto.MANIFESTATION);
         storage.createNewRecord(record );
 
         //Test record not exist
@@ -223,7 +223,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
             child.setOrigin(origin);
             child.setData("child data "+i);
             child.setParentId(id);
-            child.setRecordType(RecordTypeDto.METADATA);
+            child.setRecordType(RecordTypeDto.MANIFESTATION);
 
             storage.createNewRecord(child);	            	        
         }
@@ -238,28 +238,28 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         r1.setId("Id1"); //TODO 
         r1.setOrigin("test_origin1");
         r1.setData("id1 text");   			
-        r1.setRecordType(RecordTypeDto.METADATA);
+        r1.setRecordType(RecordTypeDto.MANIFESTATION);
         storage.createNewRecord(r1);
 
         DsRecordDto r2 = new DsRecordDto();
         r2.setId("Id2");
         r2.setOrigin("test_origin1");
         r2.setData("id2 text");   				    	
-        r2.setRecordType(RecordTypeDto.METADATA);
+        r2.setRecordType(RecordTypeDto.MANIFESTATION);
         storage.createNewRecord(r2);
 
         DsRecordDto r3 = new DsRecordDto();
         r3.setId("Id3");
         r3.setOrigin("test_origin2");
         r3.setData("id3 text");   				    	
-        r3.setRecordType(RecordTypeDto.METADATA);        
+        r3.setRecordType(RecordTypeDto.MANIFESTATION);        
         storage.createNewRecord(r3);
 
         DsRecordDto r4 = new DsRecordDto();
         r4.setId("Id4");
         r4.setOrigin("test_origin3");
         r4.setData("id4 text");
-        r4.setRecordType(RecordTypeDto.METADATA);
+        r4.setRecordType(RecordTypeDto.MANIFESTATION);
         storage.createNewRecord(r4);
 
         ArrayList<OriginCountDto> originStatisticsList = storage.getOriginStatictics();

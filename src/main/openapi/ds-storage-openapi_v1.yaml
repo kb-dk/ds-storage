@@ -445,17 +445,17 @@ components:
         
         **Explanation of the 4 different updatestrategies.**
         
-        | Enum             |  Description                                                                                 | 
-        | ---------------- | -------------------------------------------------------------------------------------------- |  
-        | METADATA         |  All records in the transitive graphs originating in this object should be marked as updated.| 
-        | COLLECTION       |  Metadata records can be in a collection                                                     |                 
-        | DELIVERABLEUNIT  |  Parent object for metadata   |
+        | Enum             |  Description                                                                                  | 
+        | ---------------- | --------------------------------------------------------------------------------------------- |  
+        | COLLECTION       |  Metadata records can be in a collection. This is the root of the tree                        |         
+        | DELIVERABLEUNIT  |  Parent object for manifestation         
+        | MANIFESTATION    |  All records in the transitive graphs originating in this object should be marked as updated.|
+        
       enum:
-        - METADATA
         - COLLECTION
         - DELIVERABLEUNIT
-  
-
+        - MANIFESTATION
+        
 
     # Basic status response component.
     # TODO: Extend this to provide application specific status, such as a list of running jobs or free disk space
