@@ -316,6 +316,8 @@ components:
       type: object
       required:
         - id
+        - origin
+        - recordType
       properties:
         id:
           type: string
@@ -329,6 +331,10 @@ components:
         origin:
           type: string
           description: 'Collection name where the record comes from. Lower characters and dot(.) allowed only.'
+        recordType:
+          type: string
+          description: 'Optional. Examples can be deliverableunit, collection or metadata. Use metadata for records that contains the data. Collection are parent records without metadata.'
+          $ref: '#/components/schemas/RecordType'          
         deleted:
           type: boolean
           description: 'Mark the record as deleted'
@@ -431,6 +437,25 @@ components:
           format: int32
         message:
           type: string
+
+    RecordType:
+      type: string
+      nullable: false
+      description: |
+        
+        **Explanation of the 4 different updatestrategies.**
+        
+        | Enum             |  Description                                                                                 | 
+        | ---------------- | -------------------------------------------------------------------------------------------- |  
+        | METADATA         |  All records in the transitive graphs originating in this object should be marked as updated.| 
+        | COLLECTION       |  Metadata records can be in a collection                                                     |                 
+        | DELIVERABLEUNIT  |  Parent object for metadata   |
+      enum:
+        - METADATA
+        - COLLECTION
+        - DELIVERABLEUNIT
+  
+
 
     # Basic status response component.
     # TODO: Extend this to provide application specific status, such as a list of running jobs or free disk space
