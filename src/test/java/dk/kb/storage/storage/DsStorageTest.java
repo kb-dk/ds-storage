@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.OriginCountDto;
+import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
 
@@ -38,12 +39,14 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         String origin="origin.test";	    	
         String data = "Hello";
         String parentId="origin.test:id_1_parent";
-
+        RecordTypeDto recordType=RecordTypeDto.METADATA;
+        
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
         record.setOrigin(origin);
         record.setData(data);
         record.setParentId(parentId);
+        record.setRecordType(RecordTypeDto.METADATA);
         storage.createNewRecord(record );
 
         //Test record not exist
@@ -58,7 +61,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertEquals(parentId,record.getParentId());        
         Assertions.assertTrue(recordLoaded.getmTime() > 0);
         Assertions.assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
-
+        Assertions.assertEquals(recordType, recordLoaded.getRecordType());
 
         //Now update
 
@@ -210,7 +213,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         megaParent.setOrigin(origin);
         megaParent.setData("mega_parent_data");
         megaParent.setParentId(null);
-
+        megaParent.setRecordType(RecordTypeDto.COLLECTION);
+        
         storage.createNewRecord(megaParent);
 
         for (int i=1;i<=1000;i++){	        
@@ -219,7 +223,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
             child.setOrigin(origin);
             child.setData("child data "+i);
             child.setParentId(id);
-
+            child.setRecordType(RecordTypeDto.METADATA);
 
             storage.createNewRecord(child);	            	        
         }
@@ -233,25 +237,29 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         DsRecordDto r1 = new DsRecordDto();
         r1.setId("Id1"); //TODO 
         r1.setOrigin("test_origin1");
-        r1.setData("id1 text");   				    	
+        r1.setData("id1 text");   			
+        r1.setRecordType(RecordTypeDto.METADATA);
         storage.createNewRecord(r1);
 
         DsRecordDto r2 = new DsRecordDto();
         r2.setId("Id2");
         r2.setOrigin("test_origin1");
         r2.setData("id2 text");   				    	
+        r2.setRecordType(RecordTypeDto.METADATA);
         storage.createNewRecord(r2);
 
         DsRecordDto r3 = new DsRecordDto();
         r3.setId("Id3");
         r3.setOrigin("test_origin2");
         r3.setData("id3 text");   				    	
+        r3.setRecordType(RecordTypeDto.METADATA);        
         storage.createNewRecord(r3);
 
         DsRecordDto r4 = new DsRecordDto();
         r4.setId("Id4");
         r4.setOrigin("test_origin3");
-        r4.setData("id4 text");   				    	
+        r4.setData("id4 text");
+        r4.setRecordType(RecordTypeDto.METADATA);
         storage.createNewRecord(r4);
 
         ArrayList<OriginCountDto> originStatisticsList = storage.getOriginStatictics();

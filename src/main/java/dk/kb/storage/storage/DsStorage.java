@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.OriginCountDto;
+import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
 
@@ -36,6 +37,7 @@ public class DsStorage implements AutoCloseable {
     private static final String ORGID_COLUMN = "orgid";
     private static final String IDERROR_COLUMN = "id_error";
     private static final String ORIGIN_COLUMN = "origin";
+    private static final String RECORDTYPE_COLUMN = "recordtype";
     private static final String DELETED_COLUMN = "deleted";
     private static final String DATA_COLUMN = "data";
     private static final String CTIME_COLUMN = "ctime";
@@ -46,8 +48,8 @@ public class DsStorage implements AutoCloseable {
 
 
     private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
-            " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " +ORGID_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
-            " VALUES (?,?,?,?,?,?,?,?,?)";
+            " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " +ORGID_COLUMN + ","+ RECORDTYPE_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
+            " VALUES (?,?,?,?,?,?,?,?,?,?)";
 
     private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+			 
             DATA_COLUMN + " = ? , "+ 						 
@@ -353,12 +355,13 @@ public class DsStorage implements AutoCloseable {
             stmt.setString(1, record.getId());
             stmt.setString(2, record.getOrigin());
             stmt.setString(3, record.getOrgid());                        
-            stmt.setInt(4, boolToInt(record.getIdError()));            
-            stmt.setInt(5, 0);
-            stmt.setLong(6, nowStamp);
+            stmt.setString(4, record.getRecordType().getValue());
+            stmt.setInt(5, boolToInt(record.getIdError()));                
+            stmt.setInt(6, 0);
             stmt.setLong(7, nowStamp);
-            stmt.setString(8, record.getData());
-            stmt.setString(9, record.getParentId());
+            stmt.setLong(8, nowStamp);
+            stmt.setString(9, record.getData());
+            stmt.setString(10, record.getParentId());
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -471,6 +474,7 @@ public class DsStorage implements AutoCloseable {
         String origin = rs.getString(ORIGIN_COLUMN);
         boolean idError = rs.getInt(IDERROR_COLUMN) == 1;
         String orgid = rs.getString(ORGID_COLUMN);
+        String recordType = rs.getString(RECORDTYPE_COLUMN);
         boolean deleted = rs.getInt(DELETED_COLUMN) == 1;		                
         String data = rs.getString(DATA_COLUMN);
         long cTime = rs.getLong(CTIME_COLUMN);
@@ -481,6 +485,7 @@ public class DsStorage implements AutoCloseable {
         record.setId(id);
         record.setOrigin(origin);
         record.setOrgid(orgid);
+        record.setRecordType(RecordTypeDto.valueOf(recordType));
         record.setIdError(idError);
         record.setData(data);
         record.setParentId(parentId);

@@ -7,11 +7,13 @@ deleted INTEGER,
 data TEXT,
 ctime BIGINT,
 mtime BIGINT,
-parentId VARCHAR(255)
+parentid VARCHAR(255),
+recordtype VARCHAR(31)
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS i ON ds_records(id);
 CREATE UNIQUE INDEX IF NOT EXISTS m ON ds_records(mtime);
 CREATE INDEX IF NOT EXISTS b ON ds_records(origin);
 CREATE INDEX IF NOT EXISTS bd ON ds_records(origin,deleted);
-CREATE INDEX IF NOT EXISTS p ON ds_records(parentId);
+CREATE INDEX IF NOT EXISTS p ON ds_records(parentid);
+CREATE INDEX IF NOT EXISTS rt ON ds_records(recordtype);
