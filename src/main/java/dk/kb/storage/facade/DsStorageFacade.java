@@ -16,6 +16,7 @@ import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
+import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.util.IdNormaliser;
@@ -31,9 +32,9 @@ public class DsStorageFacade {
 
     public static void createOrUpdateRecord(DsRecordDto record)  {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
-            validateOriginExists(record.getOrigin());
+            validateOriginExists(record.getOrigin());        
             validateIdHasOriginPrefix(record.getOrigin(), record.getId());
-            
+            validateRecordType(record.getRecordType());
             String orgId = record.getId();
             if (record.getParentId() != null) { //Parent ID must belong to same collection and also validate
               validateIdHasOriginPrefix(record.getOrigin(), record.getParentId());
@@ -331,7 +332,17 @@ public class DsStorageFacade {
         }
     }
     
-
+    /**
+     * RecordType is not null
+     * @param origin name.
+     */
+    private static void validateRecordType(RecordTypeDto type) {
+        if (type==null) {
+            throw new InvalidArgumentServiceException("RecordType must not be null");
+        }
+    }
+    
+    
     /**
      * Starts a storage transaction and performs the given action on it, returning the result from the action.
      *

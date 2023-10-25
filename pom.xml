@@ -53,6 +53,12 @@
     Every origin is configured with a transitive  update strategy that makes sense for the origin. When a record is created or update it can update the mTime of parent and all children
     if defined for the origin. The possible updatestrategies are: NONE, ALL, PARENT, CHILDREN.  (see #updatestrategy schema)
         
+    ## Record type
+    Records must have one of the 3 enum types define in RecordTypeDto. The recordtype is an easy way to determine depth in the hierachy and can be collection specific.
+    COLLECTION This is top parent (root) with information about the collection. 
+    DELIVERABLEUNIT Parent for a manifestation.
+    MANIFESTATION A record that has metadata that relates to single digital preservation unit (image, video, audio etc.).          
+        
     ## API   
     Records can be extracted by recordId or as a list by specified origin and last modification time (mTime). The uniqueness of mTime
     will ensure batching through the records using mTime will not return same record twice.  
