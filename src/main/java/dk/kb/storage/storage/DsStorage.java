@@ -52,10 +52,11 @@ public class DsStorage implements AutoCloseable {
             " VALUES (?,?,?,?,?,?,?,?,?,?)";
 
     private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+			 
+            RECORDTYPE_COLUMN + " = ?  ,"+
             DATA_COLUMN + " = ? , "+ 						 
             MTIME_COLUMN + " = ? , "+
             DELETED_COLUMN + " = 0 , "+
-            PARENT_ID_COLUMN + " = ?  "+
+            PARENT_ID_COLUMN + " = ?  "+            
             "WHERE "+
             ID_COLUMN + "= ?";
 
@@ -454,11 +455,11 @@ public class DsStorage implements AutoCloseable {
         //log.debug("Creating new record: " + record.getId());
 
         try (PreparedStatement stmt = connection.prepareStatement(updateRecordStatement);) {
-
-            stmt.setString(1, record.getData());
-            stmt.setLong(2, nowStamp);						
-            stmt.setString(3, record.getParentId());
-            stmt.setString(4, record.getId());
+            stmt.setString(1, record.getRecordType().getValue());
+            stmt.setString(2, record.getData());
+            stmt.setLong(3, nowStamp);						
+            stmt.setString(4, record.getParentId());
+            stmt.setString(5, record.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             String message = "SQL Exception in updateRecord with id:" + record.getId() + " error:" + e.getMessage();
