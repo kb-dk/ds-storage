@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 
 import dk.kb.util.webservice.stream.ExportWriter;
 
@@ -70,7 +71,14 @@ public class DsStorageFacade {
         return performStorageAction("getOriginStatistics", DsStorage::getOriginStatictics);
     }
 
-
+    /**
+    *   Retrieve records (DsRecordDs) as a list. The local record tree will not be loaded as objects
+    *
+    *   @param origin origin for the record. Origins are defined in the yaml file
+    *   @param mTime Retrieve records starting from this time
+    *   @param maxRecords Number of maximum records to extract total
+    *   @param batchSize Number of records batch. No reason to change the default 1000. 
+    */
     public static void getRecordsModifiedAfter(
             ExportWriter writer, String origin, long mTime, long maxRecords, int batchSize) {
         String id = String.format(Locale.ROOT, "writeRecordsModifiedAfter(origin='%s', mTime=%d, maxRecords=%d, batchSize=%d)",
@@ -94,23 +102,64 @@ public class DsStorageFacade {
         }
     }
 
-    /*
+    /**
+     *   Retrieve records (DsRecordDs) as a list with the local tree loaded as object.
+     *
+     *   @param origin origin for the record. Origins are defined in the yaml file
+     *   @param recordType Only retrieve records with this recordType
+     *   @param mTime Retrieve records starting from this time
+     *   @param maxRecords Number of maximum records to extract total
+     *   @param batchSize Number of records batch. No reason to change the default 1000. 
+     */
+    public static void getRecordsByRecordTypeModifiedAfterWithLocalTree(
+            ExportWriter writer, String origin, RecordTypeDto recordType, long mTime, long maxRecords, int batchSize) {
+        String id = String.format(Locale.ROOT, "writeRecordsByRecordTypeModifiedAfterWithLocalTree(origin='%s', recordType='%s' mTime=%d, maxRecords=%d, batchSize=%d)",
+                                  origin, recordType, mTime, maxRecords, batchSize);
+        long pending = maxRecords == -1 ? Long.MAX_VALUE : maxRecords; // -1 = all records
+        final AtomicLong lastMTime = new AtomicLong(mTime);
+        while (pending > 0) {
+            int request = pending < batchSize ? (int) pending : batchSize;
+            long delivered = performStorageAction(id, storage -> {
+
+                //important. Only load Id's for performance. Then load the recordTree
+                ArrayList<String> ids = storage.getRecordsIdsByRecordTypeModifiedAfter(origin, recordType,lastMTime.get(), request);
+
+                ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
+                for (int i=0;i<ids.size();i++) {
+                    records.add(getRecordWithChildrenIds(ids.get(i)));
+                }
+                                
+                // We have to load the localTree for the records                
+                records.forEach(DsStorageFacade::setLocalTreeForRecord);
+                
+                writer.writeAll(records);
+                if (!records.isEmpty()) {
+                    lastMTime.set(records.get(records.size()-1).getmTime());
+                }
+                return (long)records.size();
+            });
+            if (delivered == 0) {
+                break;
+            }
+            pending -= delivered;
+        }
+    }
+    
+    
+    /**
+     * Load a record with childrenIds
+     * 
      * Return null if record does not exist
      * 
      */
-    public static DsRecordDto getRecord(String recordId) {
-        return performStorageAction("getRecord(" + recordId + ")", storage -> {
+    public static DsRecordDto getRecordWithChildrenIds(String recordId) {
+        return performStorageAction(" getRecordWithChildrenIds(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);
-           DsRecordDto record = storage.loadRecord(idNorm);
+           DsRecordDto record = storage.loadRecordWithChildIds(idNorm);
                       
            if (record== null) {
                throw new NotFoundServiceException("No record with id:"+recordId);
-            }
-            
-
-           ArrayList<String> childrenIds = storage.getChildrenIds(record.getId());
-           record.setChildrenIds(childrenIds);
-
+            }            
             return record;
         });
     }
@@ -125,19 +174,15 @@ public class DsStorageFacade {
      *  @Throws NotFoundServiceException if record is not found
      */
     public static DsRecordDto getRecordTree(String recordId) {
-      
-        
+             
         return performStorageAction("getRecord(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);          
-        DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children. Throw exception if not found
+        DsRecordDto record = getRecordWithChildrenIds(idNorm); //Load from facade as this will set children. Throw exception if not found
                 
          DsRecordDto topParent = getTopParent(record); //this will also detect a cycle.              
-         
-         
+                  
          loadAndSetChildRelations(topParent,new HashSet<>(), record); //Resursive method     
-                   
-         
-          
+                    
          return record;
          
         });
@@ -158,7 +203,7 @@ public class DsStorageFacade {
            
         return performStorageAction("getRecordTreeLocal(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);          
-        DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children as id's. Throw exception if record is not found
+        DsRecordDto record = getRecordWithChildrenIds(idNorm); //Load from facade as this will set children as id's. Throw exception if record is not found
         setLocalTreeForRecord(record);                                     
         return record;
          
@@ -186,7 +231,7 @@ public class DsStorageFacade {
               
           }          
           ids.add(topParent.getId());
-          topParent = getRecord(topParent.getParentId());                                           
+          topParent = getRecordWithChildrenIds(topParent.getParentId());                                           
       }
       return topParent;        
     }
@@ -404,7 +449,7 @@ public class DsStorageFacade {
         for (String childId: childrenIds) {
                         
             //DsRecordDto child = getRecord(childId);          
-            DsRecordDto child = childId.equals(origo.getId()) ? origo: getRecord(childId);
+            DsRecordDto child = childId.equals(origo.getId()) ? origo: getRecordWithChildrenIds(childId);
             child.setParent(currentRecord);
             childrenRecords.add(child);
             
@@ -426,22 +471,27 @@ public class DsStorageFacade {
      * 1) Load the parent if it exists, and this will be set as parent. Parent will not point down to this child
      * 2) Load all children and set them as children. The children will not point back to this parent.   
      * 
-     * @param record The input record with the local tree set     *      
+     * @param record The input record with the local tree set     *
+     * @exception Will throw InvalidArgumentServiceException if a record has over 1000 children. It is not expected any caller wants this, but has made a mistake.      
      */
     
-    private static void setLocalTreeForRecord(DsRecordDto record) throws SQLException {
-       
+    private static void setLocalTreeForRecord(DsRecordDto record)  {
+
+        //Doom switch prevention.
+        if (record.getChildrenIds() != null && record.getChildrenIds().size() > 1000) { // It seems our collections will have a very few or millions. 
+            throw new InvalidArgumentServiceException("Record has too many children, id:"+record.getId());           
+        }
+        
         //Set parent
         String parentId=record.getParentId();
         if (parentId != null) {
-            DsRecordDto parent = getRecord(parentId);
+            DsRecordDto parent = getRecordWithChildrenIds(parentId);
             record.setParent(parent);
         }
-
-       
-         record.getChildrenIds().stream()
-         .map(DsStorageFacade::getRecord)
-         .forEach(record::addChildrenItem);
+        
+        record.getChildrenIds().stream()
+        .map(DsStorageFacade::getRecordWithChildrenIds)
+        .forEach(record::addChildrenItem);
       
          
         //just alternative method                  

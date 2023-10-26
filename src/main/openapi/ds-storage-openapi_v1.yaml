@@ -198,6 +198,62 @@ paths:
           description: No Content - The request has been executed correct and the server did not deliver any content.
 
   
+  /recordsByRecordTypeLocalTree:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Extract X records from a origin.'
+      description: >
+        Extract X records from a specified origin and recordtype after a given mTime and up to a defined maximum mTime. 
+        The records are returned in sorted order by mTime increasing. Records marked for delete will also be returned.
+        The record will be loaded with the full localtree as objects.         
+      operationId: getRecordsByRecordTypeModifiedAfterLocalTree
+      x-streamingOutput: true
+      parameters:
+        - name: origin
+          in: query
+          description: 'Origin. Will only extract records from this origin'
+          required: true
+          schema:
+            type: string
+        - name: recordType
+          in: query
+          description: 'Only extract records with this recordtype'
+          required: true
+          schema:
+            $ref: '#/components/schemas/RecordType'                      
+        - name: mTime
+          in: query
+          description: >
+            Format is milliseconds with 3 added digits. It is up to the caller to keep track of 
+            mTime when batching the extracting for retrieval between separate calls.
+          required: false
+          schema:
+            type: integer
+            format: int64  
+            example: 0
+            # Default values for longs does not work with the current version of OpenAPI generator
+            #default: 0
+        - name: maxRecords
+          in: query
+          description: 'Maximum number of records to return. -1 means no limit.'
+          required: false
+          schema:
+            type: integer
+            format: int64
+            example: 1000
+            # Default values for longs does not work with the current version of OpenAPI generator
+            #default: 1000
+
+      responses:
+        '200':
+          description: 'List of DsRecords'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DsRecordList'
+
+
   /records:
     get:
       tags:
@@ -245,6 +301,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DsRecordList'
+
 
   # The ping service should be in all projects, should not do any advanced processing
   # and should respond quickly with a simple message, e.g. "pong".
