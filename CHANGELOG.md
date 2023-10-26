@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2023-10-18
+Record object has new attribute:recordType. allowed recordTypes  are defined in the YAML config
+New method to retrieve all records from an origin and recordtype. The records will contain the local tree.
+
 ## [1.3.0] - 2023-10-18
 ### Added
 - Client for ds-storage
