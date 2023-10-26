@@ -378,8 +378,9 @@ public class DsStorageFacade {
     }
     
     /**
-     * RecordType is not null
-     * @param origin name.
+     * Validate recordType is not null
+     * 
+     * @param type 
      */
     private static void validateRecordType(RecordTypeDto type) {
         if (type==null) {

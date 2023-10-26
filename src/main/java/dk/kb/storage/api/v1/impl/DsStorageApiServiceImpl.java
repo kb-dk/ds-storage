@@ -140,7 +140,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         try {
             log.debug(" getRecordsByRecordTypeModifiedAfterLocalTree(origin='{}', recordtype='{}', mTime={}, maxRecords={}) with batchSize={} " +
                       "called with call details: {}",
-                      origin, mTime, maxRecords, ServiceConfig.getDBBatchSize(), getCallDetails());
+                      origin, recordType, mTime, maxRecords, ServiceConfig.getDBBatchSize(), getCallDetails());
             // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
             // the OpenAPI generator does not support defaults for longs (int64)
             long finalMTime = mTime == null ? 0L : mTime;
