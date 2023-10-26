@@ -81,13 +81,21 @@ public class DsStorage implements AutoCloseable {
 
 
     //SELECT * FROM  ds_records  WHERE origin= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
-   //TODO UUNITEST
     private static String recordsModifiedAfterStatement =
             "SELECT * FROM " + RECORDS_TABLE +
             " WHERE " +ORIGIN_COLUMN +"= ?" +
             " AND "+MTIME_COLUMN+" > ?" +
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
+    //SELECT ID FROM  ds_records  WHERE origin= 'test_base' AND recordtype = 'MANIFESTATION' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
+     private static String recordsIDByRecordTypeModifiedAfterStatement =
+             "SELECT "+ ID_COLUMN+ " FROM " + RECORDS_TABLE +
+             " WHERE " +ORIGIN_COLUMN +"= ?" +
+             " AND "+RECORDTYPE_COLUMN+" = ?" +
+             " AND "+MTIME_COLUMN+" > ?" +
+             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
+    
+    
     //SELECT * FROM  ds_records  WHERE origin= 'test_origin' AND mtime  > 1637237120476001 AND PARENTID IS NOT NULL ORDER BY mtime ASC LIMIT 100
     private static String recordsModifiedAfterChildrenOnlyStatement =
             "SELECT * FROM " + RECORDS_TABLE +
@@ -153,7 +161,10 @@ public class DsStorage implements AutoCloseable {
     public DsStorage() throws SQLException {
         connection = dataSource.getConnection();
     }
-
+    
+    /*
+     * Load a record. Will not load childrenIds
+     */
     public DsRecordDto loadRecord(String id) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement);) {
             stmt.setString(1, id);
@@ -167,6 +178,27 @@ public class DsStorage implements AutoCloseable {
             }
         }
     }
+    
+    /*
+     * Load a record and also load children ids
+     */
+    public DsRecordDto loadRecordWithChildIds(String id) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement);) {
+            stmt.setString(1, id);
+
+            try (ResultSet rs = stmt.executeQuery();) {
+                if (!rs.next()) {
+                    return null;// Or throw exception?
+                }
+                DsRecordDto  record = createRecordFromRS(rs);
+
+                //load children                
+                record.setChildrenIds(getChildrenIds(id));                
+                return record;
+            }
+        }
+    }
+    
 
     public boolean recordExists(String id) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(recordIdExistsStatement);) {
@@ -275,6 +307,41 @@ public class DsStorage implements AutoCloseable {
         return records;	
     }
 
+    
+
+    /*
+     * Will only extract ID. 
+     * Will be sorted by mTime. Latest is last     * 
+     * Will extract all no matter of parent or child ids
+     * 
+     */
+    public ArrayList<String> getRecordsIdsByRecordTypeModifiedAfter(String origin, RecordTypeDto recordType, long mTime, int batchSize) throws Exception {
+
+        if (batchSize <1 || batchSize > 10000) { //No doom switch
+            throw new Exception("Batchsize must be in range 1 to 10000");   
+        }
+        ArrayList<String> recordsIds = new ArrayList<String>();
+        try (PreparedStatement stmt = connection.prepareStatement(recordsIDByRecordTypeModifiedAfterStatement);) {
+                       
+            stmt.setString(1, origin);
+            stmt.setString(2, recordType.getValue());
+            stmt.setLong(3, mTime);
+            stmt.setLong(4, batchSize);
+            try (ResultSet rs = stmt.executeQuery();) {
+                while (rs.next()) {                    
+                    recordsIds.add(rs.getString(ID_COLUMN));
+                }
+            }
+        }
+        catch(Exception e) {
+            String message = "SQL Exception in getRecordsIdsByRecordTypeModifiedAfter";
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+
+        return recordsIds; 
+    }
+    
 
 
     /*

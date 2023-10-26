@@ -200,6 +200,10 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
         ArrayList<String> childIds = storage.getChildrenIds(parentId);
         assertEquals(1000, childIds.size());	        	      
+                
+        //Load with children and record at once.
+        DsRecordDto recordsWithChildren = storage.loadRecordWithChildIds(parentId);                         
+        Assertions.assertEquals(1000, recordsWithChildren.getChildrenIds().size());                
     }
 
     /*
