@@ -9,7 +9,7 @@
 
     <groupId>dk.kb.storage</groupId>
     <artifactId>ds-storage</artifactId>
-    <version>1.6</version>
+    <version>1.7-SNAPSHOT</version>
     <packaging>war</packaging>
     <description>
     # Ds-storage(Digitale Samlinger) by the Royal Danish Library. 
