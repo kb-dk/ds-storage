@@ -77,6 +77,45 @@ paths:
                 format: int32
 
 
+  /origin/deleteRecordsForOrigin:
+    delete:
+      tags:
+        - '${project.name}'
+      summary: Delete records from the storage for the origin within the timeframe.
+      description: >
+        Delete records from the storage for the origin within the timeframe. Records will be deleted and not just marked as deleted. mTimeFrom and mTimeTo will be included in the deletion range.
+      operationId: deleteRecordsForOrigin
+      parameters:
+        - name: origin
+          in: query
+          description: 'The origin to delete records from.'
+          required: true
+          schema:
+            type: string            
+        - name: mTimeFrom
+          in: query
+          description: 'mTime start. Value is included in the deletion'
+          required: true
+          schema:
+            type: integer
+            format: int64            
+        - name: mTimeTo
+          in: query
+          description: 'mTime to. Value is included in the deletion'
+          required: true
+          schema:
+            type: integer
+            format: int64   
+                        
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+
   /record/{id}:
     get:
       tags:

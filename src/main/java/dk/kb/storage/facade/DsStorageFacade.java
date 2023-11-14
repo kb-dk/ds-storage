@@ -237,6 +237,15 @@ public class DsStorageFacade {
     }
     
     
+    
+    public static Integer deleteRecordsForOrigin(String origin, long mTimeFrom, long mTimeTo) {
+        return performStorageAction("deleteRecordsForOrigin(" + origin + ")", storage -> {
+            validateOriginExists(origin);
+            int deleted = storage.deleteRecordsForOrigin(origin,mTimeFrom,mTimeTo);                       
+            return deleted;
+        });
+    }
+    
 
     public static Integer markRecordForDelete(String recordId) {
         //TODO touch children etc.
