@@ -178,6 +178,40 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertEquals(0, list6.size());	    	 
     }
 
+    
+    
+    @Test
+    public void testDeleteRecordsForOrigin() throws Exception {	    
+        String parentId="test.origin:mega_parent_id";	          	        
+        long before = UniqueTimestampGenerator.next();
+        createMegaParent(parentId,"test.origin");	                
+        
+        //Test they are created
+        ArrayList<DsRecordDto> list1 = storage.getRecordsModifiedAfter("test.origin", before, 10000);
+        assertEquals(1001, list1.size()); //1000 children +1 parent
+        
+         //Delete those before (empty set). 
+        int deleted= storage.deleteRecordsForOrigin("test.origin", 0L, before);
+        assertEquals(0,deleted);
+
+        //still 1001
+        ArrayList<DsRecordDto> list2 = storage.getRecordsModifiedAfter("test.origin", before, 10000);
+        assertEquals(1001, list2.size()); //1000 children +1 parent
+        
+        //Now delete all
+        long after = UniqueTimestampGenerator.next();
+        deleted= storage.deleteRecordsForOrigin("test.origin", 0L, after);
+        assertEquals(1001,deleted);
+        
+        //None left
+        ArrayList<DsRecordDto> list3 = storage.getRecordsModifiedAfter("test.origin", before, 10000);
+        assertEquals(0, list3.size()); 
+
+        
+        
+	    	 	    		    
+    }	    
+
 
     @Test
     public void testGetModifiedAfter() throws Exception {	    

@@ -66,6 +66,11 @@ public class DsStorage implements AutoCloseable {
             "WHERE "+
             ID_COLUMN + "= ?";
 
+    private static String deleteRecordsForOriginStateMent= "DELETE FROM " + RECORDS_TABLE + " WHERE  "+			 
+            ORIGIN_COLUMN + " = ? AND "+
+            MTIME_COLUMN +" >=  ? AND "+            
+            MTIME_COLUMN +" <=  ?";
+    
     private static String updateMTimeForRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+    
             MTIME_COLUMN + " = ? "+
             "WHERE "+
@@ -485,6 +490,21 @@ public class DsStorage implements AutoCloseable {
         }
 
     }
+    
+    public int deleteRecordsForOrigin(String origin, long mTimeFrom,long mTimeTo) throws Exception {    	
+        try (PreparedStatement stmt = connection.prepareStatement(deleteRecordsForOriginStateMent);) {		
+            stmt.setString(1, origin);						
+            stmt.setLong(2, mTimeFrom);
+            stmt.setLong(3, mTimeTo);            
+            int numberDeleted =  stmt.executeUpdate();           
+            return numberDeleted;
+        } catch (SQLException e) {
+            String message = "SQL Exception in deleteRecordsForOrigin for origin:" + origin + " error:" + e.getMessage();
+            log.error(message,e);
+            throw new SQLException(message, e);
+        }
+    }
+    
     
     public int deleteMarkedForDelete(String origin) throws Exception {
 
