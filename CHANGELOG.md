@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] 2023-11-15
+new API method to delete records by origin within a time interval. The purpose is to clean up old records after af full ingest.
+
+
 ## [1.7.0] - 2023-10-26
 Record object has new attribute:recordType. allowed recordTypes  are defined in the YAML config
 New method to retrieve all records from an origin and recordtype. The records will contain the local tree.
