@@ -237,11 +237,18 @@ public class DsStorageFacade {
     }
     
     
-    
+    /**
+     * Delete all records for an origin that has been modified time interval. The records will be deleted and not just marked for deletion
+     * 
+     * @param origin The origin for the collection. Value must be define in the configuration
+     * @param mTimeFrom modified time from. Format is millis +3 digits
+     * @param mTimeTo modified time to. Format is millis +3 digits
+     */
     public static Integer deleteRecordsForOrigin(String origin, long mTimeFrom, long mTimeTo) {
         return performStorageAction("deleteRecordsForOrigin(" + origin + ")", storage -> {
             validateOriginExists(origin);
             int deleted = storage.deleteRecordsForOrigin(origin,mTimeFrom,mTimeTo);                       
+            log.info("Deleted {} records from origin={}",deleted,origin);                     
             return deleted;
         });
     }

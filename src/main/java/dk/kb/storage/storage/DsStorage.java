@@ -244,7 +244,7 @@ public class DsStorage implements AutoCloseable {
         }		 
     }
 
-    /*
+    /**
      * Will only extract with records strightly  larger than mTime!
      * Will be sorted by mTime. Latest is last
      * 
@@ -278,7 +278,7 @@ public class DsStorage implements AutoCloseable {
         return records;	
     }
 
-    /*
+    /**
      * Will only extract with records strightly  larger than mTime!
      * Will be sorted by mTime. Latest is last
      * 
@@ -314,7 +314,7 @@ public class DsStorage implements AutoCloseable {
 
     
 
-    /*
+    /**
      * Will only extract ID. 
      * Will be sorted by mTime. Latest is last     * 
      * Will extract all no matter of parent or child ids
@@ -349,7 +349,7 @@ public class DsStorage implements AutoCloseable {
     
 
 
-    /*
+    /**
      * Will only extract with records strightly larger than mTime!
      * Will be sorted by mTime. Latest is last
      * 
@@ -491,13 +491,19 @@ public class DsStorage implements AutoCloseable {
 
     }
     
+    /**
+     * Delete all records for an origin that has been modified time interval. The records will be deleted and not just marked for deletion
+     * 
+     * @param origin The origin for the collection. Value must be define in the configuration
+     * @param mTimeFrom modified time from. Format is millis +3 digits
+     * @param mTimeTo modified time to. Format is millis +3 digits
+     */    
     public int deleteRecordsForOrigin(String origin, long mTimeFrom,long mTimeTo) throws Exception {    	
         try (PreparedStatement stmt = connection.prepareStatement(deleteRecordsForOriginStateMent);) {		
             stmt.setString(1, origin);						
             stmt.setLong(2, mTimeFrom);
             stmt.setLong(3, mTimeTo);            
-            int numberDeleted =  stmt.executeUpdate();           
-            return numberDeleted;
+            return stmt.executeUpdate();                       
         } catch (SQLException e) {
             String message = "SQL Exception in deleteRecordsForOrigin for origin:" + origin + " error:" + e.getMessage();
             log.error(message,e);
