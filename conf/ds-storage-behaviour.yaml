@@ -28,6 +28,9 @@ config:
       update_strategy: NONE
     - name : ds.maps
       update_strategy: NONE
+    - name : kb.manus.vmanus.ha
+      update_strategy: NONE
+      
 
   db:
     # In production this will always be PostgreSQL
