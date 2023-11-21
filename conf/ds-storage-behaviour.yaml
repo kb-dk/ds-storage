@@ -10,6 +10,10 @@ config:
   # update_strategy must match enums defined in open API
   # Origin names must match regexp: a-z][0-9][.] 
   allowed_origins:
+    - name: ds.radio
+      update_strategy: ALL  
+    - name: ds.tv
+      update_strategy: ALL        
     - name: doms.radio
       update_strategy: CHILD
     - name: doms.aviser
