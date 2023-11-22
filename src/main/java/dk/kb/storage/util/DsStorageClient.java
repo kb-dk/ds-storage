@@ -17,10 +17,20 @@ package dk.kb.storage.util;
 import dk.kb.storage.client.v1.DsStorageApi;
 import dk.kb.storage.invoker.v1.ApiClient;
 import dk.kb.storage.invoker.v1.Configuration;
+import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.RecordTypeDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.UriBuilder;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Client for the service. Intended for use by other projects that calls this service.
@@ -33,6 +43,19 @@ import java.net.URI;
  */
 public class DsStorageClient extends DsStorageApi {
     private static final Logger log = LoggerFactory.getLogger(DsStorageClient.class);
+    private final String serviceURI;
+
+
+    /**
+     * Set as header by record streaming endpoints to communicate the highest mTime that any records will contain.
+     * This always means the mTime for the last record in the stream.
+     * <p>
+     * Note that there is no preceeding {@code X-} as this is discouraged by
+     * <a href="https://www.rfc-editor.org/rfc/rfc6648">rfc6648</a>.
+     */
+    // This is a duplicate of the same field in DsStorageApiServiceImpl.
+    // This is on purpose as the DsStorageClient is packed as a separate JAR.
+    public static final String HEADER_HIGHEST_MTIME = "Highest-mTime";
 
     /**
      * Creates a client for the service.
@@ -40,7 +63,178 @@ public class DsStorageClient extends DsStorageApi {
      */
     public DsStorageClient(String serviceURI) {
         super(createClient(serviceURI));
+        this.serviceURI = serviceURI;
         log.info("Created OpenAPI client for '" + serviceURI + "'");
+    }
+
+    /**
+     * Delivers the raw bytestream from a call to a remote ds-storage {@link #getRecordsModifiedAfter}.
+     * <p>
+     * Important: Ensure that the returned stream is closed to avoid resource leaks.
+     * @param origin     the origin for the records.
+     * @param mTime      exclusive start time for records to deliver:
+     *                   Epoch time in microseconds (milliseconds times 1000).
+     * @param maxRecords the maximum number of records to deliver. -1 means no limit.
+     * @return a raw bytestream with the response from the remote ds-storage.
+     * @throws IOException if the connection to the remote ds-storage failed.
+     */
+    public HeaderInputStream getRecordsModifiedAfterRaw(String origin, Long mTime, Long maxRecords) throws IOException {
+        URI uri = UriBuilder.fromUri(serviceURI)
+                .path("records")
+                .queryParam("origin", origin)
+                .queryParam("mTime", mTime == null ? 0L : mTime)
+                .queryParam("maxRecords", maxRecords == null ? 10 : maxRecords)
+                .build();
+        log.debug("Opening streaming connection to '{}'", uri);
+        return HeaderInputStream.from(uri);
+    }
+
+    /**
+     * Delivers the raw bytestream from a call to a remote ds-storage
+     * {@link #getRecordsByRecordTypeModifiedAfterLocalTree}.
+     * <p>
+     * Important: Ensure that the returned stream is closed to avoid resource leaks.
+     * @param origin     the origin for the records.
+     * @param recordType valid values {@code COLLECTION}, {@code DELIVERABLEUNIT}, {@code MANIFESTATION}.
+     * @param mTime      exclusive start time for records to deliver:
+     *                   Epoch time in microseconds (milliseconds times 1000).
+     * @param maxRecords the maximum number of records to deliver. -1 means no limit.
+     * @return a raw bytestream with the response from the remote ds-storage.
+     * @throws IOException if the connection to the remote ds-storage failed.
+     */
+    public HeaderInputStream getRecordsByRecordTypeModifiedAfterLocalTreeRaw(
+            String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
+        URI uri = UriBuilder.fromUri(serviceURI)
+                .path("recordsByRecordTypeLocalTree")
+                .queryParam("origin", origin)
+                .queryParam("recordType", recordType)
+                .queryParam("mTime", mTime == null ? 0L : mTime)
+                .queryParam("maxRecords", maxRecords == null ? 10 : maxRecords)
+                .build();
+        log.debug("Opening streaming connection to '{}'", uri);
+        return HeaderInputStream.from(uri);
+    }
+
+    /**
+     * Delivers a stream of records from a call to a remote ds-storage {@link #getRecordsModifiedAfter}.
+     * The stream is unbounded by memory and gives access to the highest modification time (microseconds since
+     * Epoch 1970) for any record that will be delivered by the stream.
+     * <p>
+     * Important: Ensure that the returned stream is closed to avoid resource leaks.
+     * @param origin     the origin for the records.
+     * @param mTime      Exclusive start time for records to deliver:
+     *                   Epoch time in microseconds (milliseconds times 1000).
+     * @param maxRecords the maximum number of records to deliver. -1 means no limit.
+     * @return a stream of records from the remote ds-storage.
+     * @throws IOException if the connection to the remote ds-storage failed.
+     */
+    public RecordStream getRecordsModifiedAfterStream(String origin, Long mTime, Long maxRecords)
+            throws IOException {
+        HeaderInputStream headerStream = getRecordsModifiedAfterRaw(origin, mTime, maxRecords);
+        String highestModificationTime = headerStream.getHeaders().get(HEADER_HIGHEST_MTIME) == null ?
+                null : headerStream.getHeaders().get(HEADER_HIGHEST_MTIME).get(0);
+        return new RecordStream(highestModificationTime, bytesToRecordStream(headerStream));
+    }
+
+    /**
+     * Delivers a stream of records from a call to a remote ds-storage
+     * {@link #getRecordsByRecordTypeModifiedAfterLocalTree}.
+     * The stream is unbounded by memory and gives access to the highest modification time (microseconds since
+     * Epoch 1970) for any record that will be delivered by the stream.
+     * <p>
+     * Important: Ensure that the returned stream is closed to avoid resource leaks.
+     * @param origin     the origin for the records.
+     * @param recordType valid values {@code COLLECTION}, {@code DELIVERABLEUNIT}, {@code MANIFESTATION}.
+     * @param mTime      Exclusive start time for records to deliver:
+     *                   Epoch time in microseconds (milliseconds times 1000).
+     * @param maxRecords the maximum number of records to deliver. -1 means no limit.
+     * @return a stream of records from the remote ds-storage.
+     * @throws IOException if the connection to the remote ds-storage failed.
+     */
+    public RecordStream getRecordsByRecordTypeModifiedAfterLocalTreestream(
+            String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
+        HeaderInputStream headerStream = getRecordsByRecordTypeModifiedAfterLocalTreeRaw(
+                origin, recordType, mTime, maxRecords);
+        String highestModificationTime = headerStream.getHeaders().get(HEADER_HIGHEST_MTIME) == null ?
+                null : headerStream.getHeaders().get(HEADER_HIGHEST_MTIME).get(0);
+        return new RecordStream(highestModificationTime, bytesToRecordStream(headerStream));
+    }
+
+    /**
+     * Convert the given {@code byteStream} to a {@link Stream} of {@link DsRecordDto}.
+     * <p>
+     * The {@code byteStream} is expected to be a JSON response from a {@code records}-endpoint for a ds-storage.
+     * <p>
+     * The conversion happens lazily and an arbitrarily large {@code byteStream} can be given.
+     * <p>
+     * Important: Ensure that the returned stream is closed to avoid resource leaks.
+     * @param byteStream JSON response with records from a ds-storage.
+     * @return a stream of {@link DsRecordDto} de-serialized from the {@code byteStream}.
+     */
+    public static Stream<DsRecordDto> bytesToRecordStream(InputStream byteStream) {
+        Iterator<DsRecordDto> iRecords = bytesToRecordIterator(byteStream);
+        return StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(iRecords, Spliterator.ORDERED),
+                        false) // iterator -> stream
+                .onClose(() -> {
+                    try {
+                        byteStream.close();
+                    } catch (IOException e) {
+                        // Not critical but should generally not happen so we warn
+                        log.warn("bytesToRecordStream: IOException attempting to close InputStream", e);
+                    }
+                });
+    }
+
+    /**
+     * Convert the given {@code byteStream} to an {@link Iterator} of {@link DsRecordDto}.
+     * <p>
+     * The {@code byteStream} is expected to be a JSON response from a {@code records}-endpoint for a ds-storage.
+     * <p>
+     * The conversion happens lazily and an arbitrarily large {@code byteStream} can be given.
+     * <p>
+     * Note: This method is not public as the returned {@code Iterator} is not closeable, which might lead to
+     * resource leaks in case of problems such as a remote caller disconnecting. This is to be handled outside
+     * of this context, i.e. in {@link #bytesToRecordStream}.
+     * @param byteStream JSON response with records from a ds-storage.
+     * @return an iterator of {@link DsRecordDto} de-serialized from the {@code byteStream}.
+     */
+    static Iterator<DsRecordDto> bytesToRecordIterator(InputStream byteStream) {
+        return new Iterator<>() {
+
+            @Override
+            public boolean hasNext() {
+                throw new UnsupportedOperationException("Not implemented yet");
+            }
+
+            @Override
+            public DsRecordDto next() {
+                throw new UnsupportedOperationException("Not implemented yet");
+            }
+        };
+    }
+
+    /**
+     * {@link DsRecordDto} specific stream that gives access to the highest modification time for any record
+     * that will be in the stream (not just up to the current point). The highest modification time will always
+     * belong to the last record in the stream.
+     */
+    public static class RecordStream extends FilterStream<DsRecordDto> implements AutoCloseable {
+        private final String highestModificationTime;
+
+        public RecordStream(String highestModificationTime, Stream<DsRecordDto> inner) {
+            super(inner);
+            this.highestModificationTime = highestModificationTime;
+            log.debug("Creating RecordStream with highestModificationTime='{}'", highestModificationTime);
+        }
+
+        /**
+         * @return the highest modification time for any record that has already been delivered by the stream or will
+         *         be delivered later in the stream. If unknown, this will be null.
+         */
+        public String getHighestModificationTime() {
+            return highestModificationTime;
+        }
     }
 
     /**

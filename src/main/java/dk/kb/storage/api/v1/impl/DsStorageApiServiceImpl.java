@@ -7,11 +7,9 @@ import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.util.webservice.ImplBase;
 import dk.kb.util.webservice.stream.ExportWriter;
 import dk.kb.util.webservice.stream.ExportWriterFactory;
-import dk.kb.util.webservice.ImplBase;
-import dk.kb.util.webservice.exception.NotFoundServiceException;
-
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,13 +18,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Providers;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +32,15 @@ import java.util.List;
  *
  */
 public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
+    /**
+     * Set as header by record streaming endpoints to communicate the highest mTime that any records will contain.
+     * This always means the mTime for the last record in the stream.
+     * <p>
+     * Note that there is no preceeding {@code X-} as this is discouraged by
+     * <a href="https://www.rfc-editor.org/rfc/rfc6648">rfc6648</a>.
+     */
+    public static final String HEADER_HIGHEST_MTIME = "Highest-mTime";
+
     private Logger log = LoggerFactory.getLogger(this.toString());
 
     /*
@@ -123,6 +124,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 // https://github.com/swagger-api/swagger-ui/issues/3832
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
+            // TODO: Implement method for returning highest mTime
+            httpServletResponse.setHeader(HEADER_HIGHEST_MTIME, "123456");
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
@@ -157,6 +160,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 // https://github.com/swagger-api/swagger-ui/issues/3832
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
+            // TODO: Implement method for returning highest mTime
+            httpServletResponse.setHeader(HEADER_HIGHEST_MTIME, "123456");
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
