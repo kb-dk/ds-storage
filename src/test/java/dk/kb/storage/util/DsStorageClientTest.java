@@ -53,29 +53,32 @@ public class DsStorageClientTest {
 
     @Test
     public void testRecords0() throws IOException {
-        Stream<DsRecordDto> deserialized = DsStorageClient.bytesToRecordStream(
-                new CharSequenceInputStream(RECORDS0, StandardCharsets.UTF_8, 1024));
-        List<DsRecordDto> records = deserialized.collect(Collectors.toList());
-        assertTrue(records.isEmpty(), "There should be no records, but there were " + records.size());
+        try (Stream<DsRecordDto> deserialized = DsStorageClient.bytesToRecordStream(
+                new CharSequenceInputStream(RECORDS0, StandardCharsets.UTF_8, 1024))) {
+            List<DsRecordDto> records = deserialized.collect(Collectors.toList());
+            assertTrue(records.isEmpty(), "There should be no records, but there were " + records.size());
+        }
     }
 
     @Test
     public void testRecords1() throws IOException {
-        Stream<DsRecordDto> deserialized = DsStorageClient.bytesToRecordStream(
-                new CharSequenceInputStream(RECORDS1, StandardCharsets.UTF_8, 1024));
-        List<DsRecordDto> records = deserialized.collect(Collectors.toList());
-        assertEquals(1, records.size(), "There should be the right number of records");
-        assertEquals("id1", records.get(0).getId(), "The first record should have the expected ID");
+        try (Stream<DsRecordDto> deserialized = DsStorageClient.bytesToRecordStream(
+                new CharSequenceInputStream(RECORDS1, StandardCharsets.UTF_8, 1024))) {
+            List<DsRecordDto> records = deserialized.collect(Collectors.toList());
+            assertEquals(1, records.size(), "There should be the right number of records");
+            assertEquals("id1", records.get(0).getId(), "The first record should have the expected ID");
+        }
     }
 
     @Test
     public void testRecords2() throws IOException {
-        Stream<DsRecordDto> deserialized = DsStorageClient.bytesToRecordStream(
-                new CharSequenceInputStream(RECORDS2, StandardCharsets.UTF_8, 1024));
-        List<DsRecordDto> records = deserialized.collect(Collectors.toList());
-        assertEquals(2, records.size(), "There should be the right number of records");
-        assertEquals("id1", records.get(0).getId(), "The first record should have the expected ID");
-        assertEquals(123L, records.get(0).getmTime(), "The first record should have the expected mTime");
-        assertEquals("id2", records.get(1).getId(), "The second record should have the expected ID");
+        try (Stream<DsRecordDto> deserialized = DsStorageClient.bytesToRecordStream(
+                new CharSequenceInputStream(RECORDS2, StandardCharsets.UTF_8, 1024))) {
+            List<DsRecordDto> records = deserialized.collect(Collectors.toList());
+            assertEquals(2, records.size(), "There should be the right number of records");
+            assertEquals("id1", records.get(0).getId(), "The first record should have the expected ID");
+            assertEquals(123L, records.get(0).getmTime(), "The first record should have the expected mTime");
+            assertEquals("id2", records.get(1).getId(), "The second record should have the expected ID");
+        }
     }
 }
