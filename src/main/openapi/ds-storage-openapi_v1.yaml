@@ -264,8 +264,7 @@ paths:
         - name: mTime
           in: query
           description: >
-            Format is milliseconds with 3 added digits. It is up to the caller to keep track of 
-            mTime when batching the extracting for retrieval between separate calls.
+            Format is milliseconds with 3 added digits(see documentation in top). Start value will be excluded. It is up to the caller to keep track of mTime when batching the extracting for retrieval between separate calls, by using the last received in the next call.
           required: false
           schema:
             type: integer
@@ -313,8 +312,7 @@ paths:
         - name: mTime
           in: query
           description: >
-            Format is milliseconds with 3 added digits. It is up to the caller to keep track of 
-            mTime when batching the extracting for retrieval between separate calls.
+            Format is milliseconds with 3 added digits(see documentation in top). Start value will be excluded. It is up to the caller to keep track of mTime when batching the extracting for retrieval between separate calls, but using the last received mTime in the next call.
           required: false
           schema:
             type: integer
