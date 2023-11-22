@@ -27,7 +27,7 @@
     in the originating collection if harvested with OAI-PMH etc. 
         
     ## cTime and mTime format
-    The format of cTime and mTime i milliseconds since Epoch (1970) with 3 added digits and is guaranteed to be unique values. The additional 
+    The format of cTime and mTime is milliseconds since Epoch (1970) with 3 added digits and is guaranteed to be unique values. The additional 
     3 digits is used to ensure uniqueness. If multiple records are created/updated within same millis the last 3 digits will be consecutive.
         
     ## Creating and updating records    
