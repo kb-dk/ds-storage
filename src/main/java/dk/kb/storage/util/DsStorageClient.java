@@ -14,6 +14,10 @@
  */
 package dk.kb.storage.util;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.kb.storage.client.v1.DsStorageApi;
 import dk.kb.storage.invoker.v1.ApiClient;
 import dk.kb.storage.invoker.v1.Configuration;
@@ -131,8 +135,8 @@ public class DsStorageClient extends DsStorageApi {
     public RecordStream getRecordsModifiedAfterStream(String origin, Long mTime, Long maxRecords)
             throws IOException {
         HeaderInputStream headerStream = getRecordsModifiedAfterRaw(origin, mTime, maxRecords);
-        String highestModificationTime = headerStream.getHeaders().get(HEADER_HIGHEST_MTIME) == null ?
-                null : headerStream.getHeaders().get(HEADER_HIGHEST_MTIME).get(0);
+        String highestModificationTime = headerStream.getHeaders().get(HEADER_HIGHEST_MTIME) == null ? null :
+                headerStream.getHeaders().get(HEADER_HIGHEST_MTIME).get(0);
         return new RecordStream(highestModificationTime, bytesToRecordStream(headerStream));
     }
 
@@ -155,8 +159,8 @@ public class DsStorageClient extends DsStorageApi {
             String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
         HeaderInputStream headerStream = getRecordsByRecordTypeModifiedAfterLocalTreeRaw(
                 origin, recordType, mTime, maxRecords);
-        String highestModificationTime = headerStream.getHeaders().get(HEADER_HIGHEST_MTIME) == null ?
-                null : headerStream.getHeaders().get(HEADER_HIGHEST_MTIME).get(0);
+        String highestModificationTime = headerStream.getHeaders().get(HEADER_HIGHEST_MTIME) == null ? null :
+                headerStream.getHeaders().get(HEADER_HIGHEST_MTIME).get(0);
         return new RecordStream(highestModificationTime, bytesToRecordStream(headerStream));
     }
 
@@ -170,14 +174,16 @@ public class DsStorageClient extends DsStorageApi {
      * Important: Ensure that the returned stream is closed to avoid resource leaks.
      * @param byteStream JSON response with records from a ds-storage.
      * @return a stream of {@link DsRecordDto} de-serialized from the {@code byteStream}.
+     * @throws IOException if the Stream could not be initialized from the {@code byteStream}.
      */
-    public static Stream<DsRecordDto> bytesToRecordStream(InputStream byteStream) {
+    public static Stream<DsRecordDto> bytesToRecordStream(InputStream byteStream) throws IOException {
         Iterator<DsRecordDto> iRecords = bytesToRecordIterator(byteStream);
         return StreamSupport.stream(
                         Spliterators.spliteratorUnknownSize(iRecords, Spliterator.ORDERED),
                         false) // iterator -> stream
                 .onClose(() -> {
                     try {
+                        log.debug("bytesToRecordStream: Closing source byteStream");
                         byteStream.close();
                     } catch (IOException e) {
                         // Not critical but should generally not happen so we warn
@@ -198,18 +204,60 @@ public class DsStorageClient extends DsStorageApi {
      * of this context, i.e. in {@link #bytesToRecordStream}.
      * @param byteStream JSON response with records from a ds-storage.
      * @return an iterator of {@link DsRecordDto} de-serialized from the {@code byteStream}.
+     * @throws IOException if the {@code byteStream} could not be read.
      */
-    static Iterator<DsRecordDto> bytesToRecordIterator(InputStream byteStream) {
+    static Iterator<DsRecordDto> bytesToRecordIterator(InputStream byteStream) throws IOException {
+        JsonFactory jFactory = new JsonFactory();
+        ObjectMapper mapper = new ObjectMapper();
+        jFactory.setCodec(mapper);
+        JsonParser jParser = jFactory.createParser(byteStream);
+
+        if (jParser.nextToken() != JsonToken.START_ARRAY) {
+            throw new IllegalStateException("Expected JSON START_ARRAY but got " + jParser.currentToken());
+        }
+
         return new Iterator<>() {
+            private DsRecordDto nextRecord = null;
+            private boolean eolReached = false;
 
             @Override
-            public boolean hasNext() {
-                throw new UnsupportedOperationException("Not implemented yet");
+            public boolean hasNext(){
+                ensureNext();
+                return nextRecord != null;
             }
 
             @Override
             public DsRecordDto next() {
-                throw new UnsupportedOperationException("Not implemented yet");
+                if (!hasNext()) {
+                    throw new IllegalStateException("next() called with hasNext() == false");
+                }
+                DsRecordDto record = nextRecord;
+                nextRecord = null;
+                return record;
+            }
+
+            /**
+             * Move to next JSON token. If it is an END_ARRAY, processing is stopped, else a DsRecordDto is read
+             */
+            private void ensureNext() {
+                if (nextRecord != null || eolReached) {
+                    return;
+                }
+                try {
+                    if (jParser.nextToken() == JsonToken.END_ARRAY) {
+                        eolReached = true;
+                        jParser.close();
+                        byteStream.close();
+                        return;
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to read next JSON token", e);
+                }
+                try {
+                    nextRecord = jParser.readValueAs(DsRecordDto.class);
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to read DsRecordDto Object from JSON stream", e);
+                }
             }
         };
     }
