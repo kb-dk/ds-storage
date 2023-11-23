@@ -81,7 +81,9 @@ public class DsStorageClient extends DsStorageApi {
     }
 
     /**
-     * Delivers a stream of records from a call to a remote ds-storage {@link #getRecordsModifiedAfter}.
+     * Call the remote ds-storage {@link #getRecordsModifiedAfter} and return the response in the form of a Stream 
+     * of records.
+     * <p>
      * The stream is unbounded by memory and gives access to the highest modification time (microseconds since
      * Epoch 1970) for any record that will be delivered by the stream.
      * <p>
@@ -102,10 +104,11 @@ public class DsStorageClient extends DsStorageApi {
     }
 
     /**
-     * Delivers a stream of records from a call to a remote ds-storage
-     * {@link #getRecordsByRecordTypeModifiedAfterLocalTree}.
+     * Call the remote ds-storage {@link #getRecordsByRecordTypeModifiedAfterLocalTree} and return the response
+     * in the form of a Stream of records.
+     * <p>
      * The stream is unbounded by memory and gives access to the highest modification time (microseconds since
-     * Epoch 1970) for any record that will be delivered by the stream.
+     * Epoch 1970) for any record that will be delivered by the stream {@link RecordStream#getHighestModificationTime}.
      * <p>
      * Important: Ensure that the returned stream is closed to avoid resource leaks.
      * @param origin     the origin for the records.
@@ -126,7 +129,8 @@ public class DsStorageClient extends DsStorageApi {
     }
 
     /**
-     * Delivers the raw bytestream from a call to a remote ds-storage {@link #getRecordsModifiedAfter}.
+     * Call the remote ds-storage {@link #getRecordsModifiedAfter} and return the response unchanged as a wrapped
+     * bytestream.
      * <p>
      * Important: Ensure that the returned stream is closed to avoid resource leaks.
      * @param origin     the origin for the records.
@@ -148,8 +152,8 @@ public class DsStorageClient extends DsStorageApi {
     }
 
     /**
-     * Delivers the raw bytestream from a call to a remote ds-storage
-     * {@link #getRecordsByRecordTypeModifiedAfterLocalTree}.
+     * Call the remote ds-storage {@link #getRecordsByRecordTypeModifiedAfterLocalTree} and return the response 
+     * unchanged as a wrapped bytestream.
      * <p>
      * Important: Ensure that the returned stream is closed to avoid resource leaks.
      * @param origin     the origin for the records.
@@ -273,8 +277,8 @@ public class DsStorageClient extends DsStorageApi {
 
     /**
      * {@link DsRecordDto} specific stream that gives access to the highest modification time for any record
-     * that will be in the stream (not just up to the current point). The highest modification time will always
-     * belong to the last record in the stream.
+     * that will be in the stream (not just up to the current {@link DsRecordDto} in the stream).
+     * The highest modification time will always belong to the last record in the stream.
      */
     public static class RecordStream extends FilterStream<DsRecordDto> implements AutoCloseable {
         private final String highestModificationTime;
