@@ -94,14 +94,14 @@ paths:
             type: string            
         - name: mTimeFrom
           in: query
-          description: 'mTime start (millis+3digits). Value is included in the deletion'
+          description: 'Format is milliseconds since Epoch with 3 added digits. Value is included in the deletion'
           required: true
           schema:
             type: integer
             format: int64            
         - name: mTimeTo
           in: query
-          description: 'mTime to (millis+3digits). Value is included in the deletion'
+          description: 'Format is milliseconds since Epoch with 3 added digits. Value is included in the deletion'
           required: true
           schema:
             type: integer
@@ -264,7 +264,7 @@ paths:
         - name: mTime
           in: query
           description: >
-            Format is milliseconds with 3 added digits(see documentation in top). Start value will be excluded. It is up to the caller to keep track of mTime when batching the extracting for retrieval between separate calls, by using the last received in the next call.
+            Format is milliseconds since Epoch with 3 added digits. (see documentation in top). Start value will be excluded. It is up to the caller to keep track of mTime when batching the extracting for retrieval between separate calls, by using the last received in the next call.
           required: false
           schema:
             type: integer
@@ -312,7 +312,7 @@ paths:
         - name: mTime
           in: query
           description: >
-            Format is milliseconds with 3 added digits(see documentation in top). Start value will be excluded. It is up to the caller to keep track of mTime when batching the extracting for retrieval between separate calls, but using the last received mTime in the next call.
+            Format is milliseconds since Epoch with 3 added digits. See more documentation in top. Start value will be excluded. It is up to the caller to keep track of mTime when batching the extracting for retrieval between separate calls, but using the last received mTime in the next call.
           required: false
           schema:
             type: integer
@@ -438,11 +438,11 @@ components:
         cTime:
           type: integer
           format: int64
-          description: 'Creation time when the record was created first time. Format is millis with 3 added digits. This creation time value will not be changed when updating the record.'
+          description: 'Creation time when the record was created first time. Format is milliseconds since Epoch with 3 added digits.This creation time value will not be changed when updating the record.'
         mTime:
           type: integer
           format: int64
-          description: 'Modification time for last create or update of the record. Format is millis with 3 added digits. When a record is updated, mTime for parent and child records can also be updated due to updatestrategy defined for that origin.'
+          description: 'Modification time for last create or update of the record. Format is milliseconds since Epoch with 3 added digits . When a record is updated, mTime for parent and child records can also be updated due to updatestrategy defined for that origin.'
         cTimeHuman:
           type: string
           description: 'Creation time in date format YYYY-MM-DD HH:mm:ssZ'
@@ -496,7 +496,7 @@ components:
         latestMTime:
           type: integer
           format: int64
-          description: 'mTime stamp of most recent record updated or created for that origin'
+          description: 'mTime stamp of most recent record updated or created for that origin. Format is milliseconds since Epoch with 3 added digits'
         lastMTimeHuman:
           type: string
           description: 'latestMTime in human readable format.  Date format is YYYY-MM-DD HH:mm:ssZ'
