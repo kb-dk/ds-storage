@@ -125,9 +125,14 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
 
-            // This is currently a place holder for future functionality
-            // TODO: Implement method for returning highest mTime
-            httpServletResponse.setHeader(HEADER_HIGHEST_MTIME, "123456");
+            Long highestMtime = DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords);
+            if (highestMtime != null) {
+                httpServletResponse.setHeader(HEADER_HIGHEST_MTIME, Long.toString(highestMtime));
+            } else {
+                log.debug("Unable to set header '{}' as max mTime could not be determined for " +
+                          "origin='{}', mTime>{}, maxRecords={}",
+                          HEADER_HIGHEST_MTIME, origin, finalMTime, finalMaxRecords);
+            }
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(

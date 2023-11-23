@@ -17,7 +17,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 
 
@@ -83,7 +82,20 @@ public class DsStorage implements AutoCloseable {
 
     private static String recordByIdStatement = "SELECT * FROM " + RECORDS_TABLE + " WHERE ID= ?";
 
+    // SELECT mtime FROM ds_records WHERE origin= 'test_base' ORDER BY mtime DESC
+    private static String maxMtimeStatement =
+            "SELECT " + MTIME_COLUMN + " FROM " + RECORDS_TABLE +
+            " WHERE " + ORIGIN_COLUMN + "= ?" +
+            " ORDER BY " + MTIME_COLUMN + " DESC";
 
+    // SELECT MAX(mtime) AS MAX FROM (SELECT mtime FROM ds_records  WHERE origin= 'test_base' AND mtime > 1637237120476001 ORDER BY mtime ASC LIMIT 100) GROUP BY mtime
+    private static String maxMtimeAfterWithLimitStatement =
+            "SELECT MAX (" + MTIME_COLUMN + ") AS MAX FROM ( SELECT mtime FROM " + RECORDS_TABLE +
+            " WHERE " + ORIGIN_COLUMN + "= ?" +
+            " AND " + MTIME_COLUMN + " > ?" +
+            " ORDER BY " + MTIME_COLUMN + " ASC" +
+            " LIMIT ?)" +
+            " GROUP BY " + MTIME_COLUMN;
 
     //SELECT * FROM  ds_records  WHERE origin= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
     private static String recordsModifiedAfterStatement =
@@ -279,25 +291,71 @@ public class DsStorage implements AutoCloseable {
     }
 
     /**
+     * Extract max {@code record.mTime} in {@code origin}.
+     * <p>
+     * If there are no records, null will be returned.
+     */
+    public Long getMaxMtime(String origin) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(maxMtimeStatement)) {
+            stmt.setString(1, origin);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getLong(MTIME_COLUMN) : null;
+            }
+        } catch(Exception e) {
+            String message = "SQL Exception in getMaxMtime";
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+    }
+
+    /**
+     * Extract max {@code record.mTime}, where {@code record.mTime > mTime} in {@code origin},
+     * ordered by {@code record.mTime} and limited to {@code maxRecords}.
+     * <p>
+     * If there are no matching records, null will be returned.
+     * @param origin only records from the {@code origin} will be inspected.
+     * @param mTime only records with modification time larger than {@code mTime} will be inspected.
+     * @param maxRecords only this number of records will be inspected. {@code -1} means no limit.
+     */
+    public Long getMaxMtimeAfter(String origin, long mTime, long maxRecords) throws SQLException {
+        if (maxRecords == -1) {
+            Long maxMtime = getMaxMtime(origin);
+            return maxMtime == null || maxMtime <= mTime ? null : maxMtime;
+        }
+        try (PreparedStatement stmt = connection.prepareStatement(maxMtimeAfterWithLimitStatement)) {
+            stmt.setString(1, origin);
+            stmt.setLong(2, mTime);
+            stmt.setLong(3, maxRecords);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getLong("MAX") : null;
+            }
+        } catch(Exception e) {
+            String message = "SQL Exception in getMaxMtimeAfter";
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+    }
+
+    /**
      * Will only extract with records strightly  larger than mTime!
      * Will be sorted by mTime. Latest is last
-     * 
+     *
      * Will extract all no matter of parent or child ids
-     * 
+     *
      */
     public ArrayList<DsRecordDto > getRecordsModifiedAfter(String origin, long mTime, int batchSize) throws Exception {
 
         if (batchSize <1 || batchSize > 10000) { //No doom switch
-            throw new Exception("Batchsize must be in range 1 to 10000");			
+            throw new Exception("Batchsize must be in range 1 to 10000");
         }
         ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement);) {
-                       
+
             stmt.setString(1, origin);
             stmt.setLong(2, mTime);
             stmt.setLong(3, batchSize);
             try (ResultSet rs = stmt.executeQuery();) {
-                while (rs.next()) {                    
+                while (rs.next()) {
                     DsRecordDto record = createRecordFromRS(rs);
                     records.add(record);
                 }
@@ -309,7 +367,7 @@ public class DsStorage implements AutoCloseable {
             throw new SQLException(message, e);
         }
 
-        return records;	
+        return records;
     }
 
     

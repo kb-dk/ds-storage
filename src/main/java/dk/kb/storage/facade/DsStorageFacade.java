@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
+import dk.kb.util.webservice.exception.ServiceException;
 import dk.kb.util.webservice.stream.ExportWriter;
 
 import org.slf4j.Logger;
@@ -276,6 +277,22 @@ public class DsStorageFacade {
             return numberDeleted;
         });
     }
+
+    /**
+     * Extract max {@code record.mTime}, where {@code record.mTime > mTime} in {@code origin},
+     * ordered by {@code record.mTime} and limited to {@code maxRecords}.
+     * <p>
+     * If there are no matching records, null will be returned.
+     * @param origin only records from the {@code origin} will be inspected.
+     * @param mTime only records with modification time larger than {@code mTime} will be inspected.
+     * @param maxRecords only this number of records will be inspected. {@code -1} means no limit.
+     */
+    public static Long getMaxMtimeAfter(String origin, long mTime, long maxRecords) {
+        return performStorageAction(
+                "getMaxMtimeAfter(origin='" + origin + "', mTime=" + mTime + ", maxRecords=" + maxRecords + ")",
+                storage -> storage.getMaxMtimeAfter(origin, mTime, maxRecords));
+    }
+
 
     /*
      * This is called when ever a record is modified (create/update/markfordelete). The recordId here

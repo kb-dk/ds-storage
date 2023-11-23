@@ -1,8 +1,5 @@
 package dk.kb.storage.storage;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,6 +18,7 @@ import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class DsStorageTest extends DsStorageUnitTestUtil{
@@ -121,12 +119,42 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     }
 
     @Test
-    public void testGetModifiedAfterParentsOnly() throws Exception {	    
+    public void testGetMtimeAfterWithLimit() throws Exception {
         String parentId="test.origin:mega_parent_id";	          	        
+        long beforeTime = UniqueTimestampGenerator.next();
+        createMegaParent(parentId,"test.origin");
+        long afterTime = UniqueTimestampGenerator.next();
+
+        long maxTime = storage.getMaxMtime("test.origin");
+        assertTrue(maxTime > beforeTime, "Max time should be higher than before time");
+        assertTrue(maxTime < afterTime, "Max time should be lower than after time");
+    }
+
+    @Test
+    public void testHighestModified() throws Exception {
+        String parentId="test.origin:mega_parent_id";
+        long beforeTime = UniqueTimestampGenerator.next();
+        createMegaParent(parentId,"test.origin");
+        long afterTime = UniqueTimestampGenerator.next();
+
+        long maxBefore = storage.getMaxMtimeAfter("test.origin", beforeTime, 100);
+        long maxMiddle = storage.getMaxMtimeAfter("test.origin", (beforeTime+afterTime)/2, 100);
+        Long maxAfter = storage.getMaxMtimeAfter("test.origin", afterTime, 100);
+        
+        assertTrue(beforeTime < maxBefore, "Max mTime with start before should be after beforeTime");
+        assertTrue(maxBefore < afterTime, "Max mTime with start before should be before afterTime");
+        assertTrue(maxBefore < maxMiddle, "Max mTime with start beforeTime should be before max mTime with start in the middle");
+        assertTrue(maxMiddle < afterTime, "Max mTime with start in the middle should be before afterTime");
+        assertNull(maxAfter, "Max mTime with start afterTime should be null");
+    }
+
+    @Test
+    public void testGetModifiedAfterParentsOnly() throws Exception {
+        String parentId="test.origin:mega_parent_id";
         long before = UniqueTimestampGenerator.next();
 
 
-        createMegaParent(parentId,"test.origin");	
+        createMegaParent(parentId,"test.origin");
 
         ArrayList<DsRecordDto> list1 = storage.getModifiedAfterParentsOnly("test.origin:does_not_exist", before, 100);
         assertEquals(0, list1.size());
@@ -139,9 +167,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         long lastModified = list2.get(0).getmTime();
 
         ArrayList<DsRecordDto> list3 = storage.getModifiedAfterParentsOnly("test.origin", lastModified, 100);
-        assertEquals(0, list3.size());	    	 	    	 	    	 
+        assertEquals(0, list3.size());
     }
-
 
     @Test
     public void testGetModifiedAfterChildrenOnly() throws Exception {	    
