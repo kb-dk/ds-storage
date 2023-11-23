@@ -124,6 +124,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 // https://github.com/swagger-api/swagger-ui/issues/3832
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
+
+            // This is currently a place holder for future functionality
             // TODO: Implement method for returning highest mTime
             httpServletResponse.setHeader(HEADER_HIGHEST_MTIME, "123456");
 
@@ -160,6 +162,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 // https://github.com/swagger-api/swagger-ui/issues/3832
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
+
+            // This is currently a place holder for future functionality
             // TODO: Implement method for returning highest mTime
             httpServletResponse.setHeader(HEADER_HIGHEST_MTIME, "123456");
 
