@@ -97,10 +97,14 @@ public class DsStorageClientTest {
         }
         try (DsStorageClient.RecordStream records = remote.getRecordsModifiedAfterStream(
                 "ds.radiotv", 0L, 3L)) {
-            long count = records.count();
-            assertEquals(3L, count, "The requested number of records should be received");
+            List<DsRecordDto> recordList = records.collect(Collectors.toList());
+            assertEquals(3, recordList.size(), "The requested number of records should be received");
             assertNotNull(records.getHighestModificationTime(),
                     "The highest modification time should be present");
+            log.debug("Stated highest modification time was " + records.getHighestModificationTime());
+            assertEquals(recordList.get(recordList.size()-1).getmTime(),
+                    Long.valueOf(records.getHighestModificationTime()),
+                    "Received highest mTime should match stated highest mTime");
         }
     }
 
