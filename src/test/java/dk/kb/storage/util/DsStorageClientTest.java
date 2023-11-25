@@ -95,15 +95,15 @@ public class DsStorageClientTest {
         if (remote == null) {
             return;
         }
-        try (DsStorageClient.RecordStream records = remote.getRecordsModifiedAfterStream(
+        try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsModifiedAfterStream(
                 "ds.radiotv", 0L, 3L)) {
             List<DsRecordDto> recordList = records.collect(Collectors.toList());
             assertEquals(3, recordList.size(), "The requested number of records should be received");
-            assertNotNull(records.getHighestModificationTime(),
+            assertNotNull(records.getContinuationToken(),
                     "The highest modification time should be present");
-            log.debug("Stated highest modification time was " + records.getHighestModificationTime());
+            log.debug("Stated highest modification time was " + records.getContinuationToken());
             assertEquals(recordList.get(recordList.size()-1).getmTime(),
-                    Long.valueOf(records.getHighestModificationTime()),
+                         records.getContinuationToken(),
                     "Received highest mTime should match stated highest mTime");
         }
     }
@@ -113,19 +113,19 @@ public class DsStorageClientTest {
         if (remote == null) {
             return;
         }
-        try (DsStorageClient.RecordStream records = remote.getRecordsByRecordTypeModifiedAfterLocalTreeStream(
+        try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsByRecordTypeModifiedAfterLocalTreeStream(
                 "ds.radiotv", RecordTypeDto.DELIVERABLEUNIT, 0L, 3L)) {
             long count = records.count();
             assertEquals(3L, count, "The requested number of records should be received");
-            assertNotNull(records.getHighestModificationTime(),
+            assertNotNull(records.getContinuationToken(),
                     "The highest modification time should be present");
         }
     }
 
     @Test
     public void testRecords0() throws IOException {
-        try (Stream<DsRecordDto> deserialized = DsStorageClient.bytesToRecordStream(
-                new CharSequenceInputStream(RECORDS0, StandardCharsets.UTF_8, 1024))) {
+        try (Stream<DsRecordDto> deserialized = JSONStreamUtil.jsonToObjectsStream(
+                new CharSequenceInputStream(RECORDS0, StandardCharsets.UTF_8, 1024), DsRecordDto.class)) {
             List<DsRecordDto> records = deserialized.collect(Collectors.toList());
             assertTrue(records.isEmpty(), "There should be no records, but there were " + records.size());
         }
@@ -133,8 +133,8 @@ public class DsStorageClientTest {
 
     @Test
     public void testRecords1() throws IOException {
-        try (Stream<DsRecordDto> deserialized = DsStorageClient.bytesToRecordStream(
-                new CharSequenceInputStream(RECORDS1, StandardCharsets.UTF_8, 1024))) {
+        try (Stream<DsRecordDto> deserialized = JSONStreamUtil.jsonToObjectsStream(
+                new CharSequenceInputStream(RECORDS1, StandardCharsets.UTF_8, 1024), DsRecordDto.class)) {
             List<DsRecordDto> records = deserialized.collect(Collectors.toList());
             assertEquals(1, records.size(), "There should be the right number of records");
             assertEquals("id1", records.get(0).getId(), "The first record should have the expected ID");
@@ -143,8 +143,8 @@ public class DsStorageClientTest {
 
     @Test
     public void testRecords2() throws IOException {
-        try (Stream<DsRecordDto> deserialized = DsStorageClient.bytesToRecordStream(
-                new CharSequenceInputStream(RECORDS2, StandardCharsets.UTF_8, 1024))) {
+        try (Stream<DsRecordDto> deserialized = JSONStreamUtil.jsonToObjectsStream(
+                new CharSequenceInputStream(RECORDS2, StandardCharsets.UTF_8, 1024), DsRecordDto.class)) {
             List<DsRecordDto> records = deserialized.collect(Collectors.toList());
             assertEquals(2, records.size(), "There should be the right number of records");
             assertEquals("id1", records.get(0).getId(), "The first record should have the expected ID");
