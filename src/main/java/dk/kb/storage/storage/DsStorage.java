@@ -84,16 +84,23 @@ public class DsStorage implements AutoCloseable {
     private static String recordByIdStatement = "SELECT * FROM " + RECORDS_TABLE + " WHERE ID= ?";
 
     // SELECT mtime FROM ds_records WHERE origin= 'test_base' ORDER BY mtime DESC
-    private static String maxMtimeStatement =
+    private static final String maxMtimeStatement =
             "SELECT " + MTIME_COLUMN + " FROM " + RECORDS_TABLE +
             " WHERE " + ORIGIN_COLUMN + "= ?" +
+            " ORDER BY " + MTIME_COLUMN + " DESC";
+
+    // SELECT mtime FROM ds_records WHERE origin= 'test_base' AND recordtype='record type' ORDER BY mtime DESC
+    private static final String maxMtimeTypeStatement =
+            "SELECT " + MTIME_COLUMN + " FROM " + RECORDS_TABLE +
+            " WHERE " + ORIGIN_COLUMN + "= ?" +
+            " AND " + RECORDTYPE_COLUMN + "= ?" +
             " ORDER BY " + MTIME_COLUMN + " DESC";
 
     // TODO: Optimise this
     // The current implementation creates a temporary table
     // Alternative 1: Make a plain select and step through to the end
     // Alternative 2: First count the number of "hits", then use that as OFFSET
-    private static String maxMtimeAfterWithLimitStatement =
+    private static final String maxMtimeAfterWithLimitStatement =
             "SELECT MAX (" + MTIME_COLUMN + ") AS max_mtime, " +
             "       COUNT (*) AS limit_count " +
             "FROM " +
@@ -104,8 +111,21 @@ public class DsStorage implements AutoCloseable {
             "  ORDER BY " + MTIME_COLUMN + " ASC" +
             "  LIMIT ?) AS max_mtime_sub";
 
+    // TODO: Optimise this after maxMtimeAfterWithLimitStatement has been optimised
+    private static final String maxMtimeAfterWithLimitTypeStatement =
+            "SELECT MAX (" + MTIME_COLUMN + ") AS max_mtime, " +
+            "       COUNT (*) AS limit_count " +
+            "FROM " +
+            "( SELECT " + MTIME_COLUMN +
+            "  FROM " + RECORDS_TABLE +
+            "  WHERE " + ORIGIN_COLUMN + "= ?" +
+            "  AND " + RECORDTYPE_COLUMN + "= ?" +
+            "  AND " + MTIME_COLUMN + " > ?" +
+            "  ORDER BY " + MTIME_COLUMN + " ASC" +
+            "  LIMIT ?) AS max_mtime_sub";
+
     //SELECT * FROM  ds_records  WHERE origin= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
-    private static String recordsModifiedAfterStatement =
+    private static final String recordsModifiedAfterStatement =
             "SELECT * FROM " + RECORDS_TABLE +
             " WHERE " +ORIGIN_COLUMN +"= ?" +
             " AND "+MTIME_COLUMN+" > ?" +
@@ -300,6 +320,27 @@ public class DsStorage implements AutoCloseable {
     /**
      * Extract max {@code record.mTime} in {@code origin}.
      * @param origin only records from the {@code origin} will be inspected.
+     * @param recordType only records with the given type will be inspected.
+     * @return max {@code record.mTime} within the given {@code origin} and woth the given {@code recordType} or 0
+     *         if there were no records.
+     */
+    public long getMaxMtime(String origin, RecordTypeDto recordType) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(maxMtimeTypeStatement)) {
+            stmt.setString(1, origin);
+            stmt.setString(2, recordType.getValue());
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getLong(MTIME_COLUMN) : 0;
+            }
+        } catch(Exception e) {
+            String message = "SQL Exception in getMaxMtime with recordType";
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+    }
+
+    /**
+     * Extract max {@code record.mTime} in {@code origin}.
+     * @param origin only records from the {@code origin} will be inspected.
      * @return max {@code record.mTime} within the given {@code origin} or 0 if there were no records.
      */
     public long getMaxMtime(String origin) throws SQLException {
@@ -364,6 +405,63 @@ public class DsStorage implements AutoCloseable {
         
         // Check whether there are extra records available (extra call, but a light one)
         long absoluteMaxMtime = getMaxMtime(origin);
+        return maxMTime < absoluteMaxMtime ?
+                new Pair<>(maxMTime, true) : // Subsequent records available
+                new Pair<>(maxMTime, false); // No subsequent records
+    }
+
+    /**
+     * Extract max {@code record.mTime}, where {@code record.mTime > mTime} in {@code origin},
+     * ordered by {@code record.mTime} and limited to {@code maxRecords}.
+     * Secondarily, check whether there are any records with record.mTime higher than the returned
+     * maximum mTime.
+     * @param origin only records from the {@code origin} will be inspected.
+     * @param recordType only records with the given type will be inspected.
+     * @param mTime only records with modification time larger than {@code mTime} will be inspected.
+     * @param maxRecords only this number of records will be inspected. {@code -1} means no limit.
+     * @return pair of (maximum {@code record.mTime} or null if no match, true if there exists at
+     *         least 1 record with {@code record.mTime} higher than the maximum within the constraints).
+     */
+    public Pair<Long, Boolean> getMaxMtimeAfter(String origin, RecordTypeDto recordType, long mTime, long maxRecords)
+            throws SQLException {
+        // No maxRecords is simple: Just check the last record.mTime > mTime
+        if (maxRecords == -1) {
+            long maxMtime = getMaxMtime(origin, recordType);
+            return new Pair<>(maxMtime == 0L || maxMtime <= mTime ? null : maxMtime,
+                              false);
+        }
+
+        // Determine max record.mTime and count the number of records within the limits
+        Long maxMTime = null;
+        Long totalCount = null;
+        try (PreparedStatement stmt = connection.prepareStatement(maxMtimeAfterWithLimitTypeStatement)) {
+            stmt.setString(1, origin);
+            stmt.setString(2, recordType.getValue());
+            stmt.setLong(3, mTime);
+            stmt.setLong(4, maxRecords);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    maxMTime = rs.getLong("max_mtime");
+                    totalCount = rs.getLong("limit_count");
+                }
+            }
+        } catch(Exception e) {
+            String message = "SQL Exception in getMaxMtimeAfter(origin='" + origin + "', recordType='" + recordType +
+                             "', mTime=" + mTime + ", maxRecords=" + maxRecords + ")";
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+
+        if (maxMTime == null) { // No match (and no subsequent records)
+            return new Pair<>(null, false);
+        }
+
+        if (totalCount <maxRecords) { // Exhaustive match (no subsequent records)
+            return new Pair<>(maxMTime, false);
+        }
+
+        // Check whether there are extra records available (extra call, but a light one)
+        long absoluteMaxMtime = getMaxMtime(origin, recordType);
         return maxMTime < absoluteMaxMtime ?
                 new Pair<>(maxMTime, true) : // Subsequent records available
                 new Pair<>(maxMTime, false); // No subsequent records
@@ -746,6 +844,5 @@ public class DsStorage implements AutoCloseable {
         }
     }
 
- 
- 
+
 }

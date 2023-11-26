@@ -178,7 +178,6 @@ public class DsStorageClient extends DsStorageApi {
         Long highestModificationTime =
                 ContinuationSupport.getContinuationToken(jsonResponse).map(Long::parseLong).orElse(null);
         Boolean hasMore = ContinuationSupport.getHasMore(jsonResponse).orElse(null);
-        // TODO: Derive a proper hasMore guess instead of hardcoding to true
         return new ContinuationStream<>(JSONStreamUtil.jsonToObjectsStream(jsonResponse, DsRecordDto.class),
                                         highestModificationTime, hasMore);
     }

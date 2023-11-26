@@ -296,6 +296,26 @@ public class DsStorageFacade {
                 storage -> storage.getMaxMtimeAfter(origin, mTime, maxRecords));
     }
 
+    /**
+     * Extract max {@code record.mTime}, where {@code record.mTime > mTime} in {@code origin},
+     * ordered by {@code record.mTime} and limited to {@code maxRecords}.
+     * Secondarily, check whether there are any records with record.mTime higher than the returned
+     * maximum mTime.
+     * @param origin only records from the {@code origin} will be inspected.
+     * @param recordType only records with the given type will be inspected.
+     * @param mTime only records with modification time larger than {@code mTime} will be inspected.
+     * @param maxRecords only this number of records will be inspected. {@code -1} means no limit.
+     * @return pair of (maximum {@code record.mTime} or null if no match, true if there exists at
+     *         least 1 record with {@code record.mTime} higher than the maximum within the constraints).
+     */
+    public static Pair<Long, Boolean> getMaxMtimeAfter(
+            String origin, RecordTypeDto recordType, long mTime, long maxRecords) {
+        return performStorageAction(
+                "getMaxMtimeAfter(origin='" + origin + "', type='" + recordType + "', mTime=" + mTime +
+                ", maxRecords=" + maxRecords + ")",
+                storage -> storage.getMaxMtimeAfter(origin, recordType, mTime, maxRecords));
+    }
+
 
     /*
      * This is called when ever a record is modified (create/update/markfordelete). The recordId here
@@ -535,9 +555,7 @@ public class DsStorageFacade {
         //childrenIds.forEach( c -> record.getChildren().add(getRecord(c))); // Just to make Toke happy, but only as a comment instead of the for-loop        
     }
 
-    
-    
-    
+
     /**
      * Callback used with {@link #performStorageAction(String, StorageAction)}.
      * @param <T> the object returned from the {@link StorageAction#process(DsStorage)} method.

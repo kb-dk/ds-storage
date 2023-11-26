@@ -16,7 +16,6 @@ package dk.kb.storage.webservice;
 
 import dk.kb.util.Pair;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 import java.util.Optional;
