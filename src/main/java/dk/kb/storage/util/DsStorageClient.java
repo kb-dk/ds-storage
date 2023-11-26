@@ -20,7 +20,7 @@ import dk.kb.storage.invoker.v1.Configuration;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.webservice.ContinuationStream;
-import dk.kb.storage.webservice.ContinuationSupport;
+import dk.kb.storage.webservice.ContinuationUtil;
 import dk.kb.storage.webservice.HeaderInputStream;
 import dk.kb.storage.webservice.JSONStreamUtil;
 import org.slf4j.Logger;
@@ -44,18 +44,7 @@ public class DsStorageClient extends DsStorageApi {
     private final String serviceURI;
 
     public static final String STORAGE_SERVER_URL_KEY = ".config.storage.url";
-
-    /**
-     * Set as header by record streaming endpoints to communicate the highest mTime that any records will contain.
-     * This always means the mTime for the last record in the stream.
-     * <p>
-     * Note that there is no preceeding {@code X-} as this is discouraged by
-     * <a href="https://www.rfc-editor.org/rfc/rfc6648">rfc6648</a>.
-     */
-    // This is a duplicate of the same field in DsStorageApiServiceImpl.
-    // This is on purpose as the DsStorageClient is packed as a separate JAR.
-    public static final String HEADER_HIGHEST_MTIME = "Highest-mTime";
-
+    
     /**
      * Creates a client for the remote ds-storage service.
      * <p>
@@ -176,8 +165,8 @@ public class DsStorageClient extends DsStorageApi {
      */
     private ContinuationStream<DsRecordDto, Long> toContinuationStream(HeaderInputStream jsonResponse) throws IOException {
         Long highestModificationTime =
-                ContinuationSupport.getContinuationToken(jsonResponse).map(Long::parseLong).orElse(null);
-        Boolean hasMore = ContinuationSupport.getHasMore(jsonResponse).orElse(null);
+                ContinuationUtil.getContinuationToken(jsonResponse).map(Long::parseLong).orElse(null);
+        Boolean hasMore = ContinuationUtil.getHasMore(jsonResponse).orElse(null);
         return new ContinuationStream<>(JSONStreamUtil.jsonToObjectsStream(jsonResponse, DsRecordDto.class),
                                         highestModificationTime, hasMore);
     }

@@ -23,7 +23,7 @@ import java.util.Optional;
 /**
  * Support methods for handling continuation headers for webservices.
  */
-public class ContinuationSupport {
+public class ContinuationUtil {
 
     /**
      * Set as header by record streaming endpoints to communicate the highest mTime that any records will contain.

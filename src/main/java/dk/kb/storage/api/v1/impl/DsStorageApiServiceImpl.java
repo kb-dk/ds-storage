@@ -7,7 +7,7 @@ import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
-import dk.kb.storage.webservice.ContinuationSupport;
+import dk.kb.storage.webservice.ContinuationUtil;
 import dk.kb.util.Pair;
 import dk.kb.util.webservice.ImplBase;
 import dk.kb.util.webservice.stream.ExportWriter;
@@ -120,7 +120,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             }
 
             Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords);
-            ContinuationSupport.setHeaders(httpServletResponse, highestMtimeAndHasMore);
+            ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
@@ -157,7 +157,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             }
 
             Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, recordType, finalMTime, finalMaxRecords);
-            ContinuationSupport.setHeaders(httpServletResponse, highestMtimeAndHasMore);
+            ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(

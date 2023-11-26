@@ -17,6 +17,7 @@ package dk.kb.storage.util;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.webservice.ContinuationStream;
+import dk.kb.storage.webservice.ContinuationUtil;
 import dk.kb.storage.webservice.HeaderInputStream;
 import dk.kb.storage.webservice.JSONStreamUtil;
 import dk.kb.util.yaml.YAML;
@@ -73,8 +74,11 @@ public class DsStorageClientTest {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
             assertTrue(recordsStr.contains("\"id\":\"ds.radiotv:oai"),
                     "At least 1 JSON block for a record should be returned");
-            assertNotNull(recordsIS.getHeaders().get(DsStorageClient.HEADER_HIGHEST_MTIME),
-                    "The continuation header '" + DsStorageClient.HEADER_HIGHEST_MTIME + "' should be present");
+            assertTrue(ContinuationUtil.getContinuationToken(recordsIS).isPresent(),
+                       "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
+                       "' should be present");
+            assertTrue(ContinuationUtil.getHasMore(recordsIS).isPresent(),
+                       "The continuation header '" + ContinuationUtil.HEADER_PAGING_HAS_MORE + "' should be present");
         }
     }
 
@@ -88,8 +92,11 @@ public class DsStorageClientTest {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
             assertTrue(recordsStr.contains("\"id\":\"ds.radiotv:oai"),
                     "At least 1 JSON block for a record should be returned");
-            assertNotNull(recordsIS.getHeaders().get(DsStorageClient.HEADER_HIGHEST_MTIME),
-                    "The continuation header '" + DsStorageClient.HEADER_HIGHEST_MTIME + "' should be present");
+            assertTrue(ContinuationUtil.getContinuationToken(recordsIS).isPresent(),
+                       "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
+                       "' should be present");
+            assertTrue(ContinuationUtil.getHasMore(recordsIS).isPresent(),
+                       "The continuation header '" + ContinuationUtil.HEADER_PAGING_HAS_MORE + "' should be present");
         }
     }
 
