@@ -12,7 +12,7 @@
  *  limitations under the License.
  *
  */
-package dk.kb.storage.util;
+package dk.kb.storage.webservice;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;

@@ -16,6 +16,9 @@ package dk.kb.storage.util;
 
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.webservice.ContinuationStream;
+import dk.kb.storage.webservice.HeaderInputStream;
+import dk.kb.storage.webservice.JSONStreamUtil;
 import dk.kb.util.yaml.YAML;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CharSequenceInputStream;

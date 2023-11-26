@@ -133,9 +133,9 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         createMegaParent(parentId,"test.origin");
         long afterTime = UniqueTimestampGenerator.next();
 
-        long maxBefore = storage.getMaxMtimeAfter("test.origin", beforeTime, 100);
-        long maxMiddle = storage.getMaxMtimeAfter("test.origin", (beforeTime+afterTime)/2, 100);
-        Long maxAfter = storage.getMaxMtimeAfter("test.origin", afterTime, 100);
+        long maxBefore = storage.getMaxMtimeAfter("test.origin", beforeTime, 100).getLeft();
+        long maxMiddle = storage.getMaxMtimeAfter("test.origin", (beforeTime+afterTime)/2, 100).getLeft();
+        Long maxAfter = storage.getMaxMtimeAfter("test.origin", afterTime, 100).getLeft();
         
         assertTrue(beforeTime < maxBefore, "Max mTime with start before should be after beforeTime");
         assertTrue(maxBefore < afterTime, "Max mTime with start before should be before afterTime");

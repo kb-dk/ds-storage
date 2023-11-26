@@ -12,8 +12,9 @@
  *  limitations under the License.
  *
  */
-package dk.kb.storage.util;
+package dk.kb.storage.webservice;
 
+import dk.kb.storage.util.FilterStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,7 @@ public class ContinuationStream<T, C> extends FilterStream<T> implements AutoClo
     private static final Logger log = LoggerFactory.getLogger(ContinuationStream.class);
 
     private final C continuationToken;
-    private final boolean hasMore;
+    private final Boolean hasMore;
 
     /**
      * Create a stream.
@@ -42,7 +43,7 @@ public class ContinuationStream<T, C> extends FilterStream<T> implements AutoClo
      *                          current stream. If {@code null}, no continuation information is available.
      * @param hasMore           whether or not a subsequent request for a stream is likely to produce any elements.
      */
-    public ContinuationStream(Stream<T> inner, C continuationToken, boolean hasMore) {
+    public ContinuationStream(Stream<T> inner, C continuationToken, Boolean hasMore) {
         super(inner);
         this.continuationToken = continuationToken;
         this.hasMore = hasMore;

@@ -1,5 +1,6 @@
 package dk.kb.storage.storage;
 
+import dk.kb.util.Pair;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,11 +94,15 @@ public class DsStorage implements AutoCloseable {
     // Alternative 1: Make a plain select and step through to the end
     // Alternative 2: First count the number of "hits", then use that as OFFSET
     private static String maxMtimeAfterWithLimitStatement =
-            "SELECT MAX (" + MTIME_COLUMN + ") AS max_mtime FROM ( SELECT " + MTIME_COLUMN + " FROM " + RECORDS_TABLE +
-            " WHERE " + ORIGIN_COLUMN + "= ?" +
-            " AND " + MTIME_COLUMN + " > ?" +
-            " ORDER BY " + MTIME_COLUMN + " ASC" +
-            " LIMIT ?) AS max_mtime_sub";
+            "SELECT MAX (" + MTIME_COLUMN + ") AS max_mtime, " +
+            "       COUNT (*) AS limit_count " +
+            "FROM " +
+            "( SELECT " + MTIME_COLUMN +
+            "  FROM " + RECORDS_TABLE +
+            "  WHERE " + ORIGIN_COLUMN + "= ?" +
+            "  AND " + MTIME_COLUMN + " > ?" +
+            "  ORDER BY " + MTIME_COLUMN + " ASC" +
+            "  LIMIT ?) AS max_mtime_sub";
 
     //SELECT * FROM  ds_records  WHERE origin= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
     private static String recordsModifiedAfterStatement =
@@ -313,25 +318,34 @@ public class DsStorage implements AutoCloseable {
     /**
      * Extract max {@code record.mTime}, where {@code record.mTime > mTime} in {@code origin},
      * ordered by {@code record.mTime} and limited to {@code maxRecords}.
-     * <p>
-     * If there are no matching records, null will be returned.
+     * Secondarily, check whether there are any records with record.mTime higher than the returned
+     * maximum mTime.
      * @param origin only records from the {@code origin} will be inspected.
      * @param mTime only records with modification time larger than {@code mTime} will be inspected.
      * @param maxRecords only this number of records will be inspected. {@code -1} means no limit.
-     * @return max {@code record.mTime} within the given {@code mTime}, {@code maxRecords} window or
-     *         0 if there were no records in the window.
+     * @return pair of (maximum {@code record.mTime} or null if no match, true if there exists at
+     *         least 1 record with {@code record.mTime} higher than the maximum within the constraints).
      */
-    public long getMaxMtimeAfter(String origin, long mTime, long maxRecords) throws SQLException {
+    public Pair<Long, Boolean> getMaxMtimeAfter(String origin, long mTime, long maxRecords) throws SQLException {
+        // No maxRecords is simple: Just check the last record.mTime > mTime
         if (maxRecords == -1) {
             long maxMtime = getMaxMtime(origin);
-            return maxMtime == 0L || maxMtime <= mTime ? 0L : maxMtime;
+            return new Pair<>(maxMtime == 0L || maxMtime <= mTime ? null : maxMtime,
+                              false);
         }
+
+        // Determine max record.mTime and count the number of records within the limits
+        Long maxMTime = null;
+        Long totalCount = null;
         try (PreparedStatement stmt = connection.prepareStatement(maxMtimeAfterWithLimitStatement)) {
             stmt.setString(1, origin);
             stmt.setLong(2, mTime);
             stmt.setLong(3, maxRecords);
             try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next() ? rs.getLong("max_mtime") : 0L;
+                if (rs.next()) {
+                    maxMTime = rs.getLong("max_mtime");
+                    totalCount = rs.getLong("limit_count");
+                }
             }
         } catch(Exception e) {
             String message = "SQL Exception in getMaxMtimeAfter(origin='" + origin + "', mTime=" + mTime +
@@ -339,6 +353,20 @@ public class DsStorage implements AutoCloseable {
             log.error(message);
             throw new SQLException(message, e);
         }
+
+        if (maxMTime == null) { // No match (and no subsequent records)
+            return new Pair<>(null, false);
+        }
+
+        if (totalCount <maxRecords) { // Exhaustive match (no subsequent records)
+            return new Pair<>(maxMTime, false);
+        }
+        
+        // Check whether there are extra records available (extra call, but a light one)
+        long absoluteMaxMtime = getMaxMtime(origin);
+        return maxMTime < absoluteMaxMtime ?
+                new Pair<>(maxMTime, true) : // Subsequent records available
+                new Pair<>(maxMTime, false); // No subsequent records
     }
 
     /**

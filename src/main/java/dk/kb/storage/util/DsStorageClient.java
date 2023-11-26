@@ -19,6 +19,10 @@ import dk.kb.storage.invoker.v1.ApiClient;
 import dk.kb.storage.invoker.v1.Configuration;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.webservice.ContinuationStream;
+import dk.kb.storage.webservice.ContinuationSupport;
+import dk.kb.storage.webservice.HeaderInputStream;
+import dk.kb.storage.webservice.JSONStreamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,12 +175,12 @@ public class DsStorageClient extends DsStorageApi {
      * @throws IOException if {@code jsonResponse} could not be read or converted to objects.
      */
     private ContinuationStream<DsRecordDto, Long> toContinuationStream(HeaderInputStream jsonResponse) throws IOException {
-        String hmt = jsonResponse.getHeaders().get(HEADER_HIGHEST_MTIME) == null ? null :
-                jsonResponse.getHeaders().get(HEADER_HIGHEST_MTIME).get(0);
-        Long highestModificationTime = hmt == null ? null : Long.parseLong(hmt);
+        Long highestModificationTime =
+                ContinuationSupport.getContinuationToken(jsonResponse).map(Long::parseLong).orElse(null);
+        Boolean hasMore = ContinuationSupport.getHasMore(jsonResponse).orElse(null);
         // TODO: Derive a proper hasMore guess instead of hardcoding to true
         return new ContinuationStream<>(JSONStreamUtil.jsonToObjectsStream(jsonResponse, DsRecordDto.class),
-                                        highestModificationTime, true);
+                                        highestModificationTime, hasMore);
     }
 
     /**
