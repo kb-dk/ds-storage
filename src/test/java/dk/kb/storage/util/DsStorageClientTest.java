@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -79,6 +80,58 @@ public class DsStorageClientTest {
                        "' should be present");
             assertTrue(ContinuationUtil.getHasMore(recordsIS).isPresent(),
                        "The continuation header '" + ContinuationUtil.HEADER_PAGING_HAS_MORE + "' should be present");
+        }
+    }
+
+    // Combined unit test and demonstration of paging with continuation, OAI-PMH-like
+    @Test
+    public void testRemotePaging() throws IOException {
+        if (remote == null) {
+            return;
+        }
+
+        Long lastMTime;
+        boolean hasMore;
+
+        List<DsRecordDto> batch1;
+        List<DsRecordDto> batch2;
+
+        // First paging
+        try (ContinuationStream<DsRecordDto, Long> recordStream =
+                     remote.getRecordsModifiedAfterStream("ds.radiotv", 0L, 3L)) {
+            batch1 = recordStream.collect(Collectors.toList());
+            lastMTime = recordStream.getContinuationToken();
+            hasMore = recordStream.hasMore();
+            DsRecordDto lastRecord = batch1.get(batch1.size()-1);
+
+            assertEquals(lastMTime, lastRecord.getmTime(),
+                    "Continuation Token should match mTime for last record in batch 1");
+            assertTrue(hasMore, "There should be more records after batch 1");
+        }
+
+        // Second paging
+        try (ContinuationStream<DsRecordDto, Long> recordStream =
+                     remote.getRecordsModifiedAfterStream("ds.radiotv", lastMTime, 3L)) {
+            batch2 = recordStream.collect(Collectors.toList());
+            lastMTime = recordStream.getContinuationToken();
+            hasMore = recordStream.hasMore();
+            DsRecordDto lastRecord = batch2.get(batch2.size()-1);
+
+            assertEquals(lastMTime, lastRecord.getmTime(),
+                    "Continuation Token should match mTime for last record in batch 2");
+            assertTrue(hasMore, "There should be more records after batch 2");
+        }
+
+        // Verify batch1 + batch2
+        try (ContinuationStream<DsRecordDto, Long> recordStream =
+                     remote.getRecordsModifiedAfterStream("ds.radiotv", 0L, 6L)) {
+            List<DsRecordDto> batchAll = recordStream.collect(Collectors.toList());
+            List<DsRecordDto> batch1plus2 = new ArrayList<>(batch1);
+            batch1plus2.addAll(batch2);
+            for (int i = 0 ; i < batchAll.size() ; i++) {
+                assertEquals(batchAll.get(i), batch1plus2.get(i),
+                        "ID #" + i + " should match for batch1+2");
+            }
         }
     }
 
