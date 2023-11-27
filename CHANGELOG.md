@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.0] 2023-11-27
+DsStorageClient has new method to stream records with no limit of number of records. 
+
+
 ## [1.9.0] 2023-11-15
 new API method to delete records by origin within a time interval. The purpose is to clean up old records after af full ingest.
 
