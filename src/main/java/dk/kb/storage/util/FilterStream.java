@@ -32,6 +32,13 @@ public class FilterStream<T> implements Stream<T> {
         this.inner = inner;
     }
 
+    /**
+     * @return the inner stream that {@link FilterStream} wraps.
+     */
+    public Stream<T> getInner() {
+        return inner;
+    }
+
     @Override
     public Stream<T> filter(Predicate<? super T> predicate) {
         return inner.filter(predicate);

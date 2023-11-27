@@ -127,15 +127,39 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     }
 
     @Test
+    public void testGetMtimeAfterWithLimitCollection() throws Exception {
+        String parentId="test.origin:mega_parent_id";
+        long beforeTime = UniqueTimestampGenerator.next();
+        createMegaParent(parentId,"test.origin");
+        long afterTime = UniqueTimestampGenerator.next();
+
+        long maxTime = storage.getMaxMtime("test.origin", RecordTypeDto.COLLECTION);
+        assertTrue(maxTime > beforeTime, "Max time should be higher than before time");
+        assertTrue(maxTime < afterTime, "Max time should be lower than after time");
+    }
+
+    @Test
+    public void testGetMtimeAfterWithLimitManifestation() throws Exception {
+        String parentId="test.origin:mega_parent_id";
+        long beforeTime = UniqueTimestampGenerator.next();
+        createMegaParent(parentId,"test.origin");
+        long afterTime = UniqueTimestampGenerator.next();
+
+        long maxTime = storage.getMaxMtime("test.origin", RecordTypeDto.MANIFESTATION);
+        assertTrue(maxTime > beforeTime, "Max time should be higher than before time");
+        assertTrue(maxTime < afterTime, "Max time should be lower than after time");
+    }
+
+    @Test
     public void testHighestModified() throws Exception {
         String parentId="test.origin:mega_parent_id";
         long beforeTime = UniqueTimestampGenerator.next();
         createMegaParent(parentId,"test.origin");
         long afterTime = UniqueTimestampGenerator.next();
 
-        long maxBefore = storage.getMaxMtimeAfter("test.origin", beforeTime, 100);
-        long maxMiddle = storage.getMaxMtimeAfter("test.origin", (beforeTime+afterTime)/2, 100);
-        Long maxAfter = storage.getMaxMtimeAfter("test.origin", afterTime, 100);
+        long maxBefore = storage.getMaxMtimeAfter("test.origin", beforeTime, 100).getLeft();
+        long maxMiddle = storage.getMaxMtimeAfter("test.origin", (beforeTime+afterTime)/2, 100).getLeft();
+        Long maxAfter = storage.getMaxMtimeAfter("test.origin", afterTime, 100).getLeft();
         
         assertTrue(beforeTime < maxBefore, "Max mTime with start before should be after beforeTime");
         assertTrue(maxBefore < afterTime, "Max mTime with start before should be before afterTime");
@@ -149,6 +173,32 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 //        System.out.println("Last  record: " + bRecords.get(bRecords.size()-1).getmTime());
 
         assertEquals(maxBefore, bRecords.get(bRecords.size()-1).getmTime(),
+                "The mTime for the last bRecord should match maxBefore");
+    }
+
+    @Test
+    public void testHighestModifiedManifestation() throws Exception {
+        String parentId="test.origin:mega_parent_id";
+        long beforeTime = UniqueTimestampGenerator.next();
+        createMegaParent(parentId,"test.origin");
+        long afterTime = UniqueTimestampGenerator.next();
+
+        long maxBefore = storage.getMaxMtimeAfter("test.origin", RecordTypeDto.MANIFESTATION, beforeTime, 100).getLeft();
+        long maxMiddle = storage.getMaxMtimeAfter("test.origin", RecordTypeDto.MANIFESTATION, (beforeTime+afterTime)/2, 100).getLeft();
+        Long maxAfter = storage.getMaxMtimeAfter("test.origin", RecordTypeDto.MANIFESTATION, afterTime, 100).getLeft();
+
+        assertTrue(beforeTime < maxBefore, "Max mTime with start before should be after beforeTime");
+        assertTrue(maxBefore < afterTime, "Max mTime with start before should be before afterTime");
+        assertTrue(maxBefore < maxMiddle, "Max mTime with start beforeTime should be before max mTime with start in the middle");
+        assertTrue(maxMiddle < afterTime, "Max mTime with start in the middle should be before afterTime");
+        assertEquals(0, maxAfter, "Max mTime with start afterTime should be 0");
+        List<String> bRecords = storage.getRecordsIdsByRecordTypeModifiedAfter("test.origin", RecordTypeDto.MANIFESTATION, beforeTime, 100);
+
+//        System.out.println("First record: " + bRecords.get(0).getmTime());
+//        System.out.println("Stated mTime: " + maxBefore);
+//        System.out.println("Last  record: " + bRecords.get(bRecords.size()-1).getmTime());
+
+        assertEquals(maxBefore, storage.loadRecord(bRecords.get(bRecords.size()-1)).getmTime(),
                 "The mTime for the last bRecord should match maxBefore");
     }
 

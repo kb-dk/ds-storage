@@ -7,6 +7,8 @@ import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.webservice.ContinuationUtil;
+import dk.kb.util.Pair;
 import dk.kb.util.webservice.ImplBase;
 import dk.kb.util.webservice.stream.ExportWriter;
 import dk.kb.util.webservice.stream.ExportWriterFactory;
@@ -32,14 +34,6 @@ import java.util.List;
  *
  */
 public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
-    /**
-     * Set as header by record streaming endpoints to communicate the highest mTime that any records will contain.
-     * This always means the mTime for the last record in the stream.
-     * <p>
-     * Note that there is no preceeding {@code X-} as this is discouraged by
-     * <a href="https://www.rfc-editor.org/rfc/rfc6648">rfc6648</a>.
-     */
-    public static final String HEADER_HIGHEST_MTIME = "Highest-mTime";
 
     private Logger log = LoggerFactory.getLogger(this.toString());
 
@@ -125,14 +119,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
 
-            Long highestMtime = DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords);
-            if (highestMtime != null) {
-                httpServletResponse.setHeader(HEADER_HIGHEST_MTIME, Long.toString(highestMtime));
-            } else {
-                log.debug("Unable to set header '{}' as max mTime could not be determined for " +
-                          "origin='{}', mTime>{}, maxRecords={}",
-                          HEADER_HIGHEST_MTIME, origin, finalMTime, finalMaxRecords);
-            }
+            Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords);
+            ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
@@ -168,9 +156,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
 
-            // This is currently a place holder for future functionality
-            // TODO: Implement method for returning highest mTime
-            httpServletResponse.setHeader(HEADER_HIGHEST_MTIME, "123456");
+            Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, recordType, finalMTime, finalMaxRecords);
+            ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
