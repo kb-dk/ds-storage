@@ -14,7 +14,9 @@
  */
 package dk.kb.storage.util;
 
+import dk.kb.storage.invoker.v1.ApiException;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.webservice.ContinuationStream;
 import dk.kb.storage.webservice.ContinuationUtil;
@@ -132,6 +134,29 @@ public class DsStorageClientTest {
                 assertEquals(batchAll.get(i), batch1plus2.get(i),
                         "ID #" + i + " should match for batch1+2");
             }
+        }
+    }
+
+    @Test
+    public void testRemotePageLast() throws ApiException, IOException {
+        if (remote == null) {
+            return;
+        }
+        Long lastMTime = null;
+        for (OriginCountDto originCount: remote.getOriginStatistics()) {
+            if ("ds.radiotv".equals(originCount.getOrigin())) {
+                lastMTime = originCount.getLatestMTime();
+            }
+        }
+        assertNotNull(lastMTime, "lastMTime should be extractable for 'ds.radiotv'");
+
+        // Decrement with 1 to be sure to match the latest record
+        lastMTime -= 1;
+
+        try (ContinuationStream<DsRecordDto, Long> recordStream =
+                     remote.getRecordsModifiedAfterStream("ds.radiotv", lastMTime, 10L)) {
+            assertEquals(1, recordStream.count(), "There should be a single record after " + lastMTime);
+            assertFalse(recordStream.hasMore(), "The hasMore flag should be false");
         }
     }
 
