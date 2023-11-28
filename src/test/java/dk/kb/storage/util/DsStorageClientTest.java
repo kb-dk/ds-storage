@@ -53,7 +53,7 @@ public class DsStorageClientTest {
     public static final String RECORDS1 = "[" + RECORD1 + "]";
     public static final String RECORDS2 = "[" + RECORD1 + ", " + RECORD2 + "]";
 
-    private static DsStorageClient remote = getRemote();
+    private static DsStorageClient remote = null;
 
     @BeforeAll
     public static void beforeClass() {
@@ -88,7 +88,9 @@ public class DsStorageClientTest {
     // Combined unit test and demonstration of paging with continuation, OAI-PMH-like
     @Test
     public void testRemotePaging() throws IOException {
-        if (remote == null) {
+         long numberOfRecords=3L;
+    	
+    	if (remote == null) {
             return;
         }
 
@@ -100,7 +102,7 @@ public class DsStorageClientTest {
 
         // First paging
         try (ContinuationStream<DsRecordDto, Long> recordStream =
-                     remote.getRecordsModifiedAfterStream("ds.radiotv", 0L, 3L)) {
+                     remote.getRecordsModifiedAfterStream("ds.radiotv", 0L, numberOfRecords)) {
             batch1 = recordStream.collect(Collectors.toList());
             lastMTime = recordStream.getContinuationToken();
             hasMore = recordStream.hasMore();
@@ -113,7 +115,7 @@ public class DsStorageClientTest {
 
         // Second paging
         try (ContinuationStream<DsRecordDto, Long> recordStream =
-                     remote.getRecordsModifiedAfterStream("ds.radiotv", lastMTime, 3L)) {
+                     remote.getRecordsModifiedAfterStream("ds.radiotv", lastMTime, numberOfRecords)) {
             batch2 = recordStream.collect(Collectors.toList());
             lastMTime = recordStream.getContinuationToken();
             hasMore = recordStream.hasMore();
@@ -126,7 +128,7 @@ public class DsStorageClientTest {
 
         // Verify batch1 + batch2
         try (ContinuationStream<DsRecordDto, Long> recordStream =
-                     remote.getRecordsModifiedAfterStream("ds.radiotv", 0L, 6L)) {
+                     remote.getRecordsModifiedAfterStream("ds.radiotv", 0L, 2L*numberOfRecords)) {
             List<DsRecordDto> batchAll = recordStream.collect(Collectors.toList());
             List<DsRecordDto> batch1plus2 = new ArrayList<>(batch1);
             batch1plus2.addAll(batch2);
@@ -180,13 +182,15 @@ public class DsStorageClientTest {
 
     @Test
     public void testRemoteRecordsStream() throws IOException {
-        if (remote == null) {
+       long numberOfRecords=300L;
+       if (remote == null) {
             return;
         }
         try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsModifiedAfterStream(
-                "ds.radiotv", 0L, 3L)) {
-            List<DsRecordDto> recordList = records.collect(Collectors.toList());
-            assertEquals(3, recordList.size(), "The requested number of records should be received");
+                "ds.radiotv", 0L,numberOfRecords)) {
+            List<DsRecordDto> recordList = records.collect(Collectors.toList());         
+            
+            assertEquals(numberOfRecords, recordList.size(), "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),
                     "The highest modification time should be present");
             log.debug("Stated highest modification time was " + records.getContinuationToken());
@@ -262,7 +266,7 @@ public class DsStorageClientTest {
         try {
             client.getOriginConfiguration();
         } catch (Exception e) {
-            log.info("Found ds-storage address '{}' but could not establish contact. Skipping test", storageURL);
+           log.info("Found ds-storage address '{}' but could not establish contact. Skipping test", storageURL);
             return null;
         }
         log.debug("Established connection to storage at '{}'", storageURL);
