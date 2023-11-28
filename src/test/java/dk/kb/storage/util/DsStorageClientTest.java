@@ -88,7 +88,7 @@ public class DsStorageClientTest {
     // Combined unit test and demonstration of paging with continuation, OAI-PMH-like
     @Test
     public void testRemotePaging() throws IOException {
-         long numberOfRecords=3L;
+         long numberOfRecords=200L;
     	
     	if (remote == null) {
             return;
