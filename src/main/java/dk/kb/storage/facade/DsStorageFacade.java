@@ -456,7 +456,8 @@ public class DsStorageFacade {
      * @throws InternalServiceException if anything goes wrong.
      */
     private static <T> T performStorageAction(String actionID, StorageAction<T> action) {
-        try (DsStorage storage = new DsStorage()) {
+         long start=System.currentTimeMillis();
+    	try (DsStorage storage = new DsStorage()) {
             T result;
             try {
                 result = action.process(storage);
@@ -479,6 +480,7 @@ public class DsStorageFacade {
                 throw new InternalServiceException(e);
             }
 
+            log.info("Storage method '{}' SQL time in millis: {} ", actionID, (System.currentTimeMillis()-start));
             return result;
         } catch (SQLException e) { //Connecting to storage failed
             log.error("SQLException performing action '{}'", actionID, e);
