@@ -17,3 +17,5 @@ CREATE INDEX IF NOT EXISTS b ON ds_records(origin);
 CREATE INDEX IF NOT EXISTS bd ON ds_records(origin,deleted);
 CREATE INDEX IF NOT EXISTS p ON ds_records(parentid);
 CREATE INDEX IF NOT EXISTS rt ON ds_records(recordtype);
+CREATE INDEX IF NOT EXISTS om ON ds_records (origin, mtime);
+CREATE INDEX IF NOT EXISTS orm ON ds_records (origin, recordtype, mtime);

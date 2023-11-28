@@ -17,3 +17,5 @@ CREATE INDEX b ON ds_records(origin);
 CREATE INDEX bd ON ds_records(origin,deleted);
 CREATE INDEX p ON ds_records(parentid);
 CREATE INDEX rt ON ds_records(recordtype);
+CREATE INDEX om ON ds_records (origin, mtime);
+CREATE INDEX orm ON ds_records (origin, recordtype, mtime);
