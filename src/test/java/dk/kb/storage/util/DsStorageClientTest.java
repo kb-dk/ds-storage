@@ -19,8 +19,9 @@ import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.util.json.JSONStreamUtil;
+import dk.kb.util.webservice.stream.ContinuationInputStream;
 import dk.kb.util.webservice.stream.ContinuationStream;
-import dk.kb.storage.webservice.ContinuationUtil;
+import dk.kb.util.webservice.stream.ContinuationUtil;
 import dk.kb.util.webservice.stream.HeaderInputStream;
 import dk.kb.util.yaml.YAML;
 import org.apache.commons.io.IOUtils;
@@ -72,14 +73,14 @@ public class DsStorageClientTest {
         if (remote == null) {
             return;
         }
-        try (HeaderInputStream recordsIS = remote.getRecordsModifiedAfterRaw(
+        try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterRaw(
                 "ds.radiotv", 0L, 3L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
             assertTrue(recordsStr.contains("\"id\":\"ds.radiotv:oai"),
                     "At least 1 JSON block for a record should be returned");
-            assertTrue(ContinuationUtil.getContinuationToken(recordsIS).isPresent(),
-                       "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
-                       "' should be present");
+            assertNotNull(recordsIS.getContinuationToken(),
+                    "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
+                            "' should be present");
             assertTrue(ContinuationUtil.getHasMore(recordsIS).isPresent(),
                        "The continuation header '" + ContinuationUtil.HEADER_PAGING_HAS_MORE + "' should be present");
         }
@@ -167,12 +168,12 @@ public class DsStorageClientTest {
         if (remote == null) {
             return;
         }
-        try (HeaderInputStream recordsIS = remote.getRecordsByRecordTypeModifiedAfterLocalTreeRaw(
+        try (ContinuationInputStream recordsIS = remote.getRecordsByRecordTypeModifiedAfterLocalTreeRaw(
                              "ds.radiotv", RecordTypeDto.DELIVERABLEUNIT,  0L, 3L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
             assertTrue(recordsStr.contains("\"id\":\"ds.radiotv:oai"),
                     "At least 1 JSON block for a record should be returned");
-            assertTrue(ContinuationUtil.getContinuationToken(recordsIS).isPresent(),
+            assertNotNull(recordsIS.getContinuationToken(),
                        "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
                        "' should be present");
             assertTrue(ContinuationUtil.getHasMore(recordsIS).isPresent(),
