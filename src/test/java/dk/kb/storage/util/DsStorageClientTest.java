@@ -18,10 +18,10 @@ import dk.kb.storage.invoker.v1.ApiException;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
-import dk.kb.storage.webservice.ContinuationStream;
+import dk.kb.util.json.JSONStreamUtil;
+import dk.kb.util.webservice.stream.ContinuationStream;
 import dk.kb.storage.webservice.ContinuationUtil;
-import dk.kb.storage.webservice.HeaderInputStream;
-import dk.kb.storage.webservice.JSONStreamUtil;
+import dk.kb.util.webservice.stream.HeaderInputStream;
 import dk.kb.util.yaml.YAML;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.CharSequenceInputStream;
@@ -211,37 +211,6 @@ public class DsStorageClientTest {
             assertEquals(3L, count, "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),
                     "The highest modification time should be present");
-        }
-    }
-
-    @Test
-    public void testRecords0() throws IOException {
-        try (Stream<DsRecordDto> deserialized = JSONStreamUtil.jsonToObjectsStream(
-                new CharSequenceInputStream(RECORDS0, StandardCharsets.UTF_8, 1024), DsRecordDto.class)) {
-            List<DsRecordDto> records = deserialized.collect(Collectors.toList());
-            assertTrue(records.isEmpty(), "There should be no records, but there were " + records.size());
-        }
-    }
-
-    @Test
-    public void testRecords1() throws IOException {
-        try (Stream<DsRecordDto> deserialized = JSONStreamUtil.jsonToObjectsStream(
-                new CharSequenceInputStream(RECORDS1, StandardCharsets.UTF_8, 1024), DsRecordDto.class)) {
-            List<DsRecordDto> records = deserialized.collect(Collectors.toList());
-            assertEquals(1, records.size(), "There should be the right number of records");
-            assertEquals("id1", records.get(0).getId(), "The first record should have the expected ID");
-        }
-    }
-
-    @Test
-    public void testRecords2() throws IOException {
-        try (Stream<DsRecordDto> deserialized = JSONStreamUtil.jsonToObjectsStream(
-                new CharSequenceInputStream(RECORDS2, StandardCharsets.UTF_8, 1024), DsRecordDto.class)) {
-            List<DsRecordDto> records = deserialized.collect(Collectors.toList());
-            assertEquals(2, records.size(), "There should be the right number of records");
-            assertEquals("id1", records.get(0).getId(), "The first record should have the expected ID");
-            assertEquals(123L, records.get(0).getmTime(), "The first record should have the expected mTime");
-            assertEquals("id2", records.get(1).getId(), "The second record should have the expected ID");
         }
     }
 
