@@ -6,17 +6,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.10.0] 2023-11-27
-DsStorageClient has new method to stream records with no limit of number of records. 
+## [1.11.0] 2023-11-29
+### Changed
+- Multiple method names was changed in DsStorageClient to align naming with ds-client
+- Some helper classes for continuation streams was moved to kb-util. No change to behaviour
 
+## [1.10.0] 2023-11-27
+### Added
+- DsStorageClient has new method to stream records with no limit of number of records. 
 
 ## [1.9.0] 2023-11-15
-new API method to delete records by origin within a time interval. The purpose is to clean up old records after af full ingest.
+### Added
+- new API method to delete records by origin within a time interval. The purpose is to clean up old records after af full ingest.
 
 
 ## [1.7.0] - 2023-10-26
-Record object has new attribute:recordType. allowed recordTypes  are defined in the YAML config
-New method to retrieve all records from an origin and recordtype. The records will contain the local tree.
+### Added
+- Record object has new attribute:recordType. allowed recordTypes  are defined in the YAML config
+- New method to retrieve all records from an origin and recordtype. The records will contain the local tree.
 
 ## [1.3.0] - 2023-10-18
 ### Added
@@ -30,19 +37,19 @@ New method to retrieve all records from an origin and recordtype. The records wi
 - API service methods renamed (url's).
 
 ### Changed
-ID normalisation:
-If a record contains a invalid character after the recordbase part, it will be normalised and the invalid characters will be replaced.
-The original (invalid) id will be stored in the 'orgid' field and flagged for invalid id. Having the original id will make it possible
-to track it back to the collection it came from. The record can still be retrieved and updated using the invalid id, but also by the normalised id.
-Regexp for recordbase: ([a-z0-9.]+)       
-Regexp for id: ([a-z0-9.]+):([a-zA-Z0-9:._-]+)
+- ID normalisation:
+  If a record contains a invalid character after the recordbase part, it will be normalised and the invalid characters will be replaced.
+  The original (invalid) id will be stored in the 'orgid' field and flagged for invalid id. Having the original id will make it possible
+  to track it back to the collection it came from. The record can still be retrieved and updated using the invalid id, but also by the normalised id.
+  Regexp for recordbase: ([a-z0-9.]+)       
+  Regexp for id: ([a-z0-9.]+):([a-zA-Z0-9:._-]+)
 
-Jetty port set explicitly to 9072 instead of default 8080 to avoid collisions with projects using default tomcat/jetty setup.
+- Jetty port set explicitly to 9072 instead of default 8080 to avoid collisions with projects using default tomcat/jetty setup.
 
 
 ## [1.1.0] - 2022-02-01
 ### Added
-Test release, nothing new
+- Test release, nothing new
 
 
 ## [1.0.0] - 2022-02-01
