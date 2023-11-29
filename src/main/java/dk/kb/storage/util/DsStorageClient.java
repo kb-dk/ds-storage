@@ -79,7 +79,7 @@ public class DsStorageClient extends DsStorageApi {
      */
     public ContinuationStream<DsRecordDto, Long> getRecordsModifiedAfterStream(String origin, Long mTime, Long maxRecords)
             throws IOException {
-        return getRecordsModifiedAfterRaw(origin, mTime, maxRecords)
+        return getRecordsModifiedAfterJSON(origin, mTime, maxRecords)
                 .stream(DsRecordDto.class);
     }
 
@@ -101,12 +101,12 @@ public class DsStorageClient extends DsStorageApi {
      */
     public ContinuationStream<DsRecordDto, Long> getRecordsByRecordTypeModifiedAfterLocalTreeStream(
             String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
-        return getRecordsByRecordTypeModifiedAfterLocalTreeRaw(origin, recordType, mTime, maxRecords)
+        return getRecordsByRecordTypeModifiedAfterLocalTreeJSON(origin, recordType, mTime, maxRecords)
                 .stream(DsRecordDto.class);
     }
 
     /**
-     * Call the remote ds-storage {@link #getRecordsModifiedAfter} and return the response unchanged as a wrapped
+     * Call the remote ds-storage {@link #getRecordsModifiedAfter} and return the JSON response unchanged as a wrapped
      * bytestream.
      * <p>
      * Important: Ensure that the returned stream is closed to avoid resource leaks.
@@ -117,8 +117,8 @@ public class DsStorageClient extends DsStorageApi {
      * @return a raw bytestream with the response from the remote ds-storage.
      * @throws IOException if the connection to the remote ds-storage failed.
      */
-    public ContinuationInputStream<Long> getRecordsModifiedAfterRaw(String origin, Long mTime, Long maxRecords)
-            throws IOException {
+    public ContinuationInputStream<Long> getRecordsModifiedAfterJSON(String origin, Long mTime, Long maxRecords)
+            throws IOException { 
         URI uri = UriBuilder.fromUri(serviceURI)
                 .path("records")
                 .queryParam("origin", origin)
@@ -130,7 +130,7 @@ public class DsStorageClient extends DsStorageApi {
     }
 
     /**
-     * Call the remote ds-storage {@link #getRecordsByRecordTypeModifiedAfterLocalTree} and return the response 
+     * Call the remote ds-storage {@link #getRecordsByRecordTypeModifiedAfterLocalTree} and return the JSON response
      * unchanged as a wrapped bytestream.
      * <p>
      * Important: Ensure that the returned stream is closed to avoid resource leaks.
@@ -142,7 +142,7 @@ public class DsStorageClient extends DsStorageApi {
      * @return a raw bytestream with the response from the remote ds-storage.
      * @throws IOException if the connection to the remote ds-storage failed.
      */
-    public ContinuationInputStream<Long> getRecordsByRecordTypeModifiedAfterLocalTreeRaw(
+    public ContinuationInputStream<Long> getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
             String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
         URI uri = UriBuilder.fromUri(serviceURI)
                 .path("recordsByRecordTypeLocalTree")
