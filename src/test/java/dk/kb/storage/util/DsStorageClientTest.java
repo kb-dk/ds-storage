@@ -44,12 +44,6 @@ public class DsStorageClientTest {
 
     public static final String TEST_CONF = "internal-test-setup.yaml";
 
-    public static final String RECORD1 = "{\"id\": \"id1\", \"mTime\": \"123\"}";
-    public static final String RECORD2 = "{\"id\": \"id2\", \"mTime\": \"124\"}";
-    public static final String RECORDS0 = "[]";
-    public static final String RECORDS1 = "[" + RECORD1 + "]";
-    public static final String RECORDS2 = "[" + RECORD1 + ", " + RECORD2 + "]";
-
     private static DsStorageClient remote = null;
 
     @BeforeAll
