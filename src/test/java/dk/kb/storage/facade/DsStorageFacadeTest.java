@@ -52,7 +52,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
         try {
           DsRecordDto r1 = DsStorageFacade.getRecordWithChildrenIds("test.origin:does_not_exist");
-          fail(); 
+          assertNull(r1); 
         }
         catch (Exception e) {
          //ignore    
