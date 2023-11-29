@@ -19,10 +19,8 @@ import dk.kb.storage.invoker.v1.ApiClient;
 import dk.kb.storage.invoker.v1.Configuration;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
-import dk.kb.storage.webservice.ContinuationStream;
-import dk.kb.storage.webservice.ContinuationUtil;
-import dk.kb.storage.webservice.HeaderInputStream;
-import dk.kb.storage.webservice.JSONStreamUtil;
+import dk.kb.util.webservice.stream.ContinuationInputStream;
+import dk.kb.util.webservice.stream.ContinuationStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,8 +79,8 @@ public class DsStorageClient extends DsStorageApi {
      */
     public ContinuationStream<DsRecordDto, Long> getRecordsModifiedAfterStream(String origin, Long mTime, Long maxRecords)
             throws IOException {
-        HeaderInputStream headerStream = getRecordsModifiedAfterRaw(origin, mTime, maxRecords);
-        return toContinuationStream(headerStream);
+        return getRecordsModifiedAfterJSON(origin, mTime, maxRecords)
+                .stream(DsRecordDto.class);
     }
 
     /**
@@ -103,13 +101,12 @@ public class DsStorageClient extends DsStorageApi {
      */
     public ContinuationStream<DsRecordDto, Long> getRecordsByRecordTypeModifiedAfterLocalTreeStream(
             String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
-        HeaderInputStream headerStream = getRecordsByRecordTypeModifiedAfterLocalTreeRaw(
-                origin, recordType, mTime, maxRecords);
-        return toContinuationStream(headerStream);
+        return getRecordsByRecordTypeModifiedAfterLocalTreeJSON(origin, recordType, mTime, maxRecords)
+                .stream(DsRecordDto.class);
     }
 
     /**
-     * Call the remote ds-storage {@link #getRecordsModifiedAfter} and return the response unchanged as a wrapped
+     * Call the remote ds-storage {@link #getRecordsModifiedAfter} and return the JSON response unchanged as a wrapped
      * bytestream.
      * <p>
      * Important: Ensure that the returned stream is closed to avoid resource leaks.
@@ -120,7 +117,8 @@ public class DsStorageClient extends DsStorageApi {
      * @return a raw bytestream with the response from the remote ds-storage.
      * @throws IOException if the connection to the remote ds-storage failed.
      */
-    public HeaderInputStream getRecordsModifiedAfterRaw(String origin, Long mTime, Long maxRecords) throws IOException {
+    public ContinuationInputStream<Long> getRecordsModifiedAfterJSON(String origin, Long mTime, Long maxRecords)
+            throws IOException { 
         URI uri = UriBuilder.fromUri(serviceURI)
                 .path("records")
                 .queryParam("origin", origin)
@@ -128,11 +126,11 @@ public class DsStorageClient extends DsStorageApi {
                 .queryParam("maxRecords", maxRecords == null ? 10 : maxRecords)
                 .build();
         log.debug("Opening streaming connection to '{}'", uri);
-        return HeaderInputStream.from(uri);
+        return ContinuationInputStream.from(uri, Long::valueOf);
     }
 
     /**
-     * Call the remote ds-storage {@link #getRecordsByRecordTypeModifiedAfterLocalTree} and return the response 
+     * Call the remote ds-storage {@link #getRecordsByRecordTypeModifiedAfterLocalTree} and return the JSON response
      * unchanged as a wrapped bytestream.
      * <p>
      * Important: Ensure that the returned stream is closed to avoid resource leaks.
@@ -144,7 +142,7 @@ public class DsStorageClient extends DsStorageApi {
      * @return a raw bytestream with the response from the remote ds-storage.
      * @throws IOException if the connection to the remote ds-storage failed.
      */
-    public HeaderInputStream getRecordsByRecordTypeModifiedAfterLocalTreeRaw(
+    public ContinuationInputStream<Long> getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
             String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
         URI uri = UriBuilder.fromUri(serviceURI)
                 .path("recordsByRecordTypeLocalTree")
@@ -154,21 +152,7 @@ public class DsStorageClient extends DsStorageApi {
                 .queryParam("maxRecords", maxRecords == null ? 10 : maxRecords)
                 .build();
         log.debug("Opening streaming connection to '{}'", uri);
-        return HeaderInputStream.from(uri);
-    }
-
-    /**
-     * Convert the raw {@code jsonResponse} to a stream of {@link DsRecordDto}s.
-     * @param jsonResponse a JSON array of serialized {@link DsRecordDto}s.
-     * @return a stream of objects created from the {@code jsonResponse}.
-     * @throws IOException if {@code jsonResponse} could not be read or converted to objects.
-     */
-    private ContinuationStream<DsRecordDto, Long> toContinuationStream(HeaderInputStream jsonResponse) throws IOException {
-        Long highestModificationTime =
-                ContinuationUtil.getContinuationToken(jsonResponse).map(Long::parseLong).orElse(null);
-        Boolean hasMore = ContinuationUtil.getHasMore(jsonResponse).orElse(null);
-        return new ContinuationStream<>(JSONStreamUtil.jsonToObjectsStream(jsonResponse, DsRecordDto.class),
-                                        highestModificationTime, hasMore);
+        return ContinuationInputStream.from(uri, Long::valueOf);
     }
 
     /**

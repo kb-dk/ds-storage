@@ -18,13 +18,11 @@ import dk.kb.storage.invoker.v1.ApiException;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
-import dk.kb.storage.webservice.ContinuationStream;
-import dk.kb.storage.webservice.ContinuationUtil;
-import dk.kb.storage.webservice.HeaderInputStream;
-import dk.kb.storage.webservice.JSONStreamUtil;
+import dk.kb.util.webservice.stream.ContinuationInputStream;
+import dk.kb.util.webservice.stream.ContinuationStream;
+import dk.kb.util.webservice.stream.ContinuationUtil;
 import dk.kb.util.yaml.YAML;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.CharSequenceInputStream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -35,7 +33,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,12 +43,6 @@ public class DsStorageClientTest {
     private static final Logger log = LoggerFactory.getLogger(DsStorageClientTest.class);
 
     public static final String TEST_CONF = "internal-test-setup.yaml";
-
-    public static final String RECORD1 = "{\"id\": \"id1\", \"mTime\": \"123\"}";
-    public static final String RECORD2 = "{\"id\": \"id2\", \"mTime\": \"124\"}";
-    public static final String RECORDS0 = "[]";
-    public static final String RECORDS1 = "[" + RECORD1 + "]";
-    public static final String RECORDS2 = "[" + RECORD1 + ", " + RECORD2 + "]";
 
     private static DsStorageClient remote = null;
 
@@ -72,14 +63,14 @@ public class DsStorageClientTest {
         if (remote == null) {
             return;
         }
-        try (HeaderInputStream recordsIS = remote.getRecordsModifiedAfterRaw(
+        try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterJSON(
                 "ds.radiotv", 0L, 3L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
             assertTrue(recordsStr.contains("\"id\":\"ds.radiotv:oai"),
                     "At least 1 JSON block for a record should be returned");
-            assertTrue(ContinuationUtil.getContinuationToken(recordsIS).isPresent(),
-                       "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
-                       "' should be present");
+            assertNotNull(recordsIS.getContinuationToken(),
+                    "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
+                            "' should be present");
             assertTrue(ContinuationUtil.getHasMore(recordsIS).isPresent(),
                        "The continuation header '" + ContinuationUtil.HEADER_PAGING_HAS_MORE + "' should be present");
         }
@@ -167,12 +158,12 @@ public class DsStorageClientTest {
         if (remote == null) {
             return;
         }
-        try (HeaderInputStream recordsIS = remote.getRecordsByRecordTypeModifiedAfterLocalTreeRaw(
+        try (ContinuationInputStream recordsIS = remote.getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
                              "ds.radiotv", RecordTypeDto.DELIVERABLEUNIT,  0L, 3L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
             assertTrue(recordsStr.contains("\"id\":\"ds.radiotv:oai"),
                     "At least 1 JSON block for a record should be returned");
-            assertTrue(ContinuationUtil.getContinuationToken(recordsIS).isPresent(),
+            assertNotNull(recordsIS.getContinuationToken(),
                        "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
                        "' should be present");
             assertTrue(ContinuationUtil.getHasMore(recordsIS).isPresent(),
@@ -211,37 +202,6 @@ public class DsStorageClientTest {
             assertEquals(3L, count, "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),
                     "The highest modification time should be present");
-        }
-    }
-
-    @Test
-    public void testRecords0() throws IOException {
-        try (Stream<DsRecordDto> deserialized = JSONStreamUtil.jsonToObjectsStream(
-                new CharSequenceInputStream(RECORDS0, StandardCharsets.UTF_8, 1024), DsRecordDto.class)) {
-            List<DsRecordDto> records = deserialized.collect(Collectors.toList());
-            assertTrue(records.isEmpty(), "There should be no records, but there were " + records.size());
-        }
-    }
-
-    @Test
-    public void testRecords1() throws IOException {
-        try (Stream<DsRecordDto> deserialized = JSONStreamUtil.jsonToObjectsStream(
-                new CharSequenceInputStream(RECORDS1, StandardCharsets.UTF_8, 1024), DsRecordDto.class)) {
-            List<DsRecordDto> records = deserialized.collect(Collectors.toList());
-            assertEquals(1, records.size(), "There should be the right number of records");
-            assertEquals("id1", records.get(0).getId(), "The first record should have the expected ID");
-        }
-    }
-
-    @Test
-    public void testRecords2() throws IOException {
-        try (Stream<DsRecordDto> deserialized = JSONStreamUtil.jsonToObjectsStream(
-                new CharSequenceInputStream(RECORDS2, StandardCharsets.UTF_8, 1024), DsRecordDto.class)) {
-            List<DsRecordDto> records = deserialized.collect(Collectors.toList());
-            assertEquals(2, records.size(), "There should be the right number of records");
-            assertEquals("id1", records.get(0).getId(), "The first record should have the expected ID");
-            assertEquals(123L, records.get(0).getmTime(), "The first record should have the expected mTime");
-            assertEquals("id2", records.get(1).getId(), "The second record should have the expected ID");
         }
     }
 
