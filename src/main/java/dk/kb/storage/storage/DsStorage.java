@@ -223,8 +223,9 @@ public class DsStorage implements AutoCloseable {
         }
     }
     
-    /*
+    /**
      * Load a record and also load children ids
+     *  Return null if record does not exist
      */
     public DsRecordDto loadRecordWithChildIds(String id) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement);) {
@@ -232,7 +233,7 @@ public class DsStorage implements AutoCloseable {
 
             try (ResultSet rs = stmt.executeQuery();) {
                 if (!rs.next()) {
-                    return null;// Or throw exception?
+                    return null;
                 }
                 DsRecordDto  record = createRecordFromRS(rs);
 

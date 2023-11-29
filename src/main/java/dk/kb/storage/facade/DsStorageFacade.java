@@ -158,11 +158,7 @@ public class DsStorageFacade {
         return performStorageAction(" getRecordWithChildrenIds(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);
            DsRecordDto record = storage.loadRecordWithChildIds(idNorm);
-                      
-           if (record== null) {
-               throw new NotFoundServiceException("No record with id:"+recordId);
-            }            
-            return record;
+           return record;
         });
     }
 
@@ -216,6 +212,7 @@ public class DsStorageFacade {
     /**
      * Will recursive go up in the tree to find the top parent.
      * Throws an exception if a cycle is detected.
+     * If a parent does not exists it will return last valid record instead. This is due to inconsistent data.
      *  
      * @param record
      * @throws InternalServiceException If a cycle is detected.
@@ -229,11 +226,15 @@ public class DsStorageFacade {
       
           if (ids.contains(topParent.getId())) {
               log.error("Cycle detected for recordId:"+topParent.getId());
-              throw new InternalServiceException("Cycle detected for recordId:"+topParent.getId());
-              
+              throw new InternalServiceException("Cycle detected for recordId:"+topParent.getId());              
           }          
           ids.add(topParent.getId());
-          topParent = getRecordWithChildrenIds(topParent.getParentId());                                           
+          DsRecordDto nextParent = getRecordWithChildrenIds(topParent.getParentId());                                           
+          if (nextParent==null) { //inconsistent data.
+        	  log.warn("Inconsistent data. Parent with ID does not exist:"+topParent.getParentId() + " and is set for record:"+topParent.getId());        	  
+              return topParent; 
+          }
+          topParent=nextParent;
       }
       return topParent;        
     }
@@ -363,7 +364,10 @@ public class DsStorageFacade {
         //update all children one at a time
         ArrayList<String> childrenIds = storage.getChildrenIds(parentId);
         for (String childId : childrenIds) {
-            storage.updateMTimeForRecord(childId);
+           int updated = storage.updateMTimeForRecord(childId);
+           if (updated == 0) {
+        	   log.warn("Children with id does not exist:"+childId);
+           }
         }
     }
 
@@ -388,19 +392,9 @@ public class DsStorageFacade {
      * @param record the Record to update children and parent mTime for.
      * @throws Exception if updating failed.
      */
-    private static void updateMTimeForAll(DsStorage storage, DsRecordDto record) throws Exception {
-        boolean hasParent = (record.getParentId() != null);
-        //Find parent and then update mTime, and update all children.
-        //If parent or one of the children matches the record, it has already been updated with a new mTime,  so skip it.
-        DsRecordDto topParent = null;
-        if (!hasParent) {
-            topParent= record;
-        }
-        else {
-            topParent= storage.loadRecord(record.getParentId());   // will throw exception if not found
-        }
-
-        String recordId = record.getId();
+     private static void updateMTimeForAll(DsStorage storage, DsRecordDto record) throws Exception {
+    	DsRecordDto topParent = getTopParent(record);
+    	String recordId = record.getId();
         if (!recordId.equals(topParent.getId())) {
             storage.updateMTimeForRecord(topParent.getId());
         }
