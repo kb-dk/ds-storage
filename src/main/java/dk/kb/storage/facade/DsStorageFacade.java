@@ -474,7 +474,7 @@ public class DsStorageFacade {
                 throw new InternalServiceException(e);
             }
 
-            log.info("Storage method '{}' SQL time in millis: {} ", actionID, (System.currentTimeMillis()-start));
+            log.debug("Storage method '{}' SQL time in millis: {} ", actionID, (System.currentTimeMillis()-start));
             return result;
         } catch (SQLException e) { //Connecting to storage failed
             log.error("SQLException performing action '{}'", actionID, e);
