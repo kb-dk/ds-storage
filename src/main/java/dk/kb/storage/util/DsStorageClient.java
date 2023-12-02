@@ -41,16 +41,15 @@ public class DsStorageClient extends DsStorageApi {
     private static final Logger log = LoggerFactory.getLogger(DsStorageClient.class);
     private final String serviceURI;
 
-    public static final String STORAGE_SERVER_URL_KEY = ".config.storage.url";
+    public static final String STORAGE_SERVER_URL_KEY = ".storage.url";
     
     /**
      * Creates a client for the remote ds-storage service.
      * <p>
      * When working with YAML configs, it is suggested to define the storage URI as the structure
      * <pre>
-     * config:
-     *   storage:
-     *     url: 'http://localhost:9072/ds-storage/v1'
+     * storage:
+     *   url: 'http://localhost:9072/ds-storage/v1'
      * </pre>
      * Then use the path {@link #STORAGE_SERVER_URL_KEY} to extract the URL.
      * @param serviceURI the URI for the service, e.g. {@code https://example.com/ds-license/v1}.
