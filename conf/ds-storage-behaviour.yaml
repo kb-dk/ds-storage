@@ -6,51 +6,50 @@
 #
 
 
-config:
-  # update_strategy must match enums defined in open API
-  # Origin names must match regexp: a-z][0-9][.] 
-  allowed_origins:
-    - name: ds.tv
-      update_strategy: ALL
-    - name: ds.radio
-      update_strategy: ALL           
-    - name: doms.radio
-      update_strategy: CHILD
-    - name: doms.aviser
-      update_strategy: PARENT
-    - name: origin.strategy.none
-      update_strategy: NONE
-    - name: origin.strategy.all
-      update_strategy: ALL
-    - name: origin.strategy.child
-      update_strategy: CHILD
-    - name: origin.strategy.parent
-      update_strategy: PARENT
-    - name: ds.radiotv
-      update_strategy: ALL  
-    - name: ds.radiotv6
-      update_strategy: ALL
-    - name : ds.samlingsbilleder
-      update_strategy: NONE
-    - name : ds.maps
-      update_strategy: NONE
-    - name : kb.manus.vmanus.ha
-      update_strategy: NONE
-      
+# update_strategy must match enums defined in open API
+# Origin names must match regexp: a-z][0-9][.]
+allowed_origins:
+  - name: ds.tv
+    update_strategy: ALL
+  - name: ds.radio
+    update_strategy: ALL
+  - name: doms.radio
+    update_strategy: CHILD
+  - name: doms.aviser
+    update_strategy: PARENT
+  - name: origin.strategy.none
+    update_strategy: NONE
+  - name: origin.strategy.all
+    update_strategy: ALL
+  - name: origin.strategy.child
+    update_strategy: CHILD
+  - name: origin.strategy.parent
+    update_strategy: PARENT
+  - name: ds.radiotv
+    update_strategy: ALL
+  - name: ds.radiotv6
+    update_strategy: ALL
+  - name : ds.samlingsbilleder
+    update_strategy: NONE
+  - name : ds.maps
+    update_strategy: NONE
+  - name : kb.manus.vmanus.ha
+    update_strategy: NONE
 
-  db:
-    # In production this will always be PostgreSQL
-    # Only use H2 for smaller-scale (a million records max) test setups
-    url: jdbc:h2:${env:TMPDIR:-/tmp}/h2_ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
-    # url: jdbc:h2:/home/XXX/workspace/ds-storage/target/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
-    driver: org.h2.Driver
-    username: ''
-    password: ''
-   
-    # Example for postgres
-    #url: jdbc:postgresql://localhost:5432/ds-storage
-    #driver: org.postgresql.Driver
-    #username: username
-    #password: password
-   
-   
+
+db:
+  # In production this will always be PostgreSQL
+  # Only use H2 for smaller-scale (a million records max) test setups
+  url: jdbc:h2:${env:TMPDIR:-/tmp}/h2_ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+  # url: jdbc:h2:/home/XXX/workspace/ds-storage/target/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+  driver: org.h2.Driver
+  username: ''
+  password: ''
+
+  # Example for postgres
+  #url: jdbc:postgresql://localhost:5432/ds-storage
+  #driver: org.postgresql.Driver
+  #username: username
+  #password: password
+
+

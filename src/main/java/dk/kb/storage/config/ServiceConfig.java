@@ -51,13 +51,13 @@ public class ServiceConfig {
 	 * @return the "Hello World" lines defined in the config file.
 	 */
 	public static List<String> getHelloLines() {
-		List<String> lines = serviceConfig.getList("config.helloLines");
+		List<String> lines = serviceConfig.getList("helloLines");
 		return lines;
 	}
 
 	private static void loadAllowedOrigins() throws IOException{
 
-		List<YAML> origins = serviceConfig.getYAMLList("config.allowed_origins");
+		List<YAML> origins = serviceConfig.getYAMLList("allowed_origins");
 		//Load updtateStategy for each
 		for (YAML origin: origins) {
 			String name = origin.getString("name");
@@ -79,27 +79,27 @@ public class ServiceConfig {
 
 
 	public static  String getDBDriver() {
-		String dbDriver= serviceConfig.getString("config.db.driver");
+		String dbDriver= serviceConfig.getString("db.driver");
 		return dbDriver;
 	}
 
 	public static  String getDBUrl() {
-		String dbUrl= serviceConfig.getString("config.db.url");
+		String dbUrl= serviceConfig.getString("db.url");
 		return dbUrl;
 	}
 
 	public static  String getDBUserName() {
-		String dbUserName= serviceConfig.getString("config.db.username");
+		String dbUserName= serviceConfig.getString("db.username");
 		return dbUserName;
 	}
 
 	public static  String getDBPassword() {
-		String dbPassword= serviceConfig.getString("config.db.password");
+		String dbPassword= serviceConfig.getString("db.password");
 		return dbPassword;
 	}
 
 	public static int getDBBatchSize() {
-		return serviceConfig.getInteger("config.db.batch.size", DB_BATCH_SIZE_DEFAULT);
+		return serviceConfig.getInteger("db.batch.size", DB_BATCH_SIZE_DEFAULT);
 	}
 
 	public static HashMap<String, OriginDto> getAllowedOrigins() {
