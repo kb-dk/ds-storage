@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed 
+
+- General style of YAML configuration files, by removing the first level of indentation.
+
+
 ## [1.11.0] 2023-11-29
 ### Changed
 - Multiple method names was changed in DsStorageClient to align naming with ds-client
