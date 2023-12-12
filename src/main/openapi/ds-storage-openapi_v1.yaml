@@ -616,8 +616,7 @@ components:
         origin: "ds.radio"
         recordType: "DELIVERABLEUNIT"
         deleted: false
-        data: |
-          <xip:DeliverableUnit>Metadata for DeliverableUnit</xip:DeliverableUnit>
+        data: "<xip:DeliverableUnit>Metadata for DeliverableUnit</xip:DeliverableUnit>"
         cTime: 1701180992527000
         mTime: 1701262548465000
         cTimeHuman: "2023-11-28 15:16:32+0100"
@@ -625,7 +624,20 @@ components:
         parentId: "null"
         childrenIds: [ "ds.radio:oai:man:b39d4884-66d2-4e49-b164-0d5c7e05ca49" ]
         parent: "null"
-        children: "<xip:Manifestation>Metadata for Manifestation</xip:Manifestation"
+        children:
+          - id: "ds.radio:oai:man:231213-123123-2345-6334-c771db44aee1"
+            orgid: "null"
+            id_error: false
+            origin: "ds.radio"
+            recordType: "MANIFESTATION"
+            deleted: false
+            data: "<xip:Manifestation>Metadata for Manifestation</xip:Manifestation>"
+            cTime: 1701180992527000
+            mTime: 1701262548465000
+            cTimeHuman: "2023-11-28 15:16:32+0100"
+            mTimeHuman: "2023-11-29 13:55:48+0100"
+            parentId: "ds.radio:oai:du:c124a602-7fe6-470e-a484-c771db44aee1"
+
 
     GetDSRecord:
       value:
