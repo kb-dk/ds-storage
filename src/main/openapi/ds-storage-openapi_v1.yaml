@@ -133,6 +133,7 @@ paths:
           required: true
           schema:
             type: string
+            example: "ds.tv:oai:du:3006e2f8-3f73-477a-a504-4d7cb1ae1e1c"
       responses:
         '200':
           description: 'The DsRecord'
@@ -186,6 +187,7 @@ paths:
           required: true
           schema:
             type: string
+            example: "ds.tv:oai:du:3006e2f8-3f73-477a-a504-4d7cb1ae1e1c"
       responses:
         '200':
           description: 'The DsRecord including immediate parent and children records as objects.'
@@ -260,6 +262,7 @@ paths:
           required: true
           schema:
             type: string
+            example: ds.tv
         - name: recordType
           in: query
           description: 'Only extract records with this recordtype'
@@ -314,6 +317,7 @@ paths:
           required: true
           schema:
             type: string
+            example: ds.tv
         - name: mTime
           in: query
           description: >
@@ -553,6 +557,7 @@ components:
         - COLLECTION
         - DELIVERABLEUNIT
         - MANIFESTATION
+      example: DELIVERABLEUNIT
 
     # Basic status response component.
     # TODO: Extend this to provide application specific status, such as a list of running jobs or free disk space
