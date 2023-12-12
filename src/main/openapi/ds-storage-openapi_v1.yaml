@@ -625,7 +625,7 @@ components:
         childrenIds: [ "ds.radio:oai:man:b39d4884-66d2-4e49-b164-0d5c7e05ca49" ]
         parent: "null"
         children:
-          - id: "ds.radio:oai:man:231213-123123-2345-6334-c771db44aee1"
+          - id: "ds.radio:oai:man:b39d4884-66d2-4e49-b164-0d5c7e05ca49"
             orgid: "null"
             id_error: false
             origin: "ds.radio"
