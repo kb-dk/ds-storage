@@ -140,6 +140,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DsRecord'
+              examples:
+                DSRecord:
+                  $ref: '#/components/examples/GetDSRecord'
+
     delete:
       tags:
         - '${project.name}'
@@ -188,11 +192,15 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DsRecord'                       
-               
- 
- 
-#  This method can not be exposed by openAPI due to reference cycle
+                $ref: '#/components/schemas/DsRecord'
+              examples:
+                DSRecord:
+                  $ref: '#/components/examples/GetDSRecordWithChildren'
+
+
+
+
+  #  This method can not be exposed by openAPI due to reference cycle
 #  /recordTree/{id}:
 #    get:
 #      tags:
@@ -226,12 +234,9 @@ paths:
           application/json:    # Media type
             schema:            # Request body contents
               $ref: '#/components/schemas/DsRecord'  # Reference to an object
-            example:           
-              # Properties of a referenced object
-              id: doms_radio_id1
-              origin: doms_radio
-              data: '<xml> bla bla </xml>'
-              parentId: parentID123
+            examples:
+              DSRecord:
+                $ref: "#/components/examples/PostDSRecord"
       responses:
         '204':
           description: No Content - The request has been executed correct and the server did not deliver any content.
@@ -404,7 +409,6 @@ components:
           description: 'Name of the origin. IDs are prefixed with origin'
         updateStrategy:  
           $ref: '#/components/schemas/UpdateStrategy'
-          description: 'Update strategy defined for each origin. See the update strategy types with decription'
 
     DsRecord:
       type: object
@@ -428,7 +432,7 @@ components:
         recordType:
           type: string
           description: 'Optional. Examples can be deliverableunit, collection or metadata. Use metadata for records that contains the data. Collection are parent records without metadata.'
-          $ref: '#/components/schemas/RecordType'          
+          $ref: '#/components/schemas/RecordType'
         deleted:
           type: boolean
           description: 'Mark the record as deleted'
@@ -467,8 +471,8 @@ components:
     DsRecordList:
       type: array
       items: 
-        $ref: '#/components/schemas/DsRecord'        
-   
+        $ref: '#/components/schemas/DsRecord'
+
     OriginList:
       type: array
       items: 
@@ -537,7 +541,7 @@ components:
       nullable: false
       description: |
         
-        **Explanation of the 4 different updatestrategies.**
+        **Explanation of the 3 different record types.**
         
         | Enum             |  Description                                                                                  | 
         | ---------------- | --------------------------------------------------------------------------------------------- |  
@@ -549,7 +553,6 @@ components:
         - COLLECTION
         - DELIVERABLEUNIT
         - MANIFESTATION
-        
 
     # Basic status response component.
     # TODO: Extend this to provide application specific status, such as a list of running jobs or free disk space
@@ -588,3 +591,71 @@ components:
           type: string
           description: 'Self diagnosed health'
           example: 'ok'
+
+  examples:
+    PostDSRecord:
+      value:
+        id: 'ds.radio:oai:du:c124a602-7fe6-470e-a484-c771db44aee1'
+        origin: 'ds.radio'
+        recordType: 'DELIVERABLEUNIT'
+        data:
+          <xip:DeliverableUnit>
+          <Metadata>
+          <PBCoreDescriptionDocument:PBCoreDescriptionDocument>
+          <exampleTitle>Radioavisen</exampleTitle>
+          <exampleDescription>This is an example description of a news broadcast.</exampleDescription>
+          </PBCoreDescriptionDocument:PBCoreDescriptionDocument>
+          </Metadata>
+          </<xip:DeliverableUnit>>
+
+    GetDSRecordWithChildren:
+      value:
+        id: "ds.radio:oai:du:c124a602-7fe6-470e-a484-c771db44aee1"
+        orgid: "null"
+        id_error: false
+        origin: "ds.radio"
+        recordType: "DELIVERABLEUNIT"
+        deleted: false
+        data: "<xip:DeliverableUnit>Metadata for DeliverableUnit</xip:DeliverableUnit>"
+        cTime: 1701180992527000
+        mTime: 1701262548465000
+        cTimeHuman: "2023-11-28 15:16:32+0100"
+        mTimeHuman: "2023-11-29 13:55:48+0100"
+        parentId: "null"
+        childrenIds: [ "ds.radio:oai:man:b39d4884-66d2-4e49-b164-0d5c7e05ca49" ]
+        parent: "null"
+        children:
+          - id: "ds.radio:oai:man:b39d4884-66d2-4e49-b164-0d5c7e05ca49"
+            orgid: "null"
+            id_error: false
+            origin: "ds.radio"
+            recordType: "MANIFESTATION"
+            deleted: false
+            data: "<xip:Manifestation>Metadata for Manifestation</xip:Manifestation>"
+            cTime: 1701180992527000
+            mTime: 1701262548465000
+            cTimeHuman: "2023-11-28 15:16:32+0100"
+            mTimeHuman: "2023-11-29 13:55:48+0100"
+            parentId: "ds.radio:oai:du:c124a602-7fe6-470e-a484-c771db44aee1"
+
+
+    GetDSRecord:
+      value:
+        id: "ds.radio:oai:du:c124a602-7fe6-470e-a484-c771db44aee1"
+        orgid: "null"
+        id_error: false
+        origin: "ds.radio"
+        recordType: "DELIVERABLEUNIT"
+        deleted: false
+        data: |
+          <xip:DeliverableUnit>Metadata for DeliverableUnit</xip:DeliverableUnit>
+        cTime: 1701180992527000
+        mTime: 1701262548465000
+        cTimeHuman: "2023-11-28 15:16:32+0100"
+        mTimeHuman: "2023-11-29 13:55:48+0100"
+        parentId: "null"
+        childrenIds: "null"
+        parent: "null"
+        children: "null"
+
+
