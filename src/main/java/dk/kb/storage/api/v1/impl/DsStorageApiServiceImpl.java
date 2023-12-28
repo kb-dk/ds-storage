@@ -108,7 +108,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
 
             String filename = "records_" + finalMTime + ".json";
-            if (finalMaxRecords <= 2) { // The Swagger GUI is extremely sluggish for inline rendering
+            if (finalMaxRecords < 2) { // The Swagger GUI is extremely sluggish for inline rendering
                 // A few records is ok to show inline in the Swagger GUI:
                 // Show inline in Swagger UI, inline when opened directly in browser
                 httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"" + filename + "\"");
@@ -145,7 +145,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
 
             String filename = "records_" + finalMTime + ".json";
-            if (finalMaxRecords <= 2) { // The Swagger GUI is extremely sluggish for inline rendering
+            if (finalMaxRecords < 2) { // The Swagger GUI is extremely sluggish for inline rendering
                 // A few records is ok to show inline in the Swagger GUI:
                 // Show inline in Swagger UI, inline when opened directly in browser
                 httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"" + filename + "\"");
