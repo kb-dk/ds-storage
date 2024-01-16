@@ -3,7 +3,8 @@ info:
   version: 'v1'
   title: '${project.name}'
   description: |
-    ${config}
+    ${origin_enum}
+    ${hello}
     ${project.description}
   contact:
     email: '${user.name}@kb.dk'
@@ -68,6 +69,7 @@ paths:
           required: true
           schema:
             type: string
+            enum: [${origin_enum}]
             example: ${example_origin}
       responses:
         '200':
