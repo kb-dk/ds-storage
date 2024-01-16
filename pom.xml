@@ -115,9 +115,16 @@
         <license.url>https://www.apache.org/licenses/LICENSE-2.0.txt</license.url>
 
         <project.package>dk.kb.storage</project.package>
-        <config>testValue</config>
+
+        <!-- PROPERTIES BELOW ARE INJECTED BY USING THE YAML-PROPERTIES-PLUGIN.-->
         <!-- Extracts the name of the first origin from the given configuration file-->
+        <!--suppress UnresolvedMavenProperty -->
         <example_origin>${yaml.config.allowed_origins[0].name}</example_origin>
+        <!-- Comma seperated list, which can be used as enum in openAPI.-->
+        <!--suppress UnresolvedMavenProperty -->
+        <origin_enum>${yaml.config.allowed_origins[0].name},
+                     ${yaml.config.allowed_origins[1].name},
+                     ${yaml.config.allowed_origins[11].name}</origin_enum>
 
     </properties>
 
