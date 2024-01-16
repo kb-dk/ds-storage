@@ -3,6 +3,7 @@ info:
   version: 'v1'
   title: '${project.name}'
   description: |
+    ${config}
     ${project.description}
   contact:
     email: '${user.name}@kb.dk'
@@ -67,6 +68,7 @@ paths:
           required: true
           schema:
             type: string
+            example: ${example_origin}
       responses:
         '200':
           description: OK
@@ -91,7 +93,8 @@ paths:
           description: 'The origin to delete records from.'
           required: true
           schema:
-            type: string            
+            type: string
+            example: ${example_origin}
         - name: mTimeFrom
           in: query
           description: 'Format is milliseconds since Epoch with 3 added digits. Value is included in the deletion'
@@ -262,7 +265,7 @@ paths:
           required: true
           schema:
             type: string
-            example: ds.tv
+            example: ${example_origin}
         - name: recordType
           in: query
           description: 'Only extract records with this recordtype'
@@ -317,7 +320,7 @@ paths:
           required: true
           schema:
             type: string
-            example: ds.tv
+            example: ${example_origin}
         - name: mTime
           in: query
           description: >
@@ -411,6 +414,7 @@ components:
         name:
           type: string
           description: 'Name of the origin. IDs are prefixed with origin'
+          example: ${example_origin}
         updateStrategy:  
           $ref: '#/components/schemas/UpdateStrategy'
 
@@ -433,6 +437,7 @@ components:
         origin:
           type: string
           description: 'Collection name where the record comes from. Lower characters and dot(.) allowed only.'
+          example: ${example_origin}
         recordType:
           type: string
           description: 'Optional. Examples can be deliverableunit, collection or metadata. Use metadata for records that contains the data. Collection are parent records without metadata.'
@@ -493,6 +498,7 @@ components:
         origin:
           type: string
           description: 'Name of the origin'
+          example: ${example_origin}
         count:
           type: integer
           format: int64
