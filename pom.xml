@@ -124,7 +124,18 @@
         <!--suppress UnresolvedMavenProperty -->
         <origin_enum>${yaml.config.allowed_origins[0].name},
                      ${yaml.config.allowed_origins[1].name},
-                     ${yaml.config.allowed_origins[11].name}</origin_enum>
+                     ${yaml.config.allowed_origins[2].name},
+                     ${yaml.config.allowed_origins[3].name},
+                     ${yaml.config.allowed_origins[4].name},
+                     ${yaml.config.allowed_origins[5].name},
+                     ${yaml.config.allowed_origins[6].name},
+                     ${yaml.config.allowed_origins[7].name},
+                     ${yaml.config.allowed_origins[8].name},
+                     ${yaml.config.allowed_origins[9].name},
+                     ${yaml.config.allowed_origins[10].name},
+                     ${yaml.config.allowed_origins[11].name},
+                     ${yaml.config.allowed_origins[12].name},
+                     ${yaml.config.allowed_origins[13].name}</origin_enum>
 
     </properties>
 
