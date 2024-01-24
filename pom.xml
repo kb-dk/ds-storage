@@ -363,7 +363,7 @@
                         <YamlResolver>
                             <filePath>conf/ds-storage-behaviour.yaml</filePath>
                             <yamlType>List</yamlType>
-                            <collectionPath>allowed_origins</collectionPath>
+                            <yamlPath>allowed_origins</yamlPath>
                             <key>name</key>
                             <createEnum>true</createEnum>
                         </YamlResolver>
