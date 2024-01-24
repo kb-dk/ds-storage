@@ -119,23 +119,10 @@
         <!-- PROPERTIES BELOW ARE INJECTED BY USING THE YAML-PROPERTIES-PLUGIN.-->
         <!-- Extracts the name of the first origin from the given configuration file-->
         <!--suppress UnresolvedMavenProperty -->
-        <example_origin>${yaml.config.allowed_origins[0].name}</example_origin>
+        <example_origin>et.</example_origin>
         <!-- Comma seperated list, which can be used as enum in openAPI.-->
         <!--suppress UnresolvedMavenProperty -->
-        <origin_enum>${yaml.config.allowed_origins[0].name},
-                     ${yaml.config.allowed_origins[1].name},
-                     ${yaml.config.allowed_origins[2].name},
-                     ${yaml.config.allowed_origins[3].name},
-                     ${yaml.config.allowed_origins[4].name},
-                     ${yaml.config.allowed_origins[5].name},
-                     ${yaml.config.allowed_origins[6].name},
-                     ${yaml.config.allowed_origins[7].name},
-                     ${yaml.config.allowed_origins[8].name},
-                     ${yaml.config.allowed_origins[9].name},
-                     ${yaml.config.allowed_origins[10].name},
-                     ${yaml.config.allowed_origins[11].name},
-                     ${yaml.config.allowed_origins[12].name},
-                     ${yaml.config.allowed_origins[13].name}</origin_enum>
+        <origin_enum>et, to</origin_enum>
 
     </properties>
 
@@ -354,22 +341,27 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>com.comphenix.maven</groupId>
-                <artifactId>yaml-properties-plugin</artifactId>
-                <version>0.1.0</version>
+                <groupId>dk.kb.util</groupId>
+                <artifactId>injection-maven-plugin</artifactId>
+                <version>1.0.0</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>read-yaml-properties</goal>
                         </goals>
-                        <configuration>
-                            <files>
-                                <!-- YAML files that will be loaded. The element name is the file ID. -->
-                                <config>${basedir}/conf/ds-storage-behaviour.yaml</config>
-                            </files>
-                        </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <yamlResolvers>
+                        <YamlResolver>
+                            <filePath>conf/ds-storage-behaviour.yaml</filePath>
+                            <yamlType>List</yamlType>
+                            <collectionPath>allowed_origins</collectionPath>
+                            <key>name</key>
+                            <createEnum>true</createEnum>
+                        </YamlResolver>
+                    </yamlResolvers>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
