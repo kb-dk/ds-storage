@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+
+## [1.14](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.14) 2024-01-22
+
+### Changed
+- logback template changes
+
+
 ## [1.12](https://github.com/kb-dk/ds-storage/releases/tag/v1.12) 2023-12-05
 ### Changed 
 - General style of YAML configuration files, by removing the first level of indentation.
