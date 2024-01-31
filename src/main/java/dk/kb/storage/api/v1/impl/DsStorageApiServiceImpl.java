@@ -119,7 +119,10 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
 
+            httpServletResponse.addHeader("Paging-Record-Count", String.valueOf(finalMaxRecords));
+
             Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords);
+            ContinuationUtil.setHeaderRecordCount(httpServletResponse, finalMaxRecords);
             ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
 
             return output -> {
@@ -156,7 +159,11 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
 
+            httpServletResponse.addHeader("Paging-Record-Count", String.valueOf(finalMaxRecords));
+
+
             Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, recordType, finalMTime, finalMaxRecords);
+            ContinuationUtil.setHeaderRecordCount(httpServletResponse, finalMaxRecords);
             ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
 
             return output -> {
