@@ -160,8 +160,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             }
 
             Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, recordType, finalMTime, finalMaxRecords);
-            ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
             ContinuationUtil.setHeaderRecordCount(httpServletResponse, finalMaxRecords);
+            ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(

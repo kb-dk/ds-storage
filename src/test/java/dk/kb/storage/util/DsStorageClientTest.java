@@ -45,6 +45,8 @@ public class DsStorageClientTest {
     public static final String TEST_CONF = "internal-test-setup.yaml";
 
     private static DsStorageClient remote = null;
+    private static DsStorageClient local = new DsStorageClient("http://localhost:9072/ds-storage/v1/");
+
 
     @BeforeAll
     public static void beforeClass() {
@@ -131,6 +133,23 @@ public class DsStorageClientTest {
     }
 
     @Test
+    public void testRemotePagingCount() throws IOException {
+        try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterJSON(
+                "ds.tv", 0L, 2L)) {
+            String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
+
+
+            assertTrue(recordsStr.contains("\"id\":\"ds.tv:oai"),
+                    "At least 1 JSON block for a record should be returned");
+            assertNotNull(recordsIS.getContinuationToken(),
+                    "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
+                            "' should be present");
+            assertTrue(ContinuationUtil.getHasMore(recordsIS).isPresent(),
+                    "The continuation header '" + ContinuationUtil.HEADER_PAGING_HAS_MORE + "' should be present");
+        }
+    }
+
+    @Test
     public void testRemotePageLast() throws ApiException, IOException {
         if (remote == null) {
             return;
@@ -179,7 +198,9 @@ public class DsStorageClientTest {
         }
         try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsModifiedAfterStream(
                 "ds.radiotv", 0L,numberOfRecords)) {
-            List<DsRecordDto> recordList = records.collect(Collectors.toList());         
+            List<DsRecordDto> recordList = records.collect(Collectors.toList());
+
+            System.out.println(records.getResponseHeaders());
             
             assertEquals(numberOfRecords, recordList.size(), "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),
@@ -199,6 +220,7 @@ public class DsStorageClientTest {
         try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsByRecordTypeModifiedAfterLocalTreeStream(
                 "ds.radiotv", RecordTypeDto.DELIVERABLEUNIT, 0L, 3L)) {
             long count = records.count();
+            System.out.println(records.getResponseHeaders());
             assertEquals(3L, count, "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),
                     "The highest modification time should be present");
