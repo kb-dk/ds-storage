@@ -359,9 +359,9 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <filePath>conf/ds-storage-behaviour.yaml</filePath>
                     <yamlResolvers>
                         <YamlResolver>
-                            <filePath>conf/ds-storage-behaviour.yaml</filePath>
                             <yamlType>List</yamlType>
                             <yamlPath>allowed_origins</yamlPath>
                             <key>name</key>
