@@ -119,11 +119,11 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
 
-            httpServletResponse.addHeader("Paging-Record-Count", String.valueOf(finalMaxRecords));
-
             Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords);
             ContinuationUtil.setHeaderRecordCount(httpServletResponse, finalMaxRecords);
             ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
+
+            log.info("FIND ME. Paging-Record-Count is: '{}'", httpServletResponse.getHeader("Paging-Record-Count") );
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
@@ -159,12 +159,9 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
             }
 
-            httpServletResponse.addHeader("Paging-Record-Count", String.valueOf(finalMaxRecords));
-
-
             Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, recordType, finalMTime, finalMaxRecords);
-            ContinuationUtil.setHeaderRecordCount(httpServletResponse, finalMaxRecords);
             ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
+            ContinuationUtil.setHeaderRecordCount(httpServletResponse, finalMaxRecords);
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
@@ -177,8 +174,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         }
         
     }
-    
-    
+
     @Override
     public void recordPost(DsRecordDto dsRecordDto) {
         try {
