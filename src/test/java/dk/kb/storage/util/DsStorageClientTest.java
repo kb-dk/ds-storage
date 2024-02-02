@@ -137,7 +137,7 @@ public class DsStorageClientTest {
         DsStorageClient client = new DsStorageClient("http://localhost:9072/ds-storage/v1/");
 
         try (ContinuationInputStream<Long> recordsIS = client.getRecordsModifiedAfterJSON(
-                "ds.tv", 0L, 5L)) {
+                "ds.tv", 0L, -1L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
 
             log.info("Headers returned: '{}'", recordsIS.getResponseHeaders());
