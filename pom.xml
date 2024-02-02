@@ -115,15 +115,6 @@
         <license.url>https://www.apache.org/licenses/LICENSE-2.0.txt</license.url>
 
         <project.package>dk.kb.storage</project.package>
-
-        <!-- PROPERTIES BELOW ARE INJECTED BY USING THE YAML-PROPERTIES-PLUGIN.-->
-        <!-- Extracts the name of the first origin from the given configuration file-->
-        <!--suppress UnresolvedMavenProperty -->
-        <example_origin>et.</example_origin>
-        <!-- Comma seperated list, which can be used as enum in openAPI.-->
-        <!--suppress UnresolvedMavenProperty -->
-        <origin_enum>et, to</origin_enum>
-
     </properties>
 
     <dependencies>
@@ -364,8 +355,14 @@
                         <YamlResolver>
                             <yamlType>List</yamlType>
                             <yamlPath>allowed_origins</yamlPath>
-                            <key>name</key>
+                            <sourceKey>name</sourceKey>
+                            <destinationKey>allowed_origins</destinationKey>
                             <createEnum>true</createEnum>
+                        </YamlResolver>
+                        <YamlResolver>
+                            <yamlType>Single-value</yamlType>
+                            <yamlPath>allowed_origins[0].name</yamlPath>
+                            <destinationKey>example_origin</destinationKey>
                         </YamlResolver>
                     </yamlResolvers>
                 </configuration>
