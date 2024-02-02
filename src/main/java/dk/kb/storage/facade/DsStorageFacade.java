@@ -100,7 +100,6 @@ public class DsStorageFacade {
                 return (long)records.size();
             });
             if (delivered == 0) {
-                totalDelivered += delivered;
                 break;
             }
             pending -= delivered;
@@ -119,12 +118,13 @@ public class DsStorageFacade {
      *   @param maxRecords Number of maximum records to extract total
      *   @param batchSize Number of records batch. No reason to change the default 1000. 
      */
-    public static void getRecordsByRecordTypeModifiedAfterWithLocalTree(
+    public static Long getRecordsByRecordTypeModifiedAfterWithLocalTree(
             ExportWriter writer, String origin, RecordTypeDto recordType, long mTime, long maxRecords, int batchSize) {
         String id = String.format(Locale.ROOT, "writeRecordsByRecordTypeModifiedAfterWithLocalTree(origin='%s', recordType='%s' mTime=%d, maxRecords=%d, batchSize=%d)",
                                   origin, recordType, mTime, maxRecords, batchSize);
         long pending = maxRecords == -1 ? Long.MAX_VALUE : maxRecords; // -1 = all records
         final AtomicLong lastMTime = new AtomicLong(mTime);
+        long totalDelivered = 0L;
         while (pending > 0) {
             int request = pending < batchSize ? (int) pending : batchSize;
             long delivered = performStorageAction(id, storage -> {
@@ -150,7 +150,9 @@ public class DsStorageFacade {
                 break;
             }
             pending -= delivered;
+            totalDelivered += delivered;
         }
+        return totalDelivered;
     }
     
     
