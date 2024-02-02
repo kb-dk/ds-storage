@@ -3,7 +3,6 @@ info:
   version: 'v1'
   title: '${project.name}'
   description: |
-    ${allowed_origins}
     ${project.description}
   contact:
     email: '${user.name}@kb.dk'
@@ -267,6 +266,7 @@ paths:
           schema:
             type: string
             example: ${example_origin}
+            enum: [${allowed_origins}]
         - name: recordType
           in: query
           description: 'Only extract records with this recordtype'
@@ -322,6 +322,7 @@ paths:
           schema:
             type: string
             example: ${example_origin}
+            enum: [${allowed_origins}]
         - name: mTime
           in: query
           description: >
