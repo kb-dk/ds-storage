@@ -129,18 +129,7 @@ public class DsStorageClient extends DsStorageApi {
                 .build();
         log.debug("Opening streaming connection to '{}'", uri);
 
-
-        /*HeaderInputStream headerStream = HeaderInputStream.from(uri);
-        String pagingRecordCount = String.valueOf(ContinuationUtil.getRecordCount(headerStream));*/
-
-        Map<String, String> headers = Map.of("Paging-Record-Count", "");
-
-        try (ContinuationInputStream<Long> resultStream = ContinuationInputStream.from(uri, Long::valueOf, headers)) {
-            log.info("Stream has the following headers: '{}'", resultStream.getResponseHeaders().keySet());
-            log.info("RecordCount in stream is: '{}'", resultStream.getRecordCount());
-
-            return resultStream;
-        }
+        return ContinuationInputStream.from(uri, Long::valueOf);
     }
 
     /**

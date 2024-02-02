@@ -123,8 +123,6 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             ContinuationUtil.setHeaderRecordCount(httpServletResponse, finalMaxRecords);
             ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
 
-            log.info("FIND ME. Paging-Record-Count is: '{}'", httpServletResponse.getHeader("Paging-Record-Count") );
-
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
                         output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {

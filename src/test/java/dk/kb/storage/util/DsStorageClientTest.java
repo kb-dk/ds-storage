@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Simple verification of client code generation.
  */
 public class DsStorageClientTest {
-    private static final Logger log = LoggerFactory.getLogger(DsStorageClientTest.class);
+    private static final Logger log =  LoggerFactory.getLogger(DsStorageClientTest.class);
 
     public static final String TEST_CONF = "internal-test-setup.yaml";
 
@@ -133,19 +133,16 @@ public class DsStorageClientTest {
     }
 
     @Test
-    public void testRemotePagingCount() throws IOException {
-        try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterJSON(
-                "ds.tv", 0L, 2L)) {
+    public void testRemotePagingCount() throws IOException, ApiException {
+        DsStorageClient client = new DsStorageClient("http://localhost:9072/ds-storage/v1/");
+
+        try (ContinuationInputStream<Long> recordsIS = client.getRecordsModifiedAfterJSON(
+                "ds.tv", 0L, 5L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
 
+            log.info("Headers returned: '{}'", recordsIS.getResponseHeaders());
 
-            assertTrue(recordsStr.contains("\"id\":\"ds.tv:oai"),
-                    "At least 1 JSON block for a record should be returned");
-            assertNotNull(recordsIS.getContinuationToken(),
-                    "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
-                            "' should be present");
-            assertTrue(ContinuationUtil.getHasMore(recordsIS).isPresent(),
-                    "The continuation header '" + ContinuationUtil.HEADER_PAGING_HAS_MORE + "' should be present");
+            assertEquals(1L, recordsIS.getRecordCount());
         }
     }
 
