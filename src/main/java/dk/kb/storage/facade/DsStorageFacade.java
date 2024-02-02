@@ -100,6 +100,7 @@ public class DsStorageFacade {
                 return (long)records.size();
             });
             if (delivered == 0) {
+                totalDelivered += delivered;
                 break;
             }
             pending -= delivered;
