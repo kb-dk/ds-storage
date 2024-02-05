@@ -132,6 +132,10 @@ public class DsStorageClientTest {
 
     @Test
     public void testRemotePagingCount() throws IOException, ApiException {
+        if (remote == null) {
+            return;
+        }
+
         try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterJSON(
                 "ds.tv", 0L, 500L)) {
             assertEquals(500L, recordsIS.getRecordCount());
