@@ -192,8 +192,7 @@ public class DsStorageClientTest {
         try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsModifiedAfterStream(
                 "ds.radiotv", 0L,numberOfRecords)) {
             List<DsRecordDto> recordList = records.collect(Collectors.toList());
-
-            System.out.println(records.getResponseHeaders());
+            
             
             assertEquals(numberOfRecords, recordList.size(), "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),
