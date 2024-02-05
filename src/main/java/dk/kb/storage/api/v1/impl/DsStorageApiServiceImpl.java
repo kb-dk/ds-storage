@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Providers;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,32 +104,21 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             log.debug("getRecordsModifiedAfter(origin='{}', mTime={}, maxRecords={}) with batchSize={} " +
                       "called with call details: {}",
                       origin, mTime, maxRecords, ServiceConfig.getDBBatchSize(), getCallDetails());
+            Long returnedRecords;
             // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
             // the OpenAPI generator does not support defaults for longs (int64)
             long finalMTime = mTime == null ? 0L : mTime;
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
-
-            String filename = "records_" + finalMTime + ".json";
-            if (finalMaxRecords < 2) { // The Swagger GUI is extremely sluggish for inline rendering
-                // A few records is ok to show inline in the Swagger GUI:
-                // Show inline in Swagger UI, inline when opened directly in browser
-                httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"" + filename + "\"");
-            } else {
-                // When there are a lot of records, they should not be displayed inline in the OpenAPI GUI:
-                // Show download link in Swagger UI, inline when opened directly in browser
-                // https://github.com/swagger-api/swagger-ui/issues/3832
-                httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            
+            try (ExportWriter writer = ExportWriterFactory.wrap(
+                    output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
+                returnedRecords = DsStorageFacade.getRecordsModifiedAfter(writer, origin, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
             }
 
-            Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords);
-            ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
+            setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), returnedRecords);
 
-            return output -> {
-                try (ExportWriter writer = ExportWriterFactory.wrap(
-                        output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
-                    DsStorageFacade.getRecordsModifiedAfter(writer, origin, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
-                }
-            };
+            return output::writeTo;
         } catch (Exception e){
             throw handleException(e);
         }
@@ -139,39 +130,63 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             log.debug(" getRecordsByRecordTypeModifiedAfterLocalTree(origin='{}', recordtype='{}', mTime={}, maxRecords={}) with batchSize={} " +
                       "called with call details: {}",
                       origin, recordType, mTime, maxRecords, ServiceConfig.getDBBatchSize(), getCallDetails());
+            Long returnedRecords;
             // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
             // the OpenAPI generator does not support defaults for longs (int64)
             long finalMTime = mTime == null ? 0L : mTime;
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-            String filename = "records_" + finalMTime + ".json";
-            if (finalMaxRecords < 2) { // The Swagger GUI is extremely sluggish for inline rendering
-                // A few records is ok to show inline in the Swagger GUI:
-                // Show inline in Swagger UI, inline when opened directly in browser
-                httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"" + filename + "\"");
-            } else {
-                // When there are a lot of records, they should not be displayed inline in the OpenAPI GUI:
-                // Show download link in Swagger UI, inline when opened directly in browser
-                // https://github.com/swagger-api/swagger-ui/issues/3832
-                httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
+            try (ExportWriter writer = ExportWriterFactory.wrap(
+                    output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
+                returnedRecords = DsStorageFacade.getRecordsByRecordTypeModifiedAfterWithLocalTree(writer, origin, recordType, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
             }
 
-            Pair<Long, Boolean> highestMtimeAndHasMore = DsStorageFacade.getMaxMtimeAfter(origin, recordType, finalMTime, finalMaxRecords);
-            ContinuationUtil.setHeaders(httpServletResponse, highestMtimeAndHasMore);
+            setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, recordType, finalMTime, finalMaxRecords), returnedRecords);
 
-            return output -> {
-                try (ExportWriter writer = ExportWriterFactory.wrap(
-                        output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
-                    DsStorageFacade.getRecordsByRecordTypeModifiedAfterWithLocalTree(writer, origin, recordType, finalMTime, finalMaxRecords,  ServiceConfig.getDBBatchSize());
-                }
-            };
+            return output::writeTo;
         } catch (Exception e){
             throw handleException(e);
         }
-        
+
     }
-    
-    
+
+    /**
+     * Set headers for the response delivered through the API endpoint. The method tries to set the following headers
+     * explicitly: Content-Disposition, Paging-Continuation-Token, Paging-Has-More and Paging-Record-Count.
+     * @param finalMTime is used to determine how to set the Content-Disposition header.
+     * @param finalMaxRecords is used to determine how to set the Content-Disposition header.
+     * @param continuationPair contains the values for the Paging-Continuation-Token and Paging-Has-More headers.
+     *                         See {@link DsStorageFacade#getMaxMtimeAfter(String, long, long)} and
+     *                         {@link DsStorageFacade#getMaxMtimeAfter(String, RecordTypeDto, long, long)} for explanation.
+     * @param returnedRecords the amount of records returned from the backing DsStorage during the call.
+     */
+    private void setHeaders(long finalMTime, long finalMaxRecords, Pair<Long, Boolean> continuationPair, Long returnedRecords) {
+        setContentDispositionHeader(finalMTime, finalMaxRecords);
+        ContinuationUtil.setHeaders(httpServletResponse, continuationPair);
+        ContinuationUtil.setHeaderRecordCount(httpServletResponse, returnedRecords);
+    }
+
+    /**
+     * Determines the value for the Content-Disposition header by looking at the value of finalMaxRecords.
+     * @param finalMTime value used to construct the filename used on in header.
+     * @param finalMaxRecords amount of records being requested. If this value is more than 2, then the response is
+     *                        shown inline.
+     */
+    private void setContentDispositionHeader(long finalMTime, long finalMaxRecords) {
+        String filename = "records_" + finalMTime + ".json";
+        if (finalMaxRecords < 2) { // The Swagger GUI is extremely sluggish for inline rendering
+            // A few records is ok to show inline in the Swagger GUI:
+            // Show inline in Swagger UI, inline when opened directly in browser
+            httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"" + filename + "\"");
+        } else {
+            // When there are a lot of records, they should not be displayed inline in the OpenAPI GUI:
+            // Show download link in Swagger UI, inline when opened directly in browser
+            // https://github.com/swagger-api/swagger-ui/issues/3832
+            httpServletResponse.setHeader("Content-Disposition", "inline; swaggerDownload=\"attachment\"; filename=\"" + filename + "\"");
+        }
+    }
+
     @Override
     public void recordPost(DsRecordDto dsRecordDto) {
         try {

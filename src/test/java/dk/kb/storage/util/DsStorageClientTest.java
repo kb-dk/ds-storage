@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Simple verification of client code generation.
  */
 public class DsStorageClientTest {
-    private static final Logger log = LoggerFactory.getLogger(DsStorageClientTest.class);
+    private static final Logger log =  LoggerFactory.getLogger(DsStorageClientTest.class);
 
     public static final String TEST_CONF = "internal-test-setup.yaml";
 
@@ -131,6 +131,18 @@ public class DsStorageClientTest {
     }
 
     @Test
+    public void testRemotePagingCount() throws IOException, ApiException {
+        if (remote == null) {
+            return;
+        }
+
+        try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterJSON(
+                "ds.tv", 0L, 500L)) {
+            assertEquals(500L, recordsIS.getRecordCount());
+        }
+    }
+
+    @Test
     public void testRemotePageLast() throws ApiException, IOException {
         if (remote == null) {
             return;
@@ -179,7 +191,8 @@ public class DsStorageClientTest {
         }
         try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsModifiedAfterStream(
                 "ds.radiotv", 0L,numberOfRecords)) {
-            List<DsRecordDto> recordList = records.collect(Collectors.toList());         
+            List<DsRecordDto> recordList = records.collect(Collectors.toList());
+            
             
             assertEquals(numberOfRecords, recordList.size(), "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),
@@ -199,6 +212,7 @@ public class DsStorageClientTest {
         try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsByRecordTypeModifiedAfterLocalTreeStream(
                 "ds.radiotv", RecordTypeDto.DELIVERABLEUNIT, 0L, 3L)) {
             long count = records.count();
+            System.out.println(records.getResponseHeaders());
             assertEquals(3L, count, "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),
                     "The highest modification time should be present");
