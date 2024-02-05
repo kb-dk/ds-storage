@@ -21,12 +21,15 @@ import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
 import dk.kb.util.webservice.stream.ContinuationStream;
+import dk.kb.util.webservice.stream.ContinuationUtil;
+import dk.kb.util.webservice.stream.HeaderInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
 
 /**
  * Client for the service. Intended for use by other projects that calls this service.
@@ -125,6 +128,7 @@ public class DsStorageClient extends DsStorageApi {
                 .queryParam("maxRecords", maxRecords == null ? 10 : maxRecords)
                 .build();
         log.debug("Opening streaming connection to '{}'", uri);
+
         return ContinuationInputStream.from(uri, Long::valueOf);
     }
 
