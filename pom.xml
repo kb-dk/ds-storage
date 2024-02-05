@@ -9,7 +9,7 @@
 
     <groupId>dk.kb.storage</groupId>
     <artifactId>ds-storage</artifactId>
-    <version>1.13-SNAPSHOT</version>
+    <version>1.15-SNAPSHOT</version>
     <packaging>war</packaging>
     <description>
     # Ds-storage(Digitale Samlinger) by the Royal Danish Library. 
@@ -121,7 +121,7 @@
         <dependency>
             <groupId>dk.kb.util</groupId>
             <artifactId>kb-util</artifactId>
-            <version>1.4.18</version>
+            <version>1.4.22</version>
             <exclusions>
                 <exclusion>
                     <!-- kb-util has 2.3.3, but transitive resolving has 2.4.0 somewhere-->
@@ -209,6 +209,13 @@
             <groupId>org.openapitools</groupId>
             <artifactId>openapi-generator</artifactId>
             <version>7.1.0</version>
+             <exclusions>
+                <exclusion>
+                    <!-- The slf4j-simple logs to stderr and stdout, ignoring logback.xml -->
+                    <artifactId>slf4j-simple</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- openapitools dependency -->
@@ -259,7 +266,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.30</version>
+            <version>2.0.11</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -279,7 +286,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.11</version>
+            <version>1.4.14</version>
         </dependency>
 
         <!-- Unit test -->
@@ -326,7 +333,7 @@
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
                 <includes>
-                    <include>build.properties</include>
+                    <include>ds-storage.build.properties</include>
                 </includes>
             </resource>
         </resources>
@@ -560,7 +567,7 @@
                         <webResource> <!-- Store application name, version and build time -->
                             <directory>${basedir}/src/main/resources/</directory>
                             <includes>
-                                <include>build.properties</include>
+                                <include>ds-storage.build.properties</include>
                             </includes>
                             <filtering>true</filtering>
                         </webResource>
@@ -617,6 +624,39 @@
                         <phase>package</phase>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- Plugin used to extract information on the current git setup.
+    See: https://github.com/git-commit-id/git-commit-id-maven-plugin -->
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>7.0.0</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includeOnlyProperties>
+                        <includeOnlyProperty>git.commit.id</includeOnlyProperty>
+                        <includeOnlyProperty>git.branch</includeOnlyProperty>
+                        <includeOnlyProperty>git.tag</includeOnlyProperty>
+                        <includeOnlyProperty>git.closest.tag.name</includeOnlyProperty>
+                        <includeOnlyProperty>git.commit.author.time</includeOnlyProperty>
+                    </includeOnlyProperties>
+                    <replacementProperties>
+                        <replacementProperty>
+                            <property>git.tag</property>
+                            <regex>false</regex>
+                            <token>git.tag</token>
+                            <value>unknown</value>
+                        </replacementProperty>
+                    </replacementProperties>
+                </configuration>
             </plugin>
         </plugins>
     </build>
