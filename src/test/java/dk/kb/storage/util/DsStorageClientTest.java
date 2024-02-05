@@ -45,8 +45,6 @@ public class DsStorageClientTest {
     public static final String TEST_CONF = "internal-test-setup.yaml";
 
     private static DsStorageClient remote = null;
-    private static DsStorageClient local = new DsStorageClient("http://localhost:9072/ds-storage/v1/");
-
 
     @BeforeAll
     public static void beforeClass() {
