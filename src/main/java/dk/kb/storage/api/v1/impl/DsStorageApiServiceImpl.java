@@ -109,7 +109,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
 
             // Count records in the origin we are extracting from
-            long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin);
+            long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin, finalMTime);
             setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), recordsInOrigin);
 
             return output -> {
@@ -134,7 +134,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             long finalMTime = mTime == null ? 0L : mTime;
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
 
-            long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin);
+            long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin, finalMTime);
             setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), recordsInOrigin);
 
             return output -> {

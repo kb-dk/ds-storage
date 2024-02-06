@@ -77,10 +77,10 @@ public class DsStorageFacade {
      * Get the count of records from a specific origin
      * @param origin to count amount of records from.
      */
-    public static long countRecordsInOrigin(String origin){
+    public static long countRecordsInOrigin(String origin, long mTime){
         return performStorageAction("getAmountOfRecordsForOrigin(origin: " + origin +")", storage -> {
             validateOriginExists(origin);
-            return storage.getAmountOfRecordsForOrigin(origin);
+            return storage.getAmountOfRecordsForOrigin(origin, mTime);
         } );
     }
 
