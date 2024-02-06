@@ -74,6 +74,17 @@ public class DsStorageFacade {
     }
 
     /**
+     * Get the count of records from a specific origin
+     * @param origin to count amount of records from.
+     */
+    public static long countRecordsInOrigin(String origin){
+        return performStorageAction("getAmountOfRecordsForOrigin(origin: " + origin +")", storage -> {
+            validateOriginExists(origin);
+            return storage.getAmountOfRecordsForOrigin(origin);
+        } );
+    }
+
+    /**
     *   Retrieve records (DsRecordDs) as a list. The local record tree will not be loaded as objects
     *
     *   @param origin origin for the record. Origins are defined in the yaml file
