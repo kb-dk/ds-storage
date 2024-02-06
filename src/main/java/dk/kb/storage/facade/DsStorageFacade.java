@@ -76,6 +76,8 @@ public class DsStorageFacade {
     /**
      * Get the count of records from a specific origin
      * @param origin to count amount of records from.
+     * @param mTime  is needed to deliver a number that is equal to the extracted values.
+     * @return the number of records sent through the stream.
      */
     public static long countRecordsInOrigin(String origin, long mTime){
         return performStorageAction("getAmountOfRecordsForOrigin(origin: " + origin +")", storage -> {

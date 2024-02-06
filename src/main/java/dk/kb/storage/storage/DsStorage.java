@@ -603,6 +603,7 @@ public class DsStorage implements AutoCloseable {
     /**
      * Get total amount of records for a specific {@link #ORIGIN_COLUMN}.
      * @param origin the origin to query for in the database.
+     * @param mTime  is needed to only deliver the values that are actually extracted.
      * @return the amount of records for the specified origin.
      */
     public Long getAmountOfRecordsForOrigin(String origin, Long mTime) throws SQLException {
