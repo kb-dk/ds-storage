@@ -22,8 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Providers;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -104,24 +103,34 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             log.debug("getRecordsModifiedAfter(origin='{}', mTime={}, maxRecords={}) with batchSize={} " +
                       "called with call details: {}",
                       origin, mTime, maxRecords, ServiceConfig.getDBBatchSize(), getCallDetails());
-            Long returnedRecords;
             // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
             // the OpenAPI generator does not support defaults for longs (int64)
             long finalMTime = mTime == null ? 0L : mTime;
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            
-            try (ExportWriter writer = ExportWriterFactory.wrap(
-                    output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
-                returnedRecords = DsStorageFacade.getRecordsModifiedAfter(writer, origin, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
+
+            long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin);
+
+            long returnedRecords = Math.min(finalMaxRecords, recordsInOrigin);
+            if (finalMaxRecords == -1L){
+                returnedRecords = recordsInOrigin;
             }
 
             setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), returnedRecords);
 
-            return output::writeTo;
+            return output -> {
+                try (ExportWriter writer = ExportWriterFactory.wrap(
+                        output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
+                    DsStorageFacade.getRecordsModifiedAfter(writer, origin, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
+                }
+            };
         } catch (Exception e){
             throw handleException(e);
         }
+    }
+
+    @Override
+    public Long getSingleOriginStatistics(String origin) {
+        return DsStorageFacade.countRecordsInOrigin(origin);
     }
 
     @Override
@@ -130,21 +139,22 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             log.debug(" getRecordsByRecordTypeModifiedAfterLocalTree(origin='{}', recordtype='{}', mTime={}, maxRecords={}) with batchSize={} " +
                       "called with call details: {}",
                       origin, recordType, mTime, maxRecords, ServiceConfig.getDBBatchSize(), getCallDetails());
-            Long returnedRecords;
             // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
             // the OpenAPI generator does not support defaults for longs (int64)
             long finalMTime = mTime == null ? 0L : mTime;
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-            try (ExportWriter writer = ExportWriterFactory.wrap(
-                    output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
-                returnedRecords = DsStorageFacade.getRecordsByRecordTypeModifiedAfterWithLocalTree(writer, origin, recordType, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
-            }
+            long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin);
+            long returnedRecords = Math.min(finalMaxRecords, recordsInOrigin);
 
-            setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, recordType, finalMTime, finalMaxRecords), returnedRecords);
+            setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), returnedRecords);
 
-            return output::writeTo;
+            return output -> {
+                try (ExportWriter writer = ExportWriterFactory.wrap(
+                        output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
+                    DsStorageFacade.getRecordsByRecordTypeModifiedAfterWithLocalTree(writer, origin, recordType, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
+                }
+            };
         } catch (Exception e){
             throw handleException(e);
         }
