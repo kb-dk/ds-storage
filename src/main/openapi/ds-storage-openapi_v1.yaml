@@ -50,28 +50,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/OriginCountList'
 
-  /origin/stats/single:
-    get:
-      tags:
-        - '${project.name}'
-      summary: 'Show amount of records in origin'
-      operationId: getSingleOriginStatistics
-      parameters:
-        - name: origin
-          in: query
-          schema:
-            type: string
-            example: ${example_origin}
-      responses:
-        '200':
-          description: 'Show how many records exists for each origin'
-          content:
-            text/plain:
-              schema:
-                type: integer
-                format: int64
-
-
   /origin/cleanup:
     delete:
       tags:

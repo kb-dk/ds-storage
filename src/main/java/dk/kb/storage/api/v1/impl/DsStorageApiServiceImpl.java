@@ -108,14 +108,9 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             long finalMTime = mTime == null ? 0L : mTime;
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
 
+            // Count records in the origin we are extracting from
             long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin);
-
-            long returnedRecords = Math.min(finalMaxRecords, recordsInOrigin);
-            if (finalMaxRecords == -1L){
-                returnedRecords = recordsInOrigin;
-            }
-
-            setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), returnedRecords);
+            setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), recordsInOrigin);
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
@@ -126,11 +121,6 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         } catch (Exception e){
             throw handleException(e);
         }
-    }
-
-    @Override
-    public Long getSingleOriginStatistics(String origin) {
-        return DsStorageFacade.countRecordsInOrigin(origin);
     }
 
     @Override
@@ -145,9 +135,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
 
             long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin);
-            long returnedRecords = Math.min(finalMaxRecords, recordsInOrigin);
-
-            setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), returnedRecords);
+            setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), recordsInOrigin);
 
             return output -> {
                 try (ExportWriter writer = ExportWriterFactory.wrap(
@@ -169,11 +157,18 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
      * @param continuationPair contains the values for the Paging-Continuation-Token and Paging-Has-More headers.
      *                         See {@link DsStorageFacade#getMaxMtimeAfter(String, long, long)} and
      *                         {@link DsStorageFacade#getMaxMtimeAfter(String, RecordTypeDto, long, long)} for explanation.
-     * @param returnedRecords the amount of records returned from the backing DsStorage during the call.
+     * @param recordsInOrigin the amount of records available from the backing DsStorage during the call.
      */
-    private void setHeaders(long finalMTime, long finalMaxRecords, Pair<Long, Boolean> continuationPair, Long returnedRecords) {
+    private void setHeaders(long finalMTime, long finalMaxRecords, Pair<Long, Boolean> continuationPair, long recordsInOrigin) {
         setContentDispositionHeader(finalMTime, finalMaxRecords);
         ContinuationUtil.setHeaders(httpServletResponse, continuationPair);
+
+        // Figure which value is the correct amount to be used for the Paging-Record-Count header.
+        long returnedRecords = Math.min(finalMaxRecords, recordsInOrigin);
+        if (finalMaxRecords == -1L){
+            returnedRecords = recordsInOrigin;
+        }
+
         ContinuationUtil.setHeaderRecordCount(httpServletResponse, returnedRecords);
     }
 
