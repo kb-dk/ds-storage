@@ -74,6 +74,19 @@ public class DsStorageFacade {
     }
 
     /**
+     * Get the count of records from a specific origin
+     * @param origin to count amount of records from.
+     * @param mTime  is needed to deliver a number that is equal to the extracted values.
+     * @return the number of records sent through the stream.
+     */
+    public static long countRecordsInOrigin(String origin, long mTime){
+        return performStorageAction("getAmountOfRecordsForOrigin(origin: " + origin +")", storage -> {
+            validateOriginExists(origin);
+            return storage.getAmountOfRecordsForOrigin(origin, mTime);
+        } );
+    }
+
+    /**
     *   Retrieve records (DsRecordDs) as a list. The local record tree will not be loaded as objects
     *
     *   @param origin origin for the record. Origins are defined in the yaml file

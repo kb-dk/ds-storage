@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Changed how the paging-Record-Count is calculated. A simple database lookup is now performed instead of creating an intermediary stream.
+
 
 ## [1.15](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.15) 2024-02-06
 

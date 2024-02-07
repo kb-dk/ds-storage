@@ -50,7 +50,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/OriginCountList'
 
-
   /origin/cleanup:
     delete:
       tags:

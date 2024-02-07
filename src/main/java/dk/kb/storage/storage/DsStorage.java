@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 
 
 /*
@@ -159,7 +160,8 @@ public class DsStorage implements AutoCloseable {
 
     private static String originsStatisticsStatement = "SELECT " + ORIGIN_COLUMN + " ,COUNT(*) AS COUNT , SUM("+DELETED_COLUMN+") AS deleted,  max("+MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + ORIGIN_COLUMN;
     private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE "+ORIGIN_COLUMN +" = ? AND "+DELETED_COLUMN +" = 1" ;   
-    private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";			
+    private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";
+    private static String countRecordsInOriginStatement = "SELECT COUNT(*) FROM " + RECORDS_TABLE +  " WHERE " + ORIGIN_COLUMN + " = ? AND " + MTIME_COLUMN + " > ?";
 
 
     private static BasicDataSource dataSource;
@@ -596,6 +598,28 @@ public class DsStorage implements AutoCloseable {
             }
         }
         return originCountList;
+    }
+
+    /**
+     * Get total amount of records for a specific {@link #ORIGIN_COLUMN}.
+     * @param origin the origin to query for in the database.
+     * @param mTime  is needed to only deliver the values that are actually extracted.
+     * @return the amount of records for the specified origin.
+     */
+    public Long getAmountOfRecordsForOrigin(String origin, Long mTime) throws SQLException {
+        long recordsInOrigin = 0L;
+        try (PreparedStatement statement = connection.prepareStatement(countRecordsInOriginStatement)){
+            statement.setString(1, origin);
+            statement.setLong(2, Objects.requireNonNullElse(mTime, 0L));
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()){
+                    recordsInOrigin = rs.getLong(1);
+                }
+            }
+        }
+
+        return recordsInOrigin;
     }
 
     public void createNewRecord(DsRecordDto record) throws Exception {
