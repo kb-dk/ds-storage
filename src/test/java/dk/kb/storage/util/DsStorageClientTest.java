@@ -64,9 +64,9 @@ public class DsStorageClientTest {
             return;
         }
         try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterJSON(
-                "ds.radiotv", 0L, 3L)) {
+                "ds.radio", 0L, 3L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
-            assertTrue(recordsStr.contains("\"id\":\"ds.radiotv:oai"),
+            assertTrue(recordsStr.contains("\"id\":\"ds.radio:oai"),
                     "At least 1 JSON block for a record should be returned");
             assertNotNull(recordsIS.getContinuationToken(),
                     "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
@@ -93,7 +93,7 @@ public class DsStorageClientTest {
 
         // First paging
         try (ContinuationStream<DsRecordDto, Long> recordStream =
-                     remote.getRecordsModifiedAfterStream("ds.radiotv", 0L, numberOfRecords)) {
+                     remote.getRecordsModifiedAfterStream("ds.radio", 0L, numberOfRecords)) {
             batch1 = recordStream.collect(Collectors.toList());
             lastMTime = recordStream.getContinuationToken();
             hasMore = recordStream.hasMore();
@@ -106,7 +106,7 @@ public class DsStorageClientTest {
 
         // Second paging
         try (ContinuationStream<DsRecordDto, Long> recordStream =
-                     remote.getRecordsModifiedAfterStream("ds.radiotv", lastMTime, numberOfRecords)) {
+                     remote.getRecordsModifiedAfterStream("ds.radio", lastMTime, numberOfRecords)) {
             batch2 = recordStream.collect(Collectors.toList());
             lastMTime = recordStream.getContinuationToken();
             hasMore = recordStream.hasMore();
@@ -119,7 +119,7 @@ public class DsStorageClientTest {
 
         // Verify batch1 + batch2
         try (ContinuationStream<DsRecordDto, Long> recordStream =
-                     remote.getRecordsModifiedAfterStream("ds.radiotv", 0L, 2L*numberOfRecords)) {
+                     remote.getRecordsModifiedAfterStream("ds.radio", 0L, 2L*numberOfRecords)) {
             List<DsRecordDto> batchAll = recordStream.collect(Collectors.toList());
             List<DsRecordDto> batch1plus2 = new ArrayList<>(batch1);
             batch1plus2.addAll(batch2);
@@ -149,7 +149,7 @@ public class DsStorageClientTest {
         }
         Long lastMTime = null;
         for (OriginCountDto originCount: remote.getOriginStatistics()) {
-            if ("ds.radiotv".equals(originCount.getOrigin())) {
+            if ("ds.radio".equals(originCount.getOrigin())) {
                 lastMTime = originCount.getLatestMTime();
             }
         }
@@ -159,7 +159,7 @@ public class DsStorageClientTest {
         lastMTime -= 1;
 
         try (ContinuationStream<DsRecordDto, Long> recordStream =
-                     remote.getRecordsModifiedAfterStream("ds.radiotv", lastMTime, 10L)) {
+                     remote.getRecordsModifiedAfterStream("ds.radio", lastMTime, 10L)) {
             assertEquals(1, recordStream.count(), "There should be a single record after " + lastMTime);
             assertFalse(recordStream.hasMore(), "The hasMore flag should be false");
         }
@@ -171,9 +171,9 @@ public class DsStorageClientTest {
             return;
         }
         try (ContinuationInputStream recordsIS = remote.getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
-                             "ds.radiotv", RecordTypeDto.DELIVERABLEUNIT,  0L, 3L)) {
+                             "ds.radio", RecordTypeDto.DELIVERABLEUNIT,  0L, 3L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
-            assertTrue(recordsStr.contains("\"id\":\"ds.radiotv:oai"),
+            assertTrue(recordsStr.contains("\"id\":\"ds.radio:oai"),
                     "At least 1 JSON block for a record should be returned");
             assertNotNull(recordsIS.getContinuationToken(),
                        "The continuation header '" + ContinuationUtil.HEADER_PAGING_CONTINUATION_TOKEN +
@@ -190,7 +190,7 @@ public class DsStorageClientTest {
             return;
         }
         try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsModifiedAfterStream(
-                "ds.radiotv", 0L,numberOfRecords)) {
+                "ds.radio", 0L,numberOfRecords)) {
             List<DsRecordDto> recordList = records.collect(Collectors.toList());
             
             
@@ -210,7 +210,7 @@ public class DsStorageClientTest {
             return;
         }
         try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsByRecordTypeModifiedAfterLocalTreeStream(
-                "ds.radiotv", RecordTypeDto.DELIVERABLEUNIT, 0L, 3L)) {
+                "ds.radio", RecordTypeDto.DELIVERABLEUNIT, 0L, 3L)) {
             long count = records.count();
             System.out.println(records.getResponseHeaders());
             assertEquals(3L, count, "The requested number of records should be received");
