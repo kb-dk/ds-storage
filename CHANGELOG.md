@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Changed how the paging-Record-Count is calculated. A simple database lookup is now performed instead of creating an intermediary stream.
 - Changed the origin used for StorageClient tests as 'ds.radiotv' is removed in the near future.
+- Integration test uses aegis configuration.
 - bump sbforge-parent to v25
 
 ## [1.15](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.15) 2024-02-06
