@@ -12,18 +12,20 @@
  *  limitations under the License.
  *
  */
-package dk.kb.storage.util;
+package dk.kb.storage.integration;
 
+import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.invoker.v1.ApiException;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.util.DsStorageClient;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
 import dk.kb.util.webservice.stream.ContinuationStream;
 import dk.kb.util.webservice.stream.ContinuationUtil;
-import dk.kb.util.yaml.YAML;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,32 +39,41 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Simple verification of client code generation.
+ * Integration test on class level, will not be run by automatic build flow.
+ * Call 'kb init' to fetch YAML property file with server urls
+ * 
  */
+@Tag("integration")
 public class DsStorageClientTest {
     private static final Logger log =  LoggerFactory.getLogger(DsStorageClientTest.class);
 
-    public static final String TEST_CONF = "internal-test-setup.yaml";
-
     private static DsStorageClient remote = null;
+    private static String dsStorageDevel=null;  
 
     @BeforeAll
-    public static void beforeClass() {
-        remote = getRemote();
-    }
+    static void setup() {
+        try {
+            ServiceConfig.initialize("conf/ds-storage-behaviour.yaml","ds-storage-integration-test.yaml"); 
+            dsStorageDevel= ServiceConfig.getConfig().getString("integration.devel.storage"); 
+            remote = new DsStorageClient(dsStorageDevel);
+        } catch (IOException e) { 
+            e.printStackTrace();
+            log.error("Integration yaml 'ds-storage-integration-test.yaml' file most be present. Call 'kb init'"); 
+            fail();
 
-    @Test
-    public void testInstantiation() {
-        String backendURIString = "htp://example.com/ds-storage/v1";
-        log.debug("Creating inactive client for ds-storage with URI '{}'", backendURIString);
-        new DsStorageClient(backendURIString);
-    }
-
-    @Test
-    public void testRemoteRecordsRaw() throws IOException {
-        if (remote == null) {
-            return;
         }
+    }
+    
+    @Test
+    public void testGetRecord() throws ApiException {      
+        String id = "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744";
+        DsRecordDto record = remote.getRecord(id); 
+        log.info("Loaded record from storage with id:"+record.getId());
+        assertEquals(id, "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744"); 
+    }
+
+    @Test
+    public void testRemoteRecordsRaw() throws IOException {       
         try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterJSON(
                 "ds.radio", 0L, 3L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
@@ -80,11 +91,7 @@ public class DsStorageClientTest {
     @Test
     public void testRemotePaging() throws IOException {
          long numberOfRecords=200L;
-    	
-    	if (remote == null) {
-            return;
-        }
-
+    	    	
         Long lastMTime;
         boolean hasMore;
 
@@ -131,10 +138,7 @@ public class DsStorageClientTest {
     }
 
     @Test
-    public void testRemotePagingCount() throws IOException, ApiException {
-        if (remote == null) {
-            return;
-        }
+    public void testRemotePagingCount() throws IOException, ApiException {    
 
         try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterJSON(
                 "ds.tv", 0L, 500L)) {
@@ -143,10 +147,7 @@ public class DsStorageClientTest {
     }
 
     @Test
-    public void testRemotePageLast() throws ApiException, IOException {
-        if (remote == null) {
-            return;
-        }
+    public void testRemotePageLast() throws ApiException, IOException {        
         Long lastMTime = null;
         for (OriginCountDto originCount: remote.getOriginStatistics()) {
             if ("ds.radio".equals(originCount.getOrigin())) {
@@ -167,9 +168,7 @@ public class DsStorageClientTest {
 
     @Test
     public void testRemoteRecordsTreeRaw() throws IOException {
-        if (remote == null) {
-            return;
-        }
+  
         try (ContinuationInputStream recordsIS = remote.getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
                              "ds.radio", RecordTypeDto.DELIVERABLEUNIT,  0L, 3L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
@@ -186,9 +185,7 @@ public class DsStorageClientTest {
     @Test
     public void testRemoteRecordsStream() throws IOException {
        long numberOfRecords=300L;
-       if (remote == null) {
-            return;
-        }
+     
         try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsModifiedAfterStream(
                 "ds.radio", 0L,numberOfRecords)) {
             List<DsRecordDto> recordList = records.collect(Collectors.toList());
@@ -206,45 +203,14 @@ public class DsStorageClientTest {
 
     @Test
     public void testRemoteRecordsTreeStream() throws IOException {
-        if (remote == null) {
-            return;
-        }
+      
         try (ContinuationStream<DsRecordDto, Long> records = remote.getRecordsByRecordTypeModifiedAfterLocalTreeStream(
                 "ds.radio", RecordTypeDto.DELIVERABLEUNIT, 0L, 3L)) {
             long count = records.count();
             System.out.println(records.getResponseHeaders());
             assertEquals(3L, count, "The requested number of records should be received");
-            assertNotNull(records.getContinuationToken(),
-                    "The highest modification time should be present");
+            assertNotNull(records.getContinuationToken(),"The highest modification time should be present");
         }
-    }
-
-    /**
-     * @return a {@link DsStorageClient} if a KB-internal remote storage is specified and is available.
-     */
-    private static DsStorageClient getRemote() {
-        YAML config;
-        try {
-            config = YAML.resolveLayeredConfigs(TEST_CONF);
-        } catch (Exception e) {
-            log.info("Unable to resolve '{}' (try running 'kb init'). Skipping test", TEST_CONF);
-            return null;
-        }
-        String storageURL = config.getString(DsStorageClient.STORAGE_SERVER_URL_KEY, null);
-        if (storageURL == null) {
-            log.info("Resolved internal config '{}' but could not retrieve a value for key '{}'. Skipping test",
-                    TEST_CONF, DsStorageClient.STORAGE_SERVER_URL_KEY);
-            return null;
-        }
-        DsStorageClient client = new DsStorageClient(storageURL);
-        try {
-            client.getOriginConfiguration();
-        } catch (Exception e) {
-           log.info("Found ds-storage address '{}' but could not establish contact. Skipping test", storageURL);
-            return null;
-        }
-        log.debug("Established connection to storage at '{}'", storageURL);
-        return client;
     }
 
 }

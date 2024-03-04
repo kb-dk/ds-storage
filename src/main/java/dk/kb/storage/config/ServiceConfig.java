@@ -39,8 +39,8 @@ public class ServiceConfig {
 	 * @param configFile the configuration to load.
 	 * @throws IOException if the configuration could not be loaded or parsed.
 	 */
-	public static synchronized void initialize(String configFile) throws IOException {
-		serviceConfig = YAML.resolveLayeredConfigs(configFile);
+	public static synchronized void initialize(String... configFiles) throws IOException {
+		serviceConfig = YAML.resolveLayeredConfigs(configFiles);
 		serviceConfig.setExtrapolate(true);
 		loadAllowedOrigins();
 	}
