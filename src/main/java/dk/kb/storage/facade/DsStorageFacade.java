@@ -169,13 +169,36 @@ public class DsStorageFacade {
     }
     
     
+    
+    
+    /**
+     * Load a record with childrenIds and parentId if they exist 
+     *  If includeLocalTree is true also load the local tree for the given record. Parent will be loaded and all children. Siblings will not be loaded.  
+     *  1) If there is a parent record, the given record will point to it, but the parent will not point back to this child
+     *  2) Children will be loaded, but the children will not point back to this parent record.      
+     * 
+     *  @param recordId The record id . If inludeLocalTree is set the object tree will be returned with a pointer to this record   
+     *  @param  includeLocalTree Load the parent and children as object and not just IDs.
+     *  @Throws NotFoundServiceException if record is not found 
+     * 
+     */
+    public static DsRecordDto getRecord(String recordId, Boolean includeLocalTree) {
+      if (includeLocalTree) {
+          return getRecord(recordId);
+      }
+      else {
+          return getRecordTreeLocal(recordId);
+      }      
+    }
+
+    
     /**
      * Load a record with childrenIds
      * 
      * Return null if record does not exist
      * 
      */
-    public static DsRecordDto getRecordWithChildrenIds(String recordId) {
+    private static DsRecordDto getRecord(String recordId) {
         return performStorageAction(" getRecordWithChildrenIds(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);
            DsRecordDto record = storage.loadRecordWithChildIds(idNorm);
@@ -192,11 +215,11 @@ public class DsStorageFacade {
      * 
      *  @Throws NotFoundServiceException if record is not found
      */
-    public static DsRecordDto getRecordTree(String recordId) {
+    private static DsRecordDto getRecordTree(String recordId) {
              
         return performStorageAction("getRecord(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);          
-        DsRecordDto record = getRecordWithChildrenIds(idNorm); //Load from facade as this will set children. Throw exception if not found
+        DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children. Will return null if record not found
                 
          DsRecordDto topParent = getTopParent(record); //this will also detect a cycle.              
                   
@@ -218,11 +241,11 @@ public class DsStorageFacade {
      * 
      *  @Throws NotFoundServiceException if record is not found
      */
-    public static DsRecordDto getRecordTreeLocal(String recordId) {
+    private static DsRecordDto getRecordTreeLocal(String recordId) {
            
         return performStorageAction("getRecordTreeLocal(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);          
-        DsRecordDto record = getRecordWithChildrenIds(idNorm); //Load from facade as this will set children as id's. Throw exception if record is not found
+        DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children as id's. 
         setLocalTreeForRecord(record);                                     
         return record;
          
