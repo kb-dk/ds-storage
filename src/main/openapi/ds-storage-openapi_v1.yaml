@@ -137,8 +137,8 @@ paths:
             type: string
             example: "ds.tv:oai:du:3006e2f8-3f73-477a-a504-4d7cb1ae1e1c"
         - name: includeLocalTree
-          in: path
-          description: 'Record ID'
+          in: query
+          description: 'Also load parent and direct children as objects'
           required: false
           schema:
             type: boolean
@@ -180,38 +180,6 @@ paths:
                 format: int32          
               
  
-  /recordTreeLocal/{id}:
-    get:
-      tags:
-        - '${project.name}'
-      summary: 'Return record with local record tree.'
-      description: >
-        The local record tree consists of the queried record, all of its children and its single parent. This endpoint
-        delivers these records as full objects, not just IDs which is achieved with the endpoint ´/record/{id}´.
-        The endpoint throws an exception if no record with the given ID exists. 
-        A record marked with delete flag will also be returned.
-      operationId: getRecordTreeLocal
-      parameters:
-        - name: id
-          in: path
-          description: 'Record ID'
-          required: true
-          schema:
-            type: string
-            example: "ds.tv:oai:du:3006e2f8-3f73-477a-a504-4d7cb1ae1e1c"
-      responses:
-        '200':
-          description: 'The DsRecord including immediate parent and children records as objects.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DsRecord'
-              examples:
-                DSRecord:
-                  $ref: '#/components/examples/GetDSRecordWithChildren'
-
-
-
 
   #  This method can not be exposed by openAPI due to reference cycle
 #  /recordTree/{id}:
@@ -236,6 +204,7 @@ paths:
 #                $ref: '#/components/schemas/DsRecord'                       
   
   # TODO: Add childrenId to example.
+  
   /record:
     post:
       tags:
@@ -255,16 +224,16 @@ paths:
           description: No Content - The request has been executed correct and the server did not deliver any content.
 
   
-  /recordsByRecordTypeLocalTree:
+  /records:
     get:
       tags:
         - '${project.name}'
       summary: 'Extract X records from a origin.'
       description: >
-        Extract X records from a specified origin and recordtype after a given mTime and up to a defined maximum mTime. 
+        Extract X records from a specified origin after a given mTime and up to a defined maximum mTime. 
         The records are returned in sorted order by mTime increasing. Records marked for delete will also be returned.
-        The record will be loaded with the full localtree as objects.         
-      operationId: getRecordsByRecordTypeModifiedAfterLocalTree
+        If a recordtype type is defined it will only load records of this type and the local tree will also be loaded.                
+      operationId: getRecordsModifiedAfter
       x-streamingOutput: true
       parameters:
         - name: origin
@@ -276,8 +245,8 @@ paths:
             example: ${example_origin}
         - name: recordType
           in: query
-          description: 'Only extract records with this recordtype'
-          required: true
+          description: 'Only extract records with this recordtype. This will also load local tree for record. If null all recordstypes will be loaded.'
+          required: false
           schema:
             $ref: '#/components/schemas/RecordType'                      
         - name: mTime
@@ -301,7 +270,8 @@ paths:
             example: 1000
             # Default values for longs does not work with the current version of OpenAPI generator
             #default: 1000
-
+         
+ 
       responses:
         '200':
           description: 'List of DsRecords'
@@ -310,54 +280,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/DsRecordList'
 
-
-  /records:
-    get:
-      tags:
-        - '${project.name}'
-      summary: 'Extract X records from a origin.'
-      description: >
-        Extract X records from a specified origin after a given mTime and up to a defined maximum mTime. 
-        The records are returned in sorted order by mTime increasing. Records marked for delete will also be returned.
-      operationId: getRecordsModifiedAfter
-      x-streamingOutput: true
-      parameters:
-        - name: origin
-          in: query
-          description: 'Origin. Will only extract records from this origin'
-          required: true
-          schema:
-            type: string
-            example: ${example_origin}
-        - name: mTime
-          in: query
-          description: >
-            Format is milliseconds since Epoch with 3 added digits. See more documentation in top. Start value will be excluded. It is up to the caller to keep track of mTime when batching the extracting for retrieval between separate calls, but using the last received mTime in the next call.
-          required: false
-          schema:
-            type: integer
-            format: int64  
-            example: 0
-            # Default values for longs does not work with the current version of OpenAPI generator
-            #default: 0
-        - name: maxRecords
-          in: query
-          description: 'Maximum number of records to return. -1 means no limit.'
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 1000
-            # Default values for longs does not work with the current version of OpenAPI generator
-            #default: 1000
-
-      responses:
-        '200':
-          description: 'List of DsRecords'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DsRecordList'
 
 
   # The ping service should be in all projects, should not do any advanced processing

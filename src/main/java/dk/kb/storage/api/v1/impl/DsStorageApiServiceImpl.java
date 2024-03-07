@@ -20,9 +20,9 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Providers;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,9 +96,18 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         }
 
     }
-
     @Override
-    public StreamingOutput getRecordsModifiedAfter(String origin, Long mTime, Long maxRecords) {
+    public StreamingOutput getRecordsModifiedAfter(String origin,RecordTypeDto recordType, Long mTime, Long maxRecords) {
+        if (recordType != null) {
+            return getRecordsByRecordTypeModifiedAfterLocalTree(origin,recordType, mTime,  maxRecords);
+        }
+        else {
+            return getRecordsModifiedAfterNoLocalTree( origin, mTime, maxRecords);   
+            
+        }       
+    }
+    
+    private StreamingOutput getRecordsModifiedAfterNoLocalTree(String origin, Long mTime, Long maxRecords) {
         try {
             log.debug("getRecordsModifiedAfter(origin='{}', mTime={}, maxRecords={}) with batchSize={} " +
                       "called with call details: {}",
@@ -123,8 +132,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         }
     }
 
-    @Override
-    public StreamingOutput getRecordsByRecordTypeModifiedAfterLocalTree(String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) {
+
+    private StreamingOutput getRecordsByRecordTypeModifiedAfterLocalTree(String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) {
         try {
             log.debug(" getRecordsByRecordTypeModifiedAfterLocalTree(origin='{}', recordtype='{}', mTime={}, maxRecords={}) with batchSize={} " +
                       "called with call details: {}",
@@ -134,7 +143,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             long finalMTime = mTime == null ? 0L : mTime;
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
 
-            long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin, finalMTime);
+            long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin, finalMTime); //TODO Victor. Shouldnt this also use recordType when counting?
             setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), recordsInOrigin);
 
             return output -> {
@@ -229,20 +238,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
 
     }
     */
-
-    @Override
-    public DsRecordDto getRecordTreeLocal(String id) {
-        try {
-            log.debug("getRecordTree(id='{}') called with call details: {}", id, getCallDetails());
-            DsRecordDto record= DsStorageFacade.getRecordTreeLocal(id);            
-            return record;
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-
-    }    
-    
-    
+     
     @Override
     public Integer markRecordForDelete(String id) {
         try {
@@ -284,5 +280,6 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
 	        }
 
 	}
+  
 
 }
