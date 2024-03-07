@@ -123,9 +123,10 @@ paths:
         - '${project.name}'
       summary: 'Read a specific record by ID.'
       description: >
-        If a record is not found in ds-storage, the endpoint will throw an exception. Records can be related to other
-        records, when this is the case, this endpoint delivers the IDs for related records. If the data for related 
-        records is needed use the ´recordTreeLocal´-endpoint instead. A record marked with delete flag will also be returned.
+        Extract a specific record by ID. Parent and children recordIds will also be include.
+        If setting includeLocalTree=true the local recordTree with parent record and children records will also be loaded as objects.  
+        A record marked with delete flag will also be returned.
+        If a record is not found in ds-storage, the endpoint will throw an exception.
       operationId: getRecord
       parameters:
         - name: id
@@ -135,6 +136,15 @@ paths:
           schema:
             type: string
             example: "ds.tv:oai:du:3006e2f8-3f73-477a-a504-4d7cb1ae1e1c"
+        - name: includeLocalTree
+          in: path
+          description: 'Record ID'
+          required: false
+          schema:
+            type: boolean
+            example: true
+            default: false
+      
       responses:
         '200':
           description: 'The DsRecord'

@@ -205,10 +205,10 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     }
 
     @Override
-    public DsRecordDto getRecord(String id) {
+    public DsRecordDto getRecord(String id, Boolean includeLocalTree) {
         try {
             log.debug("getRecord(id='{}') called with call details: {}", id, getCallDetails());
-            DsRecordDto record= DsStorageFacade.getRecordWithChildrenIds(id);                      
+            DsRecordDto record= DsStorageFacade.getRecord(id,includeLocalTree);                      
             return record;
         } catch (Exception e) {
             throw handleException(e);
@@ -216,6 +216,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
 
     }
     //@Override Not overwrite. Method removed from openAPI due to cyclic loop
+    /*
     public DsRecordDto getRecordTree(String id) {
         try {
             log.debug("getRecordTree(id='{}') called with call details: {}", id, getCallDetails());
@@ -227,6 +228,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         }
 
     }
+    */
 
     @Override
     public DsRecordDto getRecordTreeLocal(String id) {
@@ -282,6 +284,5 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
 	        }
 
 	}
-
 
 }
