@@ -147,7 +147,7 @@ public class DsStorageFacade {
 
                 ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
                 for (int i=0;i<ids.size();i++) {
-                    records.add(getRecordWithChildrenIds(ids.get(i)));
+                    records.add(getRecord(ids.get(i)));
                 }
                                 
                 // We have to load the localTree for the records                
@@ -183,8 +183,12 @@ public class DsStorageFacade {
      * 
      */
     public static DsRecordDto getRecord(String recordId, Boolean includeLocalTree) {
-      if (includeLocalTree) {
-          return getRecord(recordId);
+      if (!includeLocalTree) {
+           DsRecordDto record = getRecord(recordId);
+           if (record==null) {
+               throw new NotFoundServiceException("No recordId found for:"+recordId);
+           }
+           return record;
       }
       else {
           return getRecordTreeLocal(recordId);
@@ -199,7 +203,7 @@ public class DsStorageFacade {
      * 
      */
     private static DsRecordDto getRecord(String recordId) {
-        return performStorageAction(" getRecordWithChildrenIds(" + recordId + ")", storage -> {
+        return performStorageAction(" getRecord(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);
            DsRecordDto record = storage.loadRecordWithChildIds(idNorm);
            return record;
@@ -215,7 +219,7 @@ public class DsStorageFacade {
      * 
      *  @Throws NotFoundServiceException if record is not found
      */
-    private static DsRecordDto getRecordTree(String recordId) {
+    public static DsRecordDto getRecordTree(String recordId) {
              
         return performStorageAction("getRecord(" + recordId + ")", storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);          
@@ -273,7 +277,7 @@ public class DsStorageFacade {
               throw new InternalServiceException("Cycle detected for recordId:"+topParent.getId());              
           }          
           ids.add(topParent.getId());
-          DsRecordDto nextParent = getRecordWithChildrenIds(topParent.getParentId());                                           
+          DsRecordDto nextParent = getRecord(topParent.getParentId());                                           
           if (nextParent==null) { //inconsistent data.
         	  log.warn("Inconsistent data. Parent with ID does not exist:"+topParent.getParentId() + " and is set for record:"+topParent.getId());        	  
               return topParent; 
@@ -546,7 +550,7 @@ public class DsStorageFacade {
         for (String childId: childrenIds) {
                         
             //DsRecordDto child = getRecord(childId);          
-            DsRecordDto child = childId.equals(origo.getId()) ? origo: getRecordWithChildrenIds(childId);
+            DsRecordDto child = childId.equals(origo.getId()) ? origo: getRecord(childId);
             child.setParent(currentRecord);
             childrenRecords.add(child);
             
@@ -582,12 +586,12 @@ public class DsStorageFacade {
         //Set parent
         String parentId=record.getParentId();
         if (parentId != null) {
-            DsRecordDto parent = getRecordWithChildrenIds(parentId);
+            DsRecordDto parent = getRecord(parentId);
             record.setParent(parent);
         }
         
         record.getChildrenIds().stream()
-        .map(DsStorageFacade::getRecordWithChildrenIds)
+        .map(DsStorageFacade::getRecord)
         .forEach(record::addChildrenItem);
       
          

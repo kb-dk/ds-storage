@@ -67,7 +67,7 @@ public class DsStorageClientTest {
     @Test
     public void testGetRecord() throws ApiException {      
         String id = "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744";
-        DsRecordDto record = remote.getRecord(id); 
+        DsRecordDto record = remote.getRecord(id,false); 
         log.info("Loaded record from storage with id:"+record.getId());
         assertEquals(id, "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744"); 
     }
