@@ -172,11 +172,13 @@ public class DsStorageFacade {
     
     
     /**
-     * Load a record with childrenIds and parentId if they exist 
+     *  Load a record with childrenIds and parentId if they exist 
      *  If includeLocalTree is true also load the local tree for the given record. Parent will be loaded and all children. Siblings will not be loaded.  
-     *  1) If there is a parent record, the given record will point to it, but the parent will not point back to this child
-     *  2) Children will be loaded, but the children will not point back to this parent record.      
-     * 
+     *  <ol>
+     *    <li>If there is a parent record, the given record will point to it, but the parent will not point back to this child</li>
+     *    <li>If there is a parent record, the given record will point to it, but the parent will not point back to this child</li>
+     *  </ol>
+     *   
      *  @param recordId The record id . If inludeLocalTree is set the object tree will be returned with a pointer to this record   
      *  @param  includeLocalTree Load the parent and children as object and not just IDs.
      *  @Throws NotFoundServiceException if record is not found 
