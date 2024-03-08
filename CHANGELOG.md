@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-## [1.17](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.17) 2024-03-08
+## [1.18](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.18) 2024-03-08
 
 ### Changed
 - openAPI endpoints for record/records refatored and changed. This is not backwards compatible.
