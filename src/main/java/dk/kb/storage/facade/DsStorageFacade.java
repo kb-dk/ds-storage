@@ -181,7 +181,7 @@ public class DsStorageFacade {
      *   
      *  @param recordId The record id . If inludeLocalTree is set the object tree will be returned with a pointer to this record   
      *  @param  includeLocalTree Load the parent and children as object and not just IDs.
-     *  @Throws NotFoundServiceException if record is not found 
+     *  @Throws NotFoundServiceException if record is not found     
      * 
      */
     public static DsRecordDto getRecord(String recordId, Boolean includeLocalTree) {
