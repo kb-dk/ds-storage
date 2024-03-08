@@ -148,7 +148,7 @@ public class DsStorageClient extends DsStorageApi {
     public ContinuationInputStream<Long> getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
             String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
         URI uri = UriBuilder.fromUri(serviceURI)
-                .path("recordsByRecordTypeLocalTree")
+                .path("records")
                 .queryParam("origin", origin)
                 .queryParam("recordType", recordType)
                 .queryParam("mTime", mTime == null ? 0L : mTime)
