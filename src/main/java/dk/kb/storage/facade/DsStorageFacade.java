@@ -70,7 +70,7 @@ public class DsStorageFacade {
 
     
     /**
-     * Delete all records for an origin that has been modified time interval. The records will be deleted and not just marked for deletion
+     * Update kaltura id for a record. The kaltura id is given to the record when uploaded to Kaltura. The Kaltura Id must then later be updated with this method.
      * 
      * @param kalturaReferenceId The referenceId given to the record when uploaded to Kaltura
      * @param kalturaInternalId The internal Kaltura id in Kaltura. The id is given to a record after upload.
