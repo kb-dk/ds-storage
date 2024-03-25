@@ -284,7 +284,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     public void updateKalturaId(String kalturaReferenceId, String kalturaInternalId) {
         try {
             log.debug("updateKalturaId() called with call details: {}", getCallDetails());
-            //return DsStorageFacade.               
+            DsStorageFacade.updateKalturaInternalId(kalturaReferenceId, kalturaInternalId);               
         } catch (Exception e) {
             throw handleException(e);
                 }
