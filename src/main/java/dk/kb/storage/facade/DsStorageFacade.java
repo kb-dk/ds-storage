@@ -68,6 +68,20 @@ public class DsStorageFacade {
         });
     }
 
+    
+    /**
+     * Delete all records for an origin that has been modified time interval. The records will be deleted and not just marked for deletion
+     * 
+     * @param kalturaReferenceId The referenceId given to the record when uploaded to Kaltura
+     * @param kalturaInternalId The internal Kaltura id in Kaltura. The id is given to a record after upload.
+     */
+    public static void updateKalturaInternalId(String kalturaReferenceId, String kalturaInternalId){
+         performStorageAction("updateKalturaInternalId(" + kalturaReferenceId + ")", storage -> {
+         storage.updateKalturaInternal(kalturaReferenceId, kalturaInternalId);         
+        return null;    // Something must be returned
+        });
+    }
+    
 
     public static ArrayList<OriginCountDto> getOriginStatistics() {
         return performStorageAction("getOriginStatistics", DsStorage::getOriginStatictics);
