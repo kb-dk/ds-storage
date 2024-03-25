@@ -21,4 +21,4 @@ CREATE INDEX IF NOT EXISTS p ON ds_records(parentid);
 CREATE INDEX IF NOT EXISTS rt ON ds_records(recordtype);
 CREATE INDEX IF NOT EXISTS om ON ds_records (origin, mtime);
 CREATE INDEX IF NOT EXISTS orm ON ds_records (origin, recordtype, mtime);
-CREATE UNIQUE INDEX IF NOT EXISTS kref ON ds_records (kalturareferenceid);
+CREATE INDEX IF NOT EXISTS kref ON ds_records (kalturareferenceid);
