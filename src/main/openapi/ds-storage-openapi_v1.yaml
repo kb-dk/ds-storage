@@ -210,7 +210,7 @@ paths:
       tags:
         - '${project.name}'    
       summary: 'Create a new record or update an existing record.'
-      description: A record can have a single optional parent and may have multiple children'
+      description: 'A record can have a single optional parent and may have multiple children'
       requestBody:
         content:
           application/json:    # Media type
@@ -223,6 +223,31 @@ paths:
         '204':
           description: No Content - The request has been executed correct and the server did not deliver any content.
 
+  /record/updateKalturaId:
+    post:
+      tags:
+        - '${project.name}'    
+      summary: 'Update a record with the Kaltura internal id. '
+      description: 'Update a record with the Kaltura internal id. The record was uploaded to Kaltura with the kalturaReferenceId as metadata.' 
+      operationId: updateKalturaId
+      parameters:
+        - name: kalturaReferenceId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: kalturaInternalId
+          in: query
+          required: true
+          schema:
+            type: string
+          
+      responses:
+        '204':
+          description: No Content - The request has been executed correct and the server did not deliver any content.
+
+  
+  
   
   /records:
     get:
@@ -406,6 +431,14 @@ components:
         children:
           $ref: '#/components/schemas/DsRecordList'
           description: 'All child records'  
+        kalturaReferenceId:
+          type: string
+          description: 'The referenceId given when uploading the record to Kaltura. This field is only used for records that has a file associated intended streaming.'
+        kalturaInternalId:
+          type: string
+          description: 'The Kaltura internal ID for the record. Only '
+
+
 
     DsRecordList:
       type: array

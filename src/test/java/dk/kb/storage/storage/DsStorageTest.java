@@ -33,6 +33,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         String origin="origin.test";
         String data = "Hello";
         String parentId="origin.test:id_1_parent";
+        String kalturaRefenceId="kalturaRefenceId_123";
         RecordTypeDto recordType=RecordTypeDto.MANIFESTATION;
         
         DsRecordDto record = new DsRecordDto();
@@ -41,6 +42,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         record.setData(data);
         record.setParentId(parentId);
         record.setRecordType(RecordTypeDto.MANIFESTATION);
+        record.setKalturaReferenceId(kalturaRefenceId);
         storage.createNewRecord(record );
 
         //Test record not exist
@@ -56,7 +58,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertTrue(recordLoaded.getmTime() > 0);
         Assertions.assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
         Assertions.assertEquals(recordType, recordLoaded.getRecordType());
-
+        Assertions.assertEquals(kalturaRefenceId, recordLoaded.getKalturaReferenceId());
+        
         //Now update
 
         String dataUpdate = "Hello updated";
@@ -111,9 +114,32 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
         DsRecordDto deletedReally = storage.loadRecord(id);
         Assertions.assertNull(deletedReally);
-
     }
 
+
+    @Test
+    public void testUpdateKalturaId() throws Exception {
+        String recordId="test_123";
+        String kalturaReferenceId="kaltura_ref_123";
+        String kalturaId="kaltura_id_123";
+        DsRecordDto record = new DsRecordDto();
+        record.setId(recordId);
+        record.setOrigin("origin_123");
+        record.setData("");        
+        record.setRecordType(RecordTypeDto.MANIFESTATION);
+        record.setKalturaReferenceId(kalturaReferenceId);
+        storage.createNewRecord(record );
+        
+        //Update kaltura Id.
+        storage.updateKalturaInternal(kalturaReferenceId, kalturaId);
+     
+        //Load and test kalturaId correct
+        DsRecordDto recordUpdated = storage.loadRecord(recordId);
+        assertEquals(kalturaReferenceId,recordUpdated.getKalturaReferenceId());
+        assertEquals(kalturaId,recordUpdated.getKalturaInternalId());
+    }
+
+    
     @Test
     public void testGetMtimeAfterWithLimit() throws Exception {
         String parentId="test.origin:mega_parent_id";
