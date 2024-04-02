@@ -34,6 +34,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         String data = "Hello";
         String parentId="origin.test:id_1_parent";
         String kalturaRefenceId="kalturaRefenceId_123";
+        String kalturaRefenceIdUpdated="kalturaRefenceId_123_updated";
         RecordTypeDto recordType=RecordTypeDto.MANIFESTATION;
         
         DsRecordDto record = new DsRecordDto();
@@ -68,7 +69,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
         record.setData(dataUpdate);
         record.setParentId(parentIdUpdated);            
-
+        record.setKalturaReferenceId(kalturaRefenceIdUpdated);
         storage.updateRecord(record);
 
         //Check new updated record is correct.
@@ -79,7 +80,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertEquals(parentIdUpdated,record.getParentId());        
         Assertions.assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
         Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                	                           
-
+        Assertions.assertEquals(kalturaRefenceIdUpdated, recordUpdated.getKalturaReferenceId());
+        
         //Mark record for delete				
         storage.markRecordForDelete(id);
 
