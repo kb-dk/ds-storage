@@ -61,6 +61,7 @@ public class DsStorage implements AutoCloseable {
             DATA_COLUMN + " = ? , "+ 						 
             MTIME_COLUMN + " = ? , "+
             DELETED_COLUMN + " = 0 , "+
+            KALTURA_REFERENCE_ID_COLUMN + " = ? , "+             
             PARENT_ID_COLUMN + " = ?  "+            
             "WHERE "+
             ID_COLUMN + "= ?";
@@ -774,13 +775,14 @@ public class DsStorage implements AutoCloseable {
 
         long nowStamp = UniqueTimestampGenerator.next();
         //log.debug("Creating new record: " + record.getId());
-
+                      
         try (PreparedStatement stmt = connection.prepareStatement(updateRecordStatement);) {
             stmt.setString(1, record.getRecordType().getValue());
             stmt.setString(2, record.getData());
-            stmt.setLong(3, nowStamp);						
-            stmt.setString(4, record.getParentId());
-            stmt.setString(5, record.getId());
+            stmt.setLong(3, nowStamp);			
+            stmt.setString(4, record.getKalturaReferenceId());
+            stmt.setString(5, record.getParentId());
+            stmt.setString(6, record.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             String message = "SQL Exception in updateRecord with id:" + record.getId() + " error:" + e.getMessage();
