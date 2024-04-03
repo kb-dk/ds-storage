@@ -9,6 +9,8 @@ ctime BIGINT,
 mtime BIGINT,
 parentid VARCHAR(255),
 recordtype VARCHAR(31)
+kalturareferenceid VARCHAR(255),
+kalturainternalid VARCHAR(255)
 );
 
 CREATE UNIQUE INDEX i ON ds_records(id);
@@ -19,3 +21,4 @@ CREATE INDEX p ON ds_records(parentid);
 CREATE INDEX rt ON ds_records(recordtype);
 CREATE INDEX om ON ds_records (origin, mtime);
 CREATE INDEX orm ON ds_records (origin, recordtype, mtime);
+CREATE INDEX kref ON ds_records (kalturareferenceid);

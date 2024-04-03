@@ -44,22 +44,35 @@ public class DsStorage implements AutoCloseable {
     private static final String CTIME_COLUMN = "ctime";
     private static final String MTIME_COLUMN = "mtime";
     private static final String PARENT_ID_COLUMN = "parentid";
+    private static final String KALTURA_REFERENCE_ID_COLUMN = "kalturareferenceid";
+    private static final String KALTURA_INTERNAL_ID_COLUMN = "kalturainternalid";
+    
+    
 
     private static String clearTableRecordsStatement = "DELETE FROM " + RECORDS_TABLE;
 
 
     private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
-            " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " +ORGID_COLUMN + ","+ RECORDTYPE_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  ")"+
-            " VALUES (?,?,?,?,?,?,?,?,?,?)";
+            " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " +ORGID_COLUMN + ","+ RECORDTYPE_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  " , " + KALTURA_REFERENCE_ID_COLUMN +" , "+KALTURA_INTERNAL_ID_COLUMN+")"+
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 
     private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+			 
             RECORDTYPE_COLUMN + " = ?  ,"+
             DATA_COLUMN + " = ? , "+ 						 
             MTIME_COLUMN + " = ? , "+
             DELETED_COLUMN + " = 0 , "+
+            KALTURA_REFERENCE_ID_COLUMN + " = ? , "+             
             PARENT_ID_COLUMN + " = ?  "+            
             "WHERE "+
             ID_COLUMN + "= ?";
+    
+
+    private static String updateKalturaReferenceIdStatement = "UPDATE " + RECORDS_TABLE + " SET  "+ 
+            KALTURA_INTERNAL_ID_COLUMN + " = ? ,"+
+            MTIME_COLUMN + " = ?  "+
+            "WHERE "+
+            KALTURA_REFERENCE_ID_COLUMN + "= ?";
+    
 
     private static String markRecordForDeleteStatement = "UPDATE " + RECORDS_TABLE + " SET  "+			 
             DELETED_COLUMN + " = 1,  "+
@@ -649,6 +662,8 @@ public class DsStorage implements AutoCloseable {
             stmt.setLong(8, nowStamp);
             stmt.setString(9, record.getData());
             stmt.setString(10, record.getParentId());
+            stmt.setString(11, record.getKalturaReferenceId());
+            stmt.setString(12, record.getKalturaInternalId()); //This value is probably null. It will be updated by a batch job later. 
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -760,22 +775,40 @@ public class DsStorage implements AutoCloseable {
 
         long nowStamp = UniqueTimestampGenerator.next();
         //log.debug("Creating new record: " + record.getId());
-
+                      
         try (PreparedStatement stmt = connection.prepareStatement(updateRecordStatement);) {
             stmt.setString(1, record.getRecordType().getValue());
             stmt.setString(2, record.getData());
-            stmt.setLong(3, nowStamp);						
-            stmt.setString(4, record.getParentId());
-            stmt.setString(5, record.getId());
+            stmt.setLong(3, nowStamp);			
+            stmt.setString(4, record.getKalturaReferenceId());
+            stmt.setString(5, record.getParentId());
+            stmt.setString(6, record.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             String message = "SQL Exception in updateRecord with id:" + record.getId() + " error:" + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }
-
     }
 
+
+    public void updateKalturaInternal(String kalturaReferenceId, String kalturaId) throws Exception {
+      
+        long nowStamp = UniqueTimestampGenerator.next();      
+        try (PreparedStatement stmt = connection.prepareStatement(updateKalturaReferenceIdStatement);) {
+            stmt.setString(1, kalturaId);
+            stmt.setLong(2, nowStamp);
+            stmt.setString(3, kalturaReferenceId);  
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            String message = "SQL Exception in updateKalturaInternal for kalturaReferenceId:" + kalturaReferenceId + " error:" + e.getMessage();
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+
+    }
+    
+    
     private static DsRecordDto createRecordFromRS(ResultSet rs) throws SQLException {
 
         String id = rs.getString(ID_COLUMN);
@@ -788,7 +821,9 @@ public class DsStorage implements AutoCloseable {
         long cTime = rs.getLong(CTIME_COLUMN);
         long mTime = rs.getLong(MTIME_COLUMN);
         String parentId = rs.getString(PARENT_ID_COLUMN);
-
+        String kalturaReferenceId = rs.getString(KALTURA_REFERENCE_ID_COLUMN);
+        String kalturaInternalId = rs.getString(KALTURA_INTERNAL_ID_COLUMN);
+        
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
         record.setOrigin(origin);
@@ -800,6 +835,8 @@ public class DsStorage implements AutoCloseable {
         record.setcTime(cTime);
         record.setmTime(mTime);
         record.setDeleted(deleted);
+        record.setKalturaReferenceId(kalturaReferenceId);
+        record.setKalturaInternalId(kalturaInternalId);
 
         //Set the two dates as human readable
         record.setcTimeHuman(convertToHumanDate(cTime));

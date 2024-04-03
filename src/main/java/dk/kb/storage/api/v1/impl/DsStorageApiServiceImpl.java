@@ -270,16 +270,25 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         }
     }
 
-	@Override
-	public Integer deleteRecordsForOrigin(String origin, Long mTimeFrom, Long mTimeTo) {
-		   try {
-	            log.debug("deleteRecordsForOrigin() called with call details: {}", getCallDetails());
-	            return DsStorageFacade.deleteRecordsForOrigin(origin,mTimeFrom,mTimeTo);
-	        } catch (Exception e) {
-	            throw handleException(e);
-	        }
-
-	}
+    @Override
+    public Integer deleteRecordsForOrigin(String origin, Long mTimeFrom, Long mTimeTo) {
+        try {
+	    log.debug("deleteRecordsForOrigin() called with call details: {}", getCallDetails());
+	    return DsStorageFacade.deleteRecordsForOrigin(origin,mTimeFrom,mTimeTo);
+        } catch (Exception e) {
+	    throw handleException(e);
+        }
+    }
+    
+    @Override
+    public void updateKalturaId(String kalturaReferenceId, String kalturaInternalId) {
+        try {
+            log.debug("updateKalturaId() called with call details: {}", getCallDetails());
+            DsStorageFacade.updateKalturaInternalId(kalturaReferenceId, kalturaInternalId);               
+        } catch (Exception e) {
+            throw handleException(e);
+                }
+            }
   
 
 }
