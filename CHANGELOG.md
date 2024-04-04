@@ -6,9 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Changed
-Added two new fields to record: kalturareferenceid and kalturainternalid. The kaltura internal id is required by the frontend for thumbnails and streaming. 
-New service method to update the kalturaId for a record. Both create new record and update record will set the kalturareferenceid.
+### Added
+- Support for dynamically updating values in OpenAPI spec through internal JIRA issue [DRA-139](https://kb-dk.atlassian.net/browse/DRA-139).
+
+### Changed
+- Added two new fields to record: kalturareferenceid and kalturainternalid. The kaltura internal id is required by the frontend for thumbnails and streaming. 
+- New service method to update the kalturaId for a record. Both create new record and update record will set the kalturareferenceid.
 
 ## [1.18](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.18) 2024-03-08
 

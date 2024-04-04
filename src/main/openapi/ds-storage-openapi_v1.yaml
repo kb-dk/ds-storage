@@ -11,7 +11,7 @@ info:
     url: '${license.url}'
 servers:
   #  /api must match servlet-mapping in web.xml
-  - url: '/${project.artifactId}/v1'
+  - url: '${config:openapi.serverurl}'
     description: 'Version 1'
 
 paths:
