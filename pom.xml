@@ -114,7 +114,7 @@
         <dependency>
             <groupId>dk.kb.util</groupId>
             <artifactId>kb-util</artifactId>
-            <version>1.5.2</version>
+            <version>1.5.3</version>
             <exclusions>
                 <exclusion>
                     <!-- kb-util has 2.3.3, but transitive resolving has 2.4.0 somewhere-->
@@ -331,35 +331,6 @@
             </resource>
         </resources>
         <plugins>
-            <plugin>
-                <groupId>dk.kb.util</groupId>
-                <artifactId>injection-maven-plugin</artifactId>
-                <version>1.0.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>read-yaml-properties</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <filePath>conf/ds-storage-behaviour.yaml</filePath>
-                    <yamlResolvers>
-                        <YamlResolver>
-                            <yamlType>List</yamlType>
-                            <yamlPath>allowed_origins</yamlPath>
-                            <sourceKey>name</sourceKey>
-                            <destinationKey>allowed_origins</destinationKey>
-                            <createEnum>true</createEnum>
-                        </YamlResolver>
-                        <YamlResolver>
-                            <yamlType>Single-value</yamlType>
-                            <yamlPath>allowed_origins[0].name</yamlPath>
-                            <destinationKey>example_origin</destinationKey>
-                        </YamlResolver>
-                    </yamlResolvers>
-                </configuration>
-            </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.3.1</version>
