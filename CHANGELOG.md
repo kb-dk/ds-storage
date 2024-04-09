@@ -7,9 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Support for dynamically updating values in OpenAPI spec through internal JIRA issue [DRA-139](https://kb-dk.atlassian.net/browse/DRA-139).
-
-### Changed
+- Support for dynamically updating values in OpenAPI spec. See JIRA issue [DRA-139](https://kb-dk.atlassian.net/browse/DRA-139).
 - Added two new fields to record: kalturareferenceid and kalturainternalid. The kaltura internal id is required by the frontend for thumbnails and streaming. 
 - New service method to update the kalturaId for a record. Both create new record and update record will set the kalturareferenceid.
 
