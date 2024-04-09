@@ -19,17 +19,17 @@ import dk.kb.storage.invoker.v1.ApiClient;
 import dk.kb.storage.invoker.v1.Configuration;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.util.webservice.exception.InternalServiceException;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
 import dk.kb.util.webservice.stream.ContinuationStream;
-import dk.kb.util.webservice.stream.ContinuationUtil;
-import dk.kb.util.webservice.stream.HeaderInputStream;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
+import java.net.URISyntaxException;
+import java.util.Locale;
 
 /**
  * Client for the service. Intended for use by other projects that calls this service.
@@ -86,7 +86,7 @@ public class DsStorageClient extends DsStorageApi {
     }
 
     /**
-     * Call the remote ds-storage {@link #getRecordsByRecordTypeModifiedAfterLocalTree} and return the response
+     * Call the remote ds-storage {@link #getRecordsByRecordTypeModifiedAfterLocalTreeJSON} and return the response
      * in the form of a Stream of records.
      * <p>
      * The stream is unbounded by memory and gives access to the highest modification time (microseconds since
@@ -120,20 +120,29 @@ public class DsStorageClient extends DsStorageApi {
      * @throws IOException if the connection to the remote ds-storage failed.
      */
     public ContinuationInputStream<Long> getRecordsModifiedAfterJSON(String origin, Long mTime, Long maxRecords)
-            throws IOException { 
-        URI uri = UriBuilder.fromUri(serviceURI)
-                .path("records")
-                .queryParam("origin", origin)
-                .queryParam("mTime", mTime == null ? 0L : mTime)
-                .queryParam("maxRecords", maxRecords == null ? 10 : maxRecords)
-                .build();
-        log.debug("Opening streaming connection to '{}'", uri);
+            throws IOException {
+        URI uri;
+        try {
+            uri = new URIBuilder(serviceURI)
+                    .setPath("records")
+                    .addParameter("origin", origin)
+                    .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
+                    .addParameter("maxRecords", Long.toString(maxRecords == null ? 10 : maxRecords))
+                    .build();
+        } catch (URISyntaxException e) {
+            String message = String.format(Locale.ROOT,
+                    "getRecordsModifiedAfterJSON(origin='%s', mTime=%d, maxRecords=%d): Unable to construct URI",
+                    origin, mTime, maxRecords);
+            log.warn(message, e);
+            throw new InternalServiceException(message);
+        }
 
+        log.debug("Opening streaming connection to '{}'", uri);
         return ContinuationInputStream.from(uri, Long::valueOf);
     }
 
     /**
-     * Call the remote ds-storage {@link #getRecordsByRecordTypeModifiedAfterLocalTree} and return the JSON response
+     * Call the remote ds-storage {@link #getRecordsByRecordTypeModifiedAfterLocalTreeJSON} and return the JSON response
      * unchanged as a wrapped bytestream.
      * <p>
      * Important: Ensure that the returned stream is closed to avoid resource leaks.
@@ -147,13 +156,24 @@ public class DsStorageClient extends DsStorageApi {
      */
     public ContinuationInputStream<Long> getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
             String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
-        URI uri = UriBuilder.fromUri(serviceURI)
-                .path("records")
-                .queryParam("origin", origin)
-                .queryParam("recordType", recordType)
-                .queryParam("mTime", mTime == null ? 0L : mTime)
-                .queryParam("maxRecords", maxRecords == null ? 10 : maxRecords)
-                .build();
+        URI uri;
+        try {
+            uri = new URIBuilder(serviceURI)
+                    .setPath("records")
+                    .addParameter("origin", origin)
+                    .addParameter("recordType", recordType.toString())
+                    .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
+                    .addParameter("maxRecords", Long.toString(maxRecords == null ? 10 : maxRecords))
+                    .build();
+        } catch (URISyntaxException e) {
+            String message = String.format(Locale.ROOT,
+                    "getRecordsModifiedAfterLocalTreeJSON(origin='%s', recordType='%s', mTime=%d, maxRecords=%d): " +
+                            "Unable to construct URI",
+                    origin, recordType, mTime, maxRecords);
+            log.warn(message, e);
+            throw new InternalServiceException(message);
+        }
+
         log.debug("Opening streaming connection to '{}'", uri);
         return ContinuationInputStream.from(uri, Long::valueOf);
     }
