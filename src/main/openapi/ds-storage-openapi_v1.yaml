@@ -11,7 +11,7 @@ info:
     url: '${license.url}'
 servers:
   #  /api must match servlet-mapping in web.xml
-  - url: '/${project.artifactId}/v1'
+  - url: '${config:openapi.serverurl}'
     description: 'Version 1'
 
 paths:
@@ -66,7 +66,7 @@ paths:
           required: true
           schema:
             type: string
-            example: ${example_origin}
+            enum: ["${config:allowed_origins[*].name}"]
       responses:
         '200':
           description: OK
@@ -92,7 +92,7 @@ paths:
           required: true
           schema:
             type: string
-            example: ${example_origin}
+            enum: ["${config:allowed_origins[*].name}"]
         - name: mTimeFrom
           in: query
           description: 'Format is milliseconds since Epoch with 3 added digits. Value is included in the deletion'
@@ -267,7 +267,7 @@ paths:
           required: true
           schema:
             type: string
-            example: ${example_origin}
+            enum: ["${config:allowed_origins[*].name}"]
         - name: recordType
           in: query
           description: 'Only extract records with this recordtype. This will also load local tree for record. If null all recordstypes will be loaded.'
@@ -369,7 +369,7 @@ components:
         name:
           type: string
           description: 'Name of the origin. IDs are prefixed with origin'
-          example: ${example_origin}
+          example: ${config:allowed_origins[0].name}
         updateStrategy:  
           $ref: '#/components/schemas/UpdateStrategy'
 
@@ -392,7 +392,7 @@ components:
         origin:
           type: string
           description: 'Collection name where the record comes from. Lower characters and dot(.) allowed only.'
-          example: ${example_origin}
+          example: ${config:allowed_origins[0].name}
         recordType:
           type: string
           description: 'Optional. Examples can be deliverableunit, collection or metadata. Use metadata for records that contains the data. Collection are parent records without metadata.'
@@ -461,7 +461,7 @@ components:
         origin:
           type: string
           description: 'Name of the origin'
-          example: ${example_origin}
+          example: ${config:allowed_origins[0].name}
         count:
           type: integer
           format: int64

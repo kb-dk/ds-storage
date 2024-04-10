@@ -54,4 +54,9 @@ db:
   #username: username
   #password: password
 
+# Values in the openapi part of the configuration are expected to be overwritten with the actual values used for deployment.
+# These values are used to populate the OpenAPI specification without redeploying the service. They can be served by using the syntax ${config:yaml.path}.
+openapi:
+  serverurl: http://localhost:9072/ds-storage/v1
+
 
