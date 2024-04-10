@@ -8,7 +8,7 @@ data TEXT,
 ctime BIGINT,
 mtime BIGINT,
 parentid VARCHAR(255),
-recordtype VARCHAR(31)
+recordtype VARCHAR(31),
 kalturareferenceid VARCHAR(255),
 kalturainternalid VARCHAR(255)
 );
