@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -33,6 +34,34 @@ public class DsStorageFacade {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorageFacade.class);
 
+    
+
+    /**
+     * <p>
+     * If the mapping does not exist a new entry will be created in the mapping table.<br>
+     * The id can not be null, but kalturaId can be null.<br>
+     * If the mapping already exist for the id, the kalturaId value will be updated
+     * </p>
+     * 
+     * @param mapping The mapping entry to be create or updated
+     * 
+     */
+    public static void createOrUpdateMapping(MappingDto mappingDto)  {
+        performStorageAction("createOrUpdateMapping(" + mappingDto.getId() + ")", storage -> {
+        
+            //test if mapping already exists
+            MappingDto oldMapping = storage.getMappingById(mappingDto.getId());
+            if (oldMapping==null) { //create new
+                storage.createNewMapping(mappingDto);                
+            }
+            else { //update
+                storage.updateMapping(mappingDto);
+            }
+          
+            return null; // Something must be returned
+        });
+    }
+    
     public static void createOrUpdateRecord(DsRecordDto record)  {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
             validateOriginExists(record.getOrigin());        

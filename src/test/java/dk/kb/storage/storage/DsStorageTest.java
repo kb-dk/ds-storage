@@ -1,6 +1,7 @@
 package dk.kb.storage.storage;
 
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
@@ -118,7 +119,45 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertNull(deletedReally);
     }
 
-
+    @Test
+    public void testMappingCRUD() throws Exception {
+        
+        //Create with both ids
+        String id1="test_id_1";
+        String id2="test_id_2";
+        String kalturaId1="test_kalturaid_1";
+        String kalturaId1Updated="test_kalturaid_1_updated";
+        
+        MappingDto mappingDto1 = new MappingDto();
+        mappingDto1.setId(id1);
+        mappingDto1.setKalturainternalid(kalturaId1);    
+        storage.createNewMapping(mappingDto1);
+        
+        //create with only id
+        MappingDto mappingDto2 = new MappingDto();
+        mappingDto2.setId(id2);
+        storage.createNewMapping(mappingDto2);
+        
+        //Load records
+        MappingDto map1 = storage.getMappingById(id1);
+        assertEquals(id1,map1.getId());
+        assertEquals(kalturaId1,map1.getKalturainternalid());
+                
+        MappingDto map2 = storage.getMappingById(id2);
+        assertEquals(id2,map2.getId());
+        assertNull(map2.getKalturainternalid());        
+       
+        //Test id not exists
+        MappingDto notExist = storage.getMappingById("does_not_exist");
+        assertNull(notExist);    
+        
+        //update
+        mappingDto1.setKalturainternalid(kalturaId1Updated);
+        storage.updateMapping(mappingDto1);
+        MappingDto map1Updated = storage.getMappingById(id1); //load again
+        assertEquals(kalturaId1Updated,map1Updated.getKalturainternalid());                        
+    }
+        
     @Test
     public void testUpdateKalturaId() throws Exception {
         String recordId="test_123";
