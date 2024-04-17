@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -33,6 +34,36 @@ public class DsStorageFacade {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorageFacade.class);
 
+    
+
+    /**
+     * <p>
+     * If the mapping does not exist a new entry will be created in the mapping table.<br>
+     * The id can not be null, but kalturaId can be null.<br>
+     * If the mapping already exist for the id, the kalturaId value will be updated
+     * </p>
+     * 
+     * @param mapping The mapping entry to be create or updated
+     * 
+     */
+    public static void createOrUpdateMapping(MappingDto mappingDto)  {
+        performStorageAction("createOrUpdateMapping(" + mappingDto.getId() + ")", storage -> {
+
+            //test if mapping already exists
+            MappingDto oldMapping = storage.getMappingById(mappingDto.getId());
+            if (oldMapping==null) { //create new
+                storage.createNewMapping(mappingDto);                
+            }
+            else { //update
+                storage.updateMapping(mappingDto);
+            }
+
+            return null; // Something must be returned
+        });
+    }
+
+
+    
     public static void createOrUpdateRecord(DsRecordDto record)  {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
             validateOriginExists(record.getOrigin());        
@@ -77,7 +108,7 @@ public class DsStorageFacade {
      */
     public static void updateKalturaInternalId(String kalturaReferenceId, String kalturaInternalId){
          performStorageAction("updateKalturaInternalId(" + kalturaReferenceId + ")", storage -> {
-         storage.updateKalturaInternal(kalturaReferenceId, kalturaInternalId);         
+         storage.updateKalturaInternalIdForRecord(kalturaReferenceId, kalturaInternalId);         
         return null;    // Something must be returned
         });
     }
@@ -295,7 +326,7 @@ public class DsStorageFacade {
           ids.add(topParent.getId());
           DsRecordDto nextParent = getRecord(topParent.getParentId());                                           
           if (nextParent==null) { //inconsistent data.
-        	  log.warn("Inconsistent data. Parent with ID does not exist:"+topParent.getParentId() + " and is set for record:"+topParent.getId());        	  
+              log.warn("Inconsistent data. Parent with ID does not exist:"+topParent.getParentId() + " and is set for record:"+topParent.getId());            
               return topParent; 
           }
           topParent=nextParent;
@@ -430,7 +461,7 @@ public class DsStorageFacade {
         for (String childId : childrenIds) {
            int updated = storage.updateMTimeForRecord(childId);
            if (updated == 0) {
-        	   log.warn("Children with id does not exist:"+childId);
+               log.warn("Children with id does not exist:"+childId);
            }
         }
     }
@@ -457,8 +488,8 @@ public class DsStorageFacade {
      * @throws Exception if updating failed.
      */
      private static void updateMTimeForAll(DsStorage storage, DsRecordDto record) throws Exception {
-    	DsRecordDto topParent = getTopParent(record);
-    	String recordId = record.getId();
+        DsRecordDto topParent = getTopParent(record);
+        String recordId = record.getId();
         if (!recordId.equals(topParent.getId())) {
             storage.updateMTimeForRecord(topParent.getId());
         }
@@ -515,7 +546,7 @@ public class DsStorageFacade {
      */
     private static <T> T performStorageAction(String actionID, StorageAction<T> action) {
          long start=System.currentTimeMillis();
-    	try (DsStorage storage = new DsStorage()) {
+        try (DsStorage storage = new DsStorage()) {
             T result;
             try {
                 result = action.process(storage);

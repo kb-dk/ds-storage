@@ -439,6 +439,20 @@ components:
           description: 'The Kaltura internal ID for the record. Only '
 
 
+    Mapping:
+      type: object
+      required:
+        - id               
+      properties:
+        id:
+          type: string
+          description: 'Unique identifier for the record. As for new the file-id (filename) for the stream is used. '
+        kalturainternalid:
+          type: string
+          description: 'The internal kaltura ID given to the record in kaltura '
+
+
+
 
     DsRecordList:
       type: array
