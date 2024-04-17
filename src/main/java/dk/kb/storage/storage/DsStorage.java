@@ -1,14 +1,11 @@
 package dk.kb.storage.storage;
 
 import dk.kb.util.Pair;
-import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
-
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
@@ -37,7 +34,6 @@ public class DsStorage implements AutoCloseable {
     
     
     private static final String RECORDS_TABLE = "ds_records";
-    private static final String MAPPING_TABLE = "ds_mapping";
     private static final String ID_COLUMN = "id";
     private static final String ORGID_COLUMN = "orgid";
     private static final String IDERROR_COLUMN = "id_error";
@@ -50,8 +46,8 @@ public class DsStorage implements AutoCloseable {
     private static final String PARENT_ID_COLUMN = "parentid";
     private static final String KALTURA_REFERENCE_ID_COLUMN = "kalturareferenceid";
     private static final String KALTURA_INTERNAL_ID_COLUMN = "kalturainternalid";
-    private static final String MAPPING_ID_COLUMN = "id";
-    private static final String MAPPING_KALTURA_INTERNAL_ID_COLUMN = "kalturainternalid";
+    
+    
 
     private static String clearTableRecordsStatement = "DELETE FROM " + RECORDS_TABLE;
 
@@ -60,19 +56,6 @@ public class DsStorage implements AutoCloseable {
             " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " +ORGID_COLUMN + ","+ RECORDTYPE_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  " , " + KALTURA_REFERENCE_ID_COLUMN +" , "+KALTURA_INTERNAL_ID_COLUMN+")"+
             " VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 
-
-    private static String createMapping = "INSERT INTO " + MAPPING_TABLE +
-            " (" + MAPPING_ID_COLUMN + ", " + MAPPING_KALTURA_INTERNAL_ID_COLUMN +")"+
-            " VALUES (?,?)";
-
-    private static String mappingByIdStatement = "SELECT * FROM " + MAPPING_TABLE + " WHERE ID= ?";
-    
-    private static String updateMappingStatement = "UPDATE " + MAPPING_TABLE + " SET  "+                         
-            KALTURA_INTERNAL_ID_COLUMN + " = ?  "+            
-            "WHERE "+
-            MAPPING_ID_COLUMN + "= ?";
-    
-    
     private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+			 
             RECORDTYPE_COLUMN + " = ?  ,"+
             DATA_COLUMN + " = ? , "+ 						 
@@ -714,65 +697,6 @@ public class DsStorage implements AutoCloseable {
     }
     
     
-    
-      /**
-       * Create a new entry in the mapping table. The kalturainternal id can be null and will be updated by a job later.
-       * 
-       * @param mapping The mapping.id must not be null. The kalturainternalid can be null-
-       * @throws Exception If mapping.id already exists.
-       */
-     public void createNewMapping(MappingDto mappingDto) throws Exception {
-
-        if (mappingDto.getId() == null) {
-            throw new InvalidArgumentServiceException("Id must not be null"); // TODO exception enum types, messages?
-        }
-
-        try (PreparedStatement stmt = connection.prepareStatement(createMapping);) {
-            stmt.setString(1, mappingDto.getId());
-            stmt.setString(2, mappingDto.getKalturainternalid()); 
-            stmt.executeUpdate();
-
-        } catch (SQLException e) {
-            String message = "SQL Exception in createNewMappingwith id:" + mappingDto.getId() + " error:" + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }
-    }
-    
-     
-     /**
-      * Create a new entry in the mapping table. The kalturainternal id can be null and will be updated by a job later.
-      * 
-      * @param mappingId The id key for the mapping
-      * @return The mappingDto or null if the id is mappingId is not found
-      * 
-      * @throws Exception
-      */
-    public MappingDto getMappingById(String mappingId) throws Exception {
-
-       if (mappingId == null) {
-           throw new InvalidArgumentServiceException("Id must not be null"); // TODO exception enum types, messages?
-       }
-
-       try (PreparedStatement stmt = connection.prepareStatement(mappingByIdStatement);) {
-           stmt.setString(1, mappingId);
- 
-           try (ResultSet rs = stmt.executeQuery();) {
-               if (!rs.next()) {
-                 return null; //ID not found
-               }
-             return createMappingFromRS(rs);               
-           }           
-
-       } catch (SQLException e) {
-           String message = "SQL Exception in getMappingById( id:" + mappingId + " error:" + e.getMessage();
-           log.error(message);
-           throw new SQLException(message, e);
-       }
-   }
-   
-     
-     
     public int markRecordForDelete(String recordId) throws Exception {
 
         // Sanity check
@@ -838,30 +762,6 @@ public class DsStorage implements AutoCloseable {
     }
 
     
-    /**
-     * 
-     * Update a mapping with a new internalKalturaId. The internalKalturaId can be null and remove and existing value
-     * 
-     * @param mappingDto
-     * @throws Exception Will throw exception if id is not found
-     */     
-    public void updateMapping(MappingDto mappingDto) throws Exception {
-       // Sanity check
-        if (mappingDto.getId() == null) {
-            throw new InvalidArgumentServiceException("Id must not be null"); 
-        }
-                                              
-        try (PreparedStatement stmt = connection.prepareStatement(updateMappingStatement);) {
-            stmt.setString(1, mappingDto.getKalturainternalid());
-            stmt.setString(2, mappingDto.getId());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            String message = "SQL Exception in  updateMapping with id:" + mappingDto.getId() + " error:" + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }       
-    }
-    
 
     public void updateRecord(DsRecordDto record) throws Exception {
 
@@ -892,7 +792,7 @@ public class DsStorage implements AutoCloseable {
     }
 
 
-    public void updateKalturaInternalForRecord(String kalturaReferenceId, String kalturaId) throws Exception {
+    public void updateKalturaInternal(String kalturaReferenceId, String kalturaId) throws Exception {
       
         long nowStamp = UniqueTimestampGenerator.next();      
         try (PreparedStatement stmt = connection.prepareStatement(updateKalturaReferenceIdStatement);) {
@@ -906,18 +806,6 @@ public class DsStorage implements AutoCloseable {
             throw new SQLException(message, e);
         }
 
-    }
-    
-    
-    private static MappingDto createMappingFromRS(ResultSet rs) throws SQLException {
-
-        String id = rs.getString(MAPPING_ID_COLUMN);
-        String kalturaId = rs.getString(KALTURA_INTERNAL_ID_COLUMN);
-
-        MappingDto mapping = new MappingDto();
-        mapping.setId(id);
-        mapping.setKalturainternalid(kalturaId);        
-        return mapping;
     }
     
     
