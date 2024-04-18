@@ -4,6 +4,7 @@ import dk.kb.storage.api.v1.DsStorageApi;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -20,6 +21,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Providers;
@@ -287,8 +289,28 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             DsStorageFacade.updateKalturaInternalId(kalturaReferenceId, kalturaInternalId);               
         } catch (Exception e) {
             throw handleException(e);
-                }
-            }
+        }
+    }
+      
+    @Override
+    public void mappingPost(MappingDto mappingDto) {
+        try {
+            log.debug("updateKalturaId() called with call details: {}", getCallDetails());
+            DsStorageFacade.createOrUpdateMapping(mappingDto);               
+        } catch (Exception e) {
+            throw handleException(e);
+        }        
+    }
+    @Override
+    public MappingDto getMapping(String referenceId) {
+        try {
+            log.debug("getMapping() called with call details: {}", getCallDetails());
+            return DsStorageFacade.getMapping(referenceId);
+            
+        } catch (Exception e) {
+            throw handleException(e);
+        }        
+    }
   
 
 }
