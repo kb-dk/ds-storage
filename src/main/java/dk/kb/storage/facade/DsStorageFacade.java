@@ -6,10 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Stream;
 
 import dk.kb.util.Pair;
-import dk.kb.util.webservice.exception.ServiceException;
 import dk.kb.util.webservice.stream.ExportWriter;
 
 import org.slf4j.Logger;
