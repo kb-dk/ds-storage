@@ -6,19 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import dk.kb.storage.facade.DsStorageFacade;
+
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.storage.DsStorageUnitTestUtil;
 import dk.kb.util.webservice.exception.InternalServiceException;
-import dk.kb.util.webservice.stream.ExportWriter;
-import dk.kb.util.webservice.stream.ExportWriterFactory;
-
 
 public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
