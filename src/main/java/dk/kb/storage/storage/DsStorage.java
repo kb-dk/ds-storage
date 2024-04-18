@@ -48,10 +48,10 @@ public class DsStorage implements AutoCloseable {
     private static final String CTIME_COLUMN = "ctime";
     private static final String MTIME_COLUMN = "mtime";
     private static final String PARENT_ID_COLUMN = "parentid";
-    private static final String KALTURA_REFERENCE_ID_COLUMN = "kalturareferenceid";
-    private static final String KALTURA_INTERNAL_ID_COLUMN = "kalturainternalid";
-    private static final String MAPPING_ID_COLUMN = "id";
-    private static final String MAPPING_KALTURA_INTERNAL_ID_COLUMN = "kalturainternalid";
+    private static final String KALTURA_REFERENCE_ID_COLUMN = "referenceid";
+    private static final String KALTURA_INTERNAL_ID_COLUMN = "kalturaid";
+    private static final String MAPPING_REFERENCE_ID_COLUMN = "referenceid";
+    private static final String MAPPING_KALTURA_ID_COLUMN = "kalturaid";
 
     private static String clearTableRecordsStatement = "DELETE FROM " + RECORDS_TABLE;
     private static String clearTableMappingsStatement = "DELETE FROM " + MAPPING_TABLE;
@@ -63,15 +63,15 @@ public class DsStorage implements AutoCloseable {
 
 
     private static String createMapping = "INSERT INTO " + MAPPING_TABLE +
-            " (" + MAPPING_ID_COLUMN + ", " + MAPPING_KALTURA_INTERNAL_ID_COLUMN +")"+
+            " (" + MAPPING_REFERENCE_ID_COLUMN + ", " + MAPPING_KALTURA_ID_COLUMN +")"+
             " VALUES (?,?)";
 
-    private static String mappingByIdStatement = "SELECT * FROM " + MAPPING_TABLE + " WHERE ID= ?";
+    private static String mappingByIdStatement = "SELECT * FROM " + MAPPING_TABLE + " WHERE "+ MAPPING_REFERENCE_ID_COLUMN+" = ?";
     
     private static String updateMappingStatement = "UPDATE " + MAPPING_TABLE + " SET  "+                         
             KALTURA_INTERNAL_ID_COLUMN + " = ?  "+            
             "WHERE "+
-            MAPPING_ID_COLUMN + "= ?";
+            MAPPING_REFERENCE_ID_COLUMN + "= ?";
     
     
     private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+          
@@ -683,8 +683,8 @@ public class DsStorage implements AutoCloseable {
             stmt.setLong(8, nowStamp);
             stmt.setString(9, record.getData());
             stmt.setString(10, record.getParentId());
-            stmt.setString(11, record.getKalturaReferenceId());
-            stmt.setString(12, record.getKalturaInternalId()); //This value is probably null. It will be updated by a batch job later. 
+            stmt.setString(11, record.getReferenceId());
+            stmt.setString(12, record.getKalturaId()); //This value is probably null. It will be updated by a batch job later. 
             stmt.executeUpdate();
 
         } catch (SQLException e) {
@@ -727,17 +727,17 @@ public class DsStorage implements AutoCloseable {
        */
      public void createNewMapping(MappingDto mappingDto) throws Exception {
 
-        if (mappingDto.getId() == null) {
-            throw new InvalidArgumentServiceException("Id must not be null"); // TODO exception enum types, messages?
+        if (mappingDto.getReferenceId() == null) {
+            throw new InvalidArgumentServiceException("ReferenceId must not be null"); // TODO exception enum types, messages?
         }
 
         try (PreparedStatement stmt = connection.prepareStatement(createMapping);) {
-            stmt.setString(1, mappingDto.getId());
-            stmt.setString(2, mappingDto.getKalturainternalid()); 
+            stmt.setString(1, mappingDto.getReferenceId());
+            stmt.setString(2, mappingDto.getKalturaId()); 
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            String message = "SQL Exception in createNewMappingwith id:" + mappingDto.getId() + " error:" + e.getMessage();
+            String message = "SQL Exception in createNewMappingwith referenceId:" + mappingDto.getReferenceId() + " error:" + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }
@@ -851,16 +851,16 @@ public class DsStorage implements AutoCloseable {
      */     
     public void updateMapping(MappingDto mappingDto) throws Exception {
        // Sanity check
-        if (mappingDto.getId() == null) {
+        if (mappingDto.getReferenceId() == null) {
             throw new InvalidArgumentServiceException("Id must not be null"); 
         }
                                               
         try (PreparedStatement stmt = connection.prepareStatement(updateMappingStatement);) {
-            stmt.setString(1, mappingDto.getKalturainternalid());
-            stmt.setString(2, mappingDto.getId());
+            stmt.setString(1, mappingDto.getKalturaId());
+            stmt.setString(2, mappingDto.getReferenceId());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            String message = "SQL Exception in  updateMapping with id:" + mappingDto.getId() + " error:" + e.getMessage();
+            String message = "SQL Exception in  updateMapping with id:" + mappingDto.getReferenceId() + " error:" + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }       
@@ -884,7 +884,7 @@ public class DsStorage implements AutoCloseable {
             stmt.setString(1, record.getRecordType().getValue());
             stmt.setString(2, record.getData());
             stmt.setLong(3, nowStamp);          
-            stmt.setString(4, record.getKalturaReferenceId());
+            stmt.setString(4, record.getReferenceId());
             stmt.setString(5, record.getParentId());
             stmt.setString(6, record.getId());
             stmt.executeUpdate();
@@ -915,12 +915,12 @@ public class DsStorage implements AutoCloseable {
     
     private static MappingDto createMappingFromRS(ResultSet rs) throws SQLException {
 
-        String id = rs.getString(MAPPING_ID_COLUMN);
+        String id = rs.getString(MAPPING_REFERENCE_ID_COLUMN);
         String kalturaId = rs.getString(KALTURA_INTERNAL_ID_COLUMN);
 
         MappingDto mapping = new MappingDto();
-        mapping.setId(id);
-        mapping.setKalturainternalid(kalturaId);        
+        mapping.setReferenceId(id);
+        mapping.setKalturaId(kalturaId);        
         return mapping;
     }
     
@@ -951,8 +951,8 @@ public class DsStorage implements AutoCloseable {
         record.setcTime(cTime);
         record.setmTime(mTime);
         record.setDeleted(deleted);
-        record.setKalturaReferenceId(kalturaReferenceId);
-        record.setKalturaInternalId(kalturaInternalId);
+        record.setReferenceId(kalturaReferenceId);
+        record.setKalturaId(kalturaInternalId);
 
         //Set the two dates as human readable
         record.setcTimeHuman(convertToHumanDate(cTime));

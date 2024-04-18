@@ -35,6 +35,18 @@ public class DsStorageFacade {
     private static final Logger log = LoggerFactory.getLogger(DsStorageFacade.class);
 
     
+    /**
+     * 
+     * 
+     * @param mapping The mapping entry to be create or updated
+     * 
+     */
+    public static MappingDto getMapping(String referenceId)  {                       
+        return performStorageAction("getMapping(" + referenceId + ")", storage -> {             
+            return storage.getMappingById(referenceId);   
+        });
+    }    
+    
 
     /**
      * <p>
@@ -47,15 +59,17 @@ public class DsStorageFacade {
      * 
      */
     public static void createOrUpdateMapping(MappingDto mappingDto)  {
-        performStorageAction("createOrUpdateMapping(" + mappingDto.getId() + ")", storage -> {
+        performStorageAction("createOrUpdateMapping(" + mappingDto.getReferenceId() + ")", storage -> {
 
             //test if mapping already exists
-            MappingDto oldMapping = storage.getMappingById(mappingDto.getId());
+            MappingDto oldMapping = storage.getMappingById(mappingDto.getReferenceId());
             if (oldMapping==null) { //create new
-                storage.createNewMapping(mappingDto);                
+                storage.createNewMapping(mappingDto);
+                log.info("Created new mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
             }
             else { //update
                 storage.updateMapping(mappingDto);
+                log.info("Created new mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
             }
 
             return null; // Something must be returned
