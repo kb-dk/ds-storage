@@ -117,12 +117,12 @@ public class DsStorageFacade {
     /**
      * Update kaltura id for a record. The kaltura id is given to the record when uploaded to Kaltura. The Kaltura Id must then later be updated with this method.
      * 
-     * @param kalturaReferenceId The referenceId given to the record when uploaded to Kaltura
-     * @param kalturaInternalId The internal Kaltura id in Kaltura. The id is given to a record after upload.
+     * @param referenceId The referenceId given to the record when uploaded to Kaltura
+     * @param kalturaId The Kaltura id in the kaltura system. The id is given to a record after upload.
      */
-    public static void updateKalturaInternalId(String kalturaReferenceId, String kalturaInternalId){
-         performStorageAction("updateKalturaInternalId(" + kalturaReferenceId + ")", storage -> {
-         storage.updateKalturaInternalIdForRecord(kalturaReferenceId, kalturaInternalId);         
+    public static void updateKalturaIdForRecord(String referenceId, String kalturaId){
+         performStorageAction("updateKalturaIdForRecord(" + referenceId + ")", storage -> {
+         storage.updateKalturaIdForRecord(referenceId, kalturaId);         
         return null;    // Something must be returned
         });
     }

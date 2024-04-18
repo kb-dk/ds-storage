@@ -227,9 +227,9 @@ paths:
     post:
       tags:
         - '${project.name}'    
-      summary: 'Update a record with the Kaltura internal id. '
-      description: 'Update a record with the Kaltura internal id. The record was uploaded to Kaltura with the referenceId as metadata.' 
-      operationId: updateKalturaId
+      summary: 'Update a record with the Kaltura id. '
+      description: 'Update a record with the Kaltura id. The record was uploaded to Kaltura with the referenceId as metadata.' 
+      operationId: updateKalturaIdForRecord
       parameters:
         - name: referenceId
           in: query
@@ -333,7 +333,7 @@ paths:
         - '${project.name}'    
       summary: 'Create a new mapping or update a mappin .'
       operationId: mappingPost
-      description: 'Create a new mapping or update mapping if referenceId exists. Each record with a stream will have a referenceId (file-id) and needs to be mapped to the internal KalturaId'
+      description: 'Create a new mapping or update mapping if referenceId exists. Each record with a stream will have a referenceId (file-id) and needs to be mapped to the KalturaId'
       requestBody:
         content:
           application/json:    # Media type
@@ -478,7 +478,7 @@ components:
           description: 'The referenceId given when uploading the record to Kaltura. This field is only used for records that has a file associated intended streaming.'
         kalturaId:
           type: string
-          description: 'The Kaltura internal ID for the record. Only '
+          description: 'The Kaltura  ID for the record. Can be null if it has not been resolved yet even if the referenceId is not null '
 
 
     Mapping:
@@ -491,7 +491,7 @@ components:
           description: 'Unique identifier for the record. As for now the file-id (filename) for the stream is used. '
         kalturaId:
           type: string
-          description: 'The internal kaltura ID given to the record in kaltura '
+          description: 'The  kaltura ID given to the record in kaltura '
 
 
     DsRecordList:
