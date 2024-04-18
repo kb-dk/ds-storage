@@ -173,7 +173,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         storage.createNewRecord(record );
         
         //Update kaltura Id.
-        storage.updateKalturaInternalIdForRecord(kalturaReferenceId, kalturaId);
+        storage.updateKalturaIdForRecord(kalturaReferenceId, kalturaId);
      
         //Load and test kalturaId correct
         DsRecordDto recordUpdated = storage.loadRecord(recordId);

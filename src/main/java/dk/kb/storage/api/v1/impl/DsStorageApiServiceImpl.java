@@ -283,10 +283,10 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     }
     
     @Override
-    public void updateKalturaId(String kalturaReferenceId, String kalturaInternalId) {
+    public void updateKalturaIdForRecord(String referenceId, String kalturaId) {
         try {
             log.debug("updateKalturaId() called with call details: {}", getCallDetails());
-            DsStorageFacade.updateKalturaInternalId(kalturaReferenceId, kalturaInternalId);               
+            DsStorageFacade.updateKalturaIdForRecord(referenceId, kalturaId);               
         } catch (Exception e) {
             throw handleException(e);
         }
