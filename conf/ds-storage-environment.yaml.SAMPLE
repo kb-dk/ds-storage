@@ -1,0 +1,30 @@
+#
+# This config contains environment-data: Servers, usernames, passwords etc.
+# If will be automatically merged with the core config when accesses through the application config system.
+#
+# The environment config is normally controlled by operations and is not part of the code repository.
+#
+# update_strategy must match enums defined in open API
+# Origin names must match regexp: a-z][0-9][.]
+allowed_origins:
+  - name: ds.tv
+    update_strategy: ALL
+  - name: ds.radio
+    update_strategy: ALL
+
+# Configuration of the backing DB. In stage and production this is always a PostgreSQL database.
+db:
+  # URL for the DB
+  url: jdbc:postgresql://localhost:XXXX/path
+  driver: org.postgresql.Driver
+  # Username and password for the DB
+  username: ''
+  password: ''
+
+# Values in the openapi part of the configuration are expected to be overwritten with the actual values used for deployment.
+# These values are used to populate the OpenAPI specification without redeploying the service. They can be served by using the syntax ${config:yaml.path}.
+openapi:
+  # This is the URL where this service is deployed appended with /v1
+  serverurl: http://localhost:9072/ds-storage/v1
+
+
