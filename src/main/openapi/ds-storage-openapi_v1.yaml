@@ -228,7 +228,7 @@ paths:
       tags:
         - '${project.name}'    
       summary: 'Update a record with the Kaltura id. '
-      description: 'Update a record with the Kaltura id. The record was uploaded to Kaltura with the referenceId as metadata.' 
+      description: 'Update a record with the Kaltura id. The record was uploaded to Kaltura with the referenceId as metadata. Knowing the kalturaId is important to find the record(stream) in Kaltura later for update or deletetion etc.' 
       operationId: updateKalturaIdForRecord
       parameters:
         - name: referenceId
@@ -313,6 +313,7 @@ paths:
         - '${project.name}'
       summary: 'Get mapping for a specific referenceId'
       operationId: getMapping
+      description: 'Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.'
       parameters:
         - name: referenceId
           in: query
@@ -478,8 +479,8 @@ components:
           description: 'The referenceId given when uploading the record to Kaltura. This field is only used for records that has a file associated intended streaming.'
         kalturaId:
           type: string
-          description: 'The Kaltura  ID for the record. Can be null if it has not been resolved yet even if the referenceId is not null '
-
+          description: 'The Kaltura  ID for the record. It can be null even if the record is Kaltura but the mapping has not been updated yet.  '
+                                                        
 
     Mapping:
       type: object
