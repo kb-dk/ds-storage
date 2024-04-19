@@ -65,7 +65,7 @@ public class ServiceConfig {
 			    throw new IOException("Configured origin: '"+name+"' does not validate to regexp for origin");			    
 			}
 			
-			String updateStrategy =origin.getString("update_strategy");        
+			String updateStrategy =origin.getString("updateStrategy");        
 			OriginDto originDto = new OriginDto();
 			originDto.setName(name);
 			originDto.setUpdateStrategy(UpdateStrategyDto.valueOf(updateStrategy));                	

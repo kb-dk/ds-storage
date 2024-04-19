@@ -134,16 +134,16 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
      *   The 4 record origin defined in yaml used the config
      *
     - name: origin.strategy.none   
-      update_strategy: NONE
+      updateStrategy: NONE
 
     - name: origin.strategy.all    
-      update_strategy: ALL
+      updateStrategy: ALL
 
     - name: origin_strategy_child    
-      update_strategy: CHILD
+      updateStrategy: CHILD
 
     - name: oritin.strategy.parent
-      update_strategy: PARENT
+      updateStrategy: PARENT
      *  
      * The 4 unittest has minor differences in assertions about that is updated
      *   
