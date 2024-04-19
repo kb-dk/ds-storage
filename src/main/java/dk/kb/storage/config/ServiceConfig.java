@@ -57,7 +57,7 @@ public class ServiceConfig {
 
 	private static void loadAllowedOrigins() throws IOException{
 
-		List<YAML> origins = serviceConfig.getYAMLList("allowed_origins");
+		List<YAML> origins = serviceConfig.getYAMLList("origins");
 		//Load updtateStategy for each
 		for (YAML origin: origins) {
 			String name = origin.getString("name");
