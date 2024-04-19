@@ -139,22 +139,22 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         storage.createNewMapping(mappingDto2);
         
         //Load records
-        MappingDto map1 = storage.getMappingById(id1);
+        MappingDto map1 = storage.getMappingByReferenceId(id1);
         assertEquals(id1,map1.getReferenceId());
         assertEquals(kalturaId1,map1.getKalturaId());
                 
-        MappingDto map2 = storage.getMappingById(id2);
+        MappingDto map2 = storage.getMappingByReferenceId(id2);
         assertEquals(id2,map2.getReferenceId());
         assertNull(map2.getKalturaId());        
        
         //Test id not exists
-        MappingDto notExist = storage.getMappingById("does_not_exist");
+        MappingDto notExist = storage.getMappingByReferenceId("does_not_exist");
         assertNull(notExist);    
         
         //update
         mappingDto1.setKalturaId(kalturaId1Updated);
         storage.updateMapping(mappingDto1);
-        MappingDto map1Updated = storage.getMappingById(id1); //load again
+        MappingDto map1Updated = storage.getMappingByReferenceId(id1); //load again
         assertEquals(kalturaId1Updated,map1Updated.getKalturaId());                
         
     }
