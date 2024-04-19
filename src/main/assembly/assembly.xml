@@ -42,7 +42,7 @@
     <fileSet>
       <outputDirectory>.</outputDirectory>
       <directoryMode>0755</directoryMode>
-      <fileMode>0744</fileMode>
+      <fileMode>0644</fileMode>
       <includes>
           <include>CHANGELOG.md</include>
           <include>README.md</include>
