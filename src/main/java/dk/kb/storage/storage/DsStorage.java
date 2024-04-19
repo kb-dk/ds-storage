@@ -243,7 +243,7 @@ public class DsStorage implements AutoCloseable {
      * Load a record. Will not load childrenIds
      */
     public DsRecordDto loadRecord(String id) throws SQLException {
-        try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement)) {
             stmt.setString(1, id);
 
             try (ResultSet rs = stmt.executeQuery();) {
@@ -261,7 +261,7 @@ public class DsStorage implements AutoCloseable {
      *  Return null if record does not exist
      */
     public DsRecordDto loadRecordWithChildIds(String id) throws SQLException {
-        try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement)) {
             stmt.setString(1, id);
 
             try (ResultSet rs = stmt.executeQuery();) {
@@ -279,7 +279,7 @@ public class DsStorage implements AutoCloseable {
     
 
     public boolean recordExists(String id) throws SQLException {
-        try (PreparedStatement stmt = connection.prepareStatement(recordIdExistsStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(recordIdExistsStatement)) {
             stmt.setString(1, id);
 
             try (ResultSet rs = stmt.executeQuery();) {
@@ -294,7 +294,7 @@ public class DsStorage implements AutoCloseable {
     public ArrayList<String> getChildrenIds(String parentId) throws SQLException {
 
         ArrayList<String> childIds = new ArrayList<String>();
-        try (PreparedStatement stmt = connection.prepareStatement(childrenIdsStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(childrenIdsStatement)) {
             stmt.setString(1, parentId);
             try (ResultSet rs = stmt.executeQuery();) {
                 while (rs.next()) {
@@ -312,10 +312,10 @@ public class DsStorage implements AutoCloseable {
      * 
      */
     public void clearTableRecords() throws SQLException {
-        try (PreparedStatement stmt = connection.prepareStatement(clearTableRecordsStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(clearTableRecordsStatement)) {
             stmt.execute(); //No resultset to close
         }        
-        try (PreparedStatement stmt = connection.prepareStatement(clearTableMappingsStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(clearTableMappingsStatement)) {
             stmt.execute(); //No resultset to close
         }
     }
@@ -333,7 +333,7 @@ public class DsStorage implements AutoCloseable {
             throw new Exception("Batchsize must be in range 1 to 100000");          
         }
         ArrayList<DsRecordDto > records = new ArrayList<DsRecordDto >();
-        try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterParentsOnlyStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterParentsOnlyStatement)) {
 
             stmt.setString(1, origin);
             stmt.setLong(2, mTime);
@@ -517,7 +517,7 @@ public class DsStorage implements AutoCloseable {
             throw new Exception("Batchsize must be in range 1 to 10000");
         }
         ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
-        try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement)) {
 
             stmt.setString(1, origin);
             stmt.setLong(2, mTime);
@@ -552,7 +552,7 @@ public class DsStorage implements AutoCloseable {
             throw new Exception("Batchsize must be in range 1 to 10000");   
         }
         ArrayList<String> recordsIds = new ArrayList<String>();
-        try (PreparedStatement stmt = connection.prepareStatement(recordsIDByRecordTypeModifiedAfterStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(recordsIDByRecordTypeModifiedAfterStatement)) {
                        
             stmt.setString(1, origin);
             stmt.setString(2, recordType.getValue());
@@ -588,7 +588,7 @@ public class DsStorage implements AutoCloseable {
             throw new Exception("Batchsize must be in range 1 to 100000");          
         }
         ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
-        try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterChildrenOnlyStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterChildrenOnlyStatement)) {
 
             stmt.setString(1, origin);
             stmt.setLong(2, mTime);
@@ -613,7 +613,7 @@ public class DsStorage implements AutoCloseable {
     public ArrayList<OriginCountDto> getOriginStatictics() throws SQLException {
 
         ArrayList<OriginCountDto> originCountList = new ArrayList<OriginCountDto>();
-        try (PreparedStatement stmt = connection.prepareStatement(originsStatisticsStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(originsStatisticsStatement)) {
             
             try (ResultSet rs = stmt.executeQuery();) {
                 while (rs.next()) {
@@ -672,7 +672,7 @@ public class DsStorage implements AutoCloseable {
         long nowStamp = UniqueTimestampGenerator.next();
         //log.debug("Creating new record: " + record.getId());
 
-        try (PreparedStatement stmt = connection.prepareStatement(createRecordStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(createRecordStatement)) {
             stmt.setString(1, record.getId());
             stmt.setString(2, record.getOrigin());
             stmt.setString(3, record.getOrgid());                        
@@ -705,7 +705,7 @@ public class DsStorage implements AutoCloseable {
         long nowStamp = UniqueTimestampGenerator.next();
         //log.debug("Creating new record: " + record.getId());
 
-        try (PreparedStatement stmt = connection.prepareStatement(updateMTimeForRecordStatement);) {  
+        try (PreparedStatement stmt = connection.prepareStatement(updateMTimeForRecordStatement)) {  
             stmt.setLong(1, nowStamp);      
             stmt.setString(2, recordId);
            int numberUpdated =  stmt.executeUpdate();           
@@ -731,7 +731,7 @@ public class DsStorage implements AutoCloseable {
             throw new InvalidArgumentServiceException("ReferenceId must not be null"); // TODO exception enum types, messages?
         }
 
-        try (PreparedStatement stmt = connection.prepareStatement(createMapping);) {
+        try (PreparedStatement stmt = connection.prepareStatement(createMapping)) {
             stmt.setString(1, mappingDto.getReferenceId());
             stmt.setString(2, mappingDto.getKalturaId()); 
             stmt.executeUpdate();
@@ -758,7 +758,7 @@ public class DsStorage implements AutoCloseable {
            throw new InvalidArgumentServiceException("Id must not be null"); // TODO exception enum types, messages?
        }
 
-       try (PreparedStatement stmt = connection.prepareStatement(mappingByIdStatement);) {
+       try (PreparedStatement stmt = connection.prepareStatement(mappingByIdStatement)) {
            stmt.setString(1, mappingId);
  
            try (ResultSet rs = stmt.executeQuery();) {
@@ -787,7 +787,7 @@ public class DsStorage implements AutoCloseable {
         long nowStamp = UniqueTimestampGenerator.next();
         //log.debug("Creating new record: " + record.getId());
 
-        try (PreparedStatement stmt = connection.prepareStatement(markRecordForDeleteStatement);) {     
+        try (PreparedStatement stmt = connection.prepareStatement(markRecordForDeleteStatement)) {     
             stmt.setLong(1, nowStamp);                      
             stmt.setString(2, recordId);
            int numberUpdated =  stmt.executeUpdate();           
@@ -808,7 +808,7 @@ public class DsStorage implements AutoCloseable {
      * @param mTimeTo modified time to. Format is millis +3 digits
      */    
     public int deleteRecordsForOrigin(String origin, long mTimeFrom,long mTimeTo) throws Exception {        
-        try (PreparedStatement stmt = connection.prepareStatement(deleteRecordsForOriginStateMent);) {      
+        try (PreparedStatement stmt = connection.prepareStatement(deleteRecordsForOriginStateMent)) {      
             stmt.setString(1, origin);                      
             stmt.setLong(2, mTimeFrom);
             stmt.setLong(3, mTimeTo);            
@@ -828,7 +828,7 @@ public class DsStorage implements AutoCloseable {
             throw new Exception("Origin must not be null"); // TODO exception enum types, messages?
         }
     
-        try (PreparedStatement stmt = connection.prepareStatement(deleteMarkedForDeleteStatement);) {        
+        try (PreparedStatement stmt = connection.prepareStatement(deleteMarkedForDeleteStatement)) {        
             stmt.setString(1, origin);
             int numberDeleted = stmt.executeUpdate();
             return numberDeleted;                    
@@ -844,7 +844,7 @@ public class DsStorage implements AutoCloseable {
     
     /**
      * 
-     * Update a mapping new a new kalturaId
+     * Update a mapping with a new kalturaId
      * 
      * @param mappingDto
      * @throws Exception Will throw exception if id is not found
@@ -852,10 +852,10 @@ public class DsStorage implements AutoCloseable {
     public void updateMapping(MappingDto mappingDto) throws Exception {
        // Sanity check
         if (mappingDto.getReferenceId() == null) {
-            throw new InvalidArgumentServiceException("Id must not be null"); 
+            throw new InvalidArgumentServiceException("referenceId must not be null"); 
         }
                                               
-        try (PreparedStatement stmt = connection.prepareStatement(updateMappingStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(updateMappingStatement)) {
             stmt.setString(1, mappingDto.getKalturaId());
             stmt.setString(2, mappingDto.getReferenceId());
             stmt.executeUpdate();
@@ -880,7 +880,7 @@ public class DsStorage implements AutoCloseable {
         long nowStamp = UniqueTimestampGenerator.next();
         //log.debug("Creating new record: " + record.getId());
                       
-        try (PreparedStatement stmt = connection.prepareStatement(updateRecordStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(updateRecordStatement)) {
             stmt.setString(1, record.getRecordType().getValue());
             stmt.setString(2, record.getData());
             stmt.setLong(3, nowStamp);          
@@ -899,7 +899,7 @@ public class DsStorage implements AutoCloseable {
     public void updateKalturaIdForRecord(String kalturaReferenceId, String kalturaId) throws Exception {
       
         long nowStamp = UniqueTimestampGenerator.next();      
-        try (PreparedStatement stmt = connection.prepareStatement(updateKalturaIdStatement);) {
+        try (PreparedStatement stmt = connection.prepareStatement(updateKalturaIdStatement)) {
             stmt.setString(1, kalturaId);
             stmt.setLong(2, nowStamp);
             stmt.setString(3, kalturaReferenceId);  
@@ -912,11 +912,14 @@ public class DsStorage implements AutoCloseable {
 
     }
     
-    
+    /* 
+     * Convert a row in the mapping table to a mappingDto object. 
+     * 
+     */
     private static MappingDto createMappingFromRS(ResultSet rs) throws SQLException {
 
         String id = rs.getString(MAPPING_REFERENCE_ID_COLUMN);
-        String kalturaId = rs.getString(KALTURA_ID_COLUMN);
+        String kalturaId = rs.getString(MAPPING_KALTURA_ID_COLUMN);
 
         MappingDto mapping = new MappingDto();
         mapping.setReferenceId(id);
