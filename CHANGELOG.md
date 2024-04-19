@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 - new table Mappings with fields (referenceId,kalturaId) and methods to create/update/read entries
-
+- new service method that will enrich records in the records table with kalturaid from the mapping table
 
 ### Fixed
 - Switch from Jersey to Apache URI Builder to handle parameters containing '{' [DRA-338](https://kb-dk.atlassian.net/browse/DRA-338)

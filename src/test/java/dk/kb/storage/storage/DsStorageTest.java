@@ -205,6 +205,55 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertTrue(maxTime > beforeTime, "Max time should be higher than before time");
         assertTrue(maxTime < afterTime, "Max time should be lower than after time");
     }
+    
+    
+    
+    /**
+    * Data structure
+    * 
+    * RECORD table:
+    * |ID |REFERENCEID |KALTURAID
+    * -------------------------------
+    * |id1|referenceid1|     (null) |        (This can be enriched with kalturaid)
+    * |id1|referenceid2|     (null) |        (this record needs to be enriched, but referenceid2 is not in the mapping table) 
+    * |id3|null        |     (null) |        (this record can not be enriched with kalturaid, no referenceId)
+    * |id4|referenceid4|(kalturaid4)|        (this is already as kalturaid)
+    * 
+    * MAPPING table:
+    * |REFERENCEID | KALTURAID|
+    * ------------------------- 
+    * |referenceid1|kalturaid1|              (this mappen can be used to enrich record with id1)
+    * |referenceid4|kalturaid4|              (no record that has referenceid4, so not used)
+    *   
+    * This is the result of the SQL inner join, only one row is generated from about data structure
+    * 
+    * JOIN-RESULT-SET
+    * |ID| REFERENCEID | KALTURAID|
+    * -----------------------------
+    * |id1|referenceid1|kalturaid1|   
+    * 
+    * After updating the kalturaid the record with id1 will now have kalturaid
+    * |id1|referenceid1|kalturaid1|          (this is the change in record data by calling the updatekalturaId method)
+    */    
+    @Test
+    public void testUpdateKalturaIdForRecords() throws Exception {
+        
+        //Create test data
+        createTestMappingData();
+       
+        String recordId="id1";
+        //load record1 and see kalturaid is not set
+        DsRecordDto recordBefore = storage.loadRecord(recordId);
+        assertNull(recordBefore.getKalturaId());
+        
+        
+        int updated = storage.updateKalturaIdForRecords();        
+        assertEquals(1,updated);
+        
+        //load record1 and see kalturaid is now set
+        DsRecordDto recordAfter = storage.loadRecord(recordId);
+        assertEquals("kalturaid1",recordAfter.getKalturaId());        
+    }
 
     @Test
     public void testGetMtimeAfterWithLimitManifestation() throws Exception {
@@ -241,7 +290,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 //        System.out.println("Last  record: " + bRecords.get(bRecords.size()-1).getmTime());
 
         assertEquals(maxBefore, bRecords.get(bRecords.size()-1).getmTime(),
-                "The mTime for the last bRecord should match maxBefore");
+                     "The mTime for the last bRecord should match maxBefore");
     }
 
     @Test
@@ -267,7 +316,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 //        System.out.println("Last  record: " + bRecords.get(bRecords.size()-1).getmTime());
 
         assertEquals(maxBefore, storage.loadRecord(bRecords.get(bRecords.size()-1)).getmTime(),
-                "The mTime for the last bRecord should match maxBefore");
+                     "The mTime for the last bRecord should match maxBefore");
     }
 
     @Test
@@ -466,4 +515,51 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertEquals("test_origin3",item2.getOrigin());
 
     }
+    
+   /*
+    * See {@link #testUpdateKalturaIdForRecords() testUpdateKalturaIdForRecords} method for data visualization
+    *       
+    */   
+    private void createTestMappingData()  throws Exception{
+                
+        DsRecordDto r1 = new DsRecordDto();
+        r1.setId("id1"); 
+        r1.setOrigin("test_origin1");
+        r1.setData("id1");
+        r1.setRecordType(RecordTypeDto.MANIFESTATION);
+        r1.setReferenceId("referenceid1");
+        storage.createNewRecord(r1);
+        
+        DsRecordDto r2 = new DsRecordDto();
+        r2.setId("id2");  
+        r2.setOrigin("test_origin1");
+        r2.setData("id2");
+        r2.setRecordType(RecordTypeDto.MANIFESTATION);
+        r2.setReferenceId("referenceid2");
+        storage.createNewRecord(r2);
+        
+        DsRecordDto r3 = new DsRecordDto();
+        r3.setId("id3");  
+        r3.setOrigin("test_origin1");
+        r3.setData("id3");
+        r3.setRecordType(RecordTypeDto.MANIFESTATION);
+        //No referenceid
+        storage.createNewRecord(r3);
+        
+        DsRecordDto r4 = new DsRecordDto();
+        r4.setId("id4");  
+        r4.setOrigin("test_origin1");
+        r4.setData("id4");
+        r4.setRecordType(RecordTypeDto.MANIFESTATION);
+        r4.setReferenceId("referenceid4");
+        r4.setKalturaId("kalturaid4");
+        storage.createNewRecord(r4);
+        
+        MappingDto map = new MappingDto();
+        map.setReferenceId("referenceid1");
+        map.setKalturaId("kalturaid1");            
+        storage.createNewMapping(map);       
+    }
+           
+    
 }

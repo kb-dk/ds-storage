@@ -189,6 +189,13 @@ public class DsStorage implements AutoCloseable {
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
 
+    //Optimized SQL that finds missing KalturaIds on records table that have a referenceId but no kalturaId. Can take some time(minutes) first time if million of records miss kalturaId    
+    //select A.id, A.referenceid, B.kalturaid from ds_records A inner join ds_mapping B ON A.referenceid=B.referenceid where  A.kalturaid is null AND b.kalturaid is NOT null         
+    private static String joinMissingKalturaIdStatement = "SELECT A."+ID_COLUMN+", A."+RECORDS_REFERENCE_ID_COLUMN+", B."+MAPPING_KALTURA_ID_COLUMN+" FROM "+RECORDS_TABLE +
+                                                        " A INNER JOIN "+MAPPING_TABLE+" B"+ 
+                                                        " ON A."+RECORDS_REFERENCE_ID_COLUMN+"=B."+MAPPING_REFERENCE_ID_COLUMN+
+                                                        " WHERE  A."+RECORDS_KALTURA_ID_COLUMN+" IS NULL AND b."+MAPPING_KALTURA_ID_COLUMN +" IS NOT NULL";    
+    
     private static String originsStatisticsStatement = "SELECT " + ORIGIN_COLUMN + " ,COUNT(*) AS COUNT , SUM("+DELETED_COLUMN+") AS deleted,  max("+MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + ORIGIN_COLUMN;
     private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE "+ORIGIN_COLUMN +" = ? AND "+DELETED_COLUMN +" = 1" ;   
     private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";
@@ -777,7 +784,42 @@ public class DsStorage implements AutoCloseable {
    }
    
      
-     
+    /**
+     * TODO
+     */
+   public int updateKalturaIdForRecords() throws Exception {
+
+      System.out.println(joinMissingKalturaIdStatement);
+
+      try (PreparedStatement stmt = connection.prepareStatement(joinMissingKalturaIdStatement)) {
+
+          int updated=0;
+
+          try (ResultSet rs = stmt.executeQuery();) {
+              while(rs.next()) {
+           
+                String id=rs.getString(ID_COLUMN);
+                String referenceId=rs.getString(MAPPING_REFERENCE_ID_COLUMN);
+                String kalturaId=rs.getString(MAPPING_KALTURA_ID_COLUMN);
+                
+                //Update the record with the kalturaId
+                updateKalturaIdForRecord(referenceId, kalturaId);
+                log.info("Updated kalturaid for record. id={}, referenceid={}, kalturaid{}", id,referenceId,kalturaId);                
+                updated++;
+              }
+                           
+          }           
+          return updated;
+
+      } catch (SQLException e) {
+          String message = "SQL Exception in updateKalturaIdForRecords error:" + e.getMessage();
+          log.error(message);
+          throw new SQLException(message, e);
+      }
+  } 
+    
+    
+    
     public int markRecordForDelete(String recordId) throws Exception {
 
         // Sanity check
@@ -897,16 +939,16 @@ public class DsStorage implements AutoCloseable {
     }
 
 
-    public void updateKalturaIdForRecord(String kalturaReferenceId, String kalturaId) throws Exception {
+    public void updateKalturaIdForRecord(String referenceId, String kalturaId) throws Exception {
       
         long nowStamp = UniqueTimestampGenerator.next();      
         try (PreparedStatement stmt = connection.prepareStatement(updateKalturaIdStatement)) {
             stmt.setString(1, kalturaId);
             stmt.setLong(2, nowStamp);
-            stmt.setString(3, kalturaReferenceId);  
+            stmt.setString(3, referenceId);  
             stmt.executeUpdate();
         } catch (SQLException e) {
-            String message = "SQL Exception in updateKalturaId for referenceId:" + kalturaReferenceId + " error:" + e.getMessage();
+            String message = "SQL Exception in updateKalturaId for referenceId:" + referenceId + " error:" + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }
