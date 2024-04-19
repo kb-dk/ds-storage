@@ -35,7 +35,7 @@ public class DsStorageFacade {
     
     /**
      * <p>
-     * Get a mapping having (referenceid,kalturaid). If the is no entry for the referenceid in the mapping table null be will returned.
+     * Get a mapping having (referenceid,kalturaid). If there is no entry for the referenceid in the mapping table null will be returned.
      * The referenceid can exist but kalturaid can be null even if the entry is uploaded to kaltura, but the mapping table has not been updated yet.
      * </p>
      * 
