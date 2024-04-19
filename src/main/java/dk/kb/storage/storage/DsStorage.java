@@ -749,7 +749,7 @@ public class DsStorage implements AutoCloseable {
       * Get a mappingDto by referenceId. 
       * 
       * @param refenceId The id key for the mapping
-      * @return The mappingDto if referenceId exists. Null if the referenceId is not found
+      * @return referenceId  Return a mappingDto if referenceId exists. Null if the referenceId is not found in the mapping
       * 
       * @throws Exception
       */
