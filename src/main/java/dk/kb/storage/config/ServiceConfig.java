@@ -57,7 +57,7 @@ public class ServiceConfig {
 
 	private static void loadAllowedOrigins() throws IOException{
 
-		List<YAML> origins = serviceConfig.getYAMLList("allowed_origins");
+		List<YAML> origins = serviceConfig.getYAMLList("origins");
 		//Load updtateStategy for each
 		for (YAML origin: origins) {
 			String name = origin.getString("name");
@@ -65,7 +65,7 @@ public class ServiceConfig {
 			    throw new IOException("Configured origin: '"+name+"' does not validate to regexp for origin");			    
 			}
 			
-			String updateStrategy =origin.getString("update_strategy");        
+			String updateStrategy =origin.getString("updateStrategy");        
 			OriginDto originDto = new OriginDto();
 			originDto.setName(name);
 			originDto.setUpdateStrategy(UpdateStrategyDto.valueOf(updateStrategy));                	

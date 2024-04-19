@@ -1,6 +1,7 @@
 package dk.kb.storage.storage;
 
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
@@ -33,8 +34,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         String origin="origin.test";
         String data = "Hello";
         String parentId="origin.test:id_1_parent";
-        String kalturaRefenceId="kalturaRefenceId_123";
-        String kalturaRefenceIdUpdated="kalturaRefenceId_123_updated";
+        String refenceId="kalturaRefenceId_123";
+        String refenceIdUpdated="kalturaRefenceId_123_updated";
         RecordTypeDto recordType=RecordTypeDto.MANIFESTATION;
         
         DsRecordDto record = new DsRecordDto();
@@ -43,7 +44,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         record.setData(data);
         record.setParentId(parentId);
         record.setRecordType(RecordTypeDto.MANIFESTATION);
-        record.setKalturaReferenceId(kalturaRefenceId);
+        record.setReferenceId(refenceId);
         storage.createNewRecord(record );
 
         //Test record not exist
@@ -59,7 +60,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertTrue(recordLoaded.getmTime() > 0);
         Assertions.assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
         Assertions.assertEquals(recordType, recordLoaded.getRecordType());
-        Assertions.assertEquals(kalturaRefenceId, recordLoaded.getKalturaReferenceId());
+        Assertions.assertEquals(refenceId, recordLoaded.getReferenceId());
         
         //Now update
 
@@ -69,7 +70,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
         record.setData(dataUpdate);
         record.setParentId(parentIdUpdated);            
-        record.setKalturaReferenceId(kalturaRefenceIdUpdated);
+        record.setReferenceId(refenceIdUpdated);
         storage.updateRecord(record);
 
         //Check new updated record is correct.
@@ -79,10 +80,10 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertEquals(origin,recordUpdated .getOrigin());
         Assertions.assertEquals(parentIdUpdated,record.getParentId());        
         Assertions.assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
-        Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                	                           
-        Assertions.assertEquals(kalturaRefenceIdUpdated, recordUpdated.getKalturaReferenceId());
+        Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                                            
+        Assertions.assertEquals(refenceIdUpdated, recordUpdated.getReferenceId());
         
-        //Mark record for delete				
+        //Mark record for delete                
         storage.markRecordForDelete(id);
 
         DsRecordDto record_deleted = storage.loadRecord(id);
@@ -118,7 +119,46 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertNull(deletedReally);
     }
 
-
+    @Test
+    public void testMappingCRUD() throws Exception {
+        
+        //Create with both ids
+        String id1="test_id_1";
+        String id2="test_id_2";
+        String kalturaId1="test_kalturaid_1";
+        String kalturaId1Updated="test_kalturaid_1_updated";
+        
+        MappingDto mappingDto1 = new MappingDto();
+        mappingDto1.setReferenceId(id1);
+        mappingDto1.setKalturaId(kalturaId1);    
+        storage.createNewMapping(mappingDto1);
+        
+        //create with only id
+        MappingDto mappingDto2 = new MappingDto();
+        mappingDto2.setReferenceId(id2);
+        storage.createNewMapping(mappingDto2);
+        
+        //Load records
+        MappingDto map1 = storage.getMappingByReferenceId(id1);
+        assertEquals(id1,map1.getReferenceId());
+        assertEquals(kalturaId1,map1.getKalturaId());
+                
+        MappingDto map2 = storage.getMappingByReferenceId(id2);
+        assertEquals(id2,map2.getReferenceId());
+        assertNull(map2.getKalturaId());        
+       
+        //Test id not exists
+        MappingDto notExist = storage.getMappingByReferenceId("does_not_exist");
+        assertNull(notExist);    
+        
+        //update
+        mappingDto1.setKalturaId(kalturaId1Updated);
+        storage.updateMapping(mappingDto1);
+        MappingDto map1Updated = storage.getMappingByReferenceId(id1); //load again
+        assertEquals(kalturaId1Updated,map1Updated.getKalturaId());                
+        
+    }
+        
     @Test
     public void testUpdateKalturaId() throws Exception {
         String recordId="test_123";
@@ -129,16 +169,16 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         record.setOrigin("origin_123");
         record.setData("");        
         record.setRecordType(RecordTypeDto.MANIFESTATION);
-        record.setKalturaReferenceId(kalturaReferenceId);
+        record.setReferenceId(kalturaReferenceId);
         storage.createNewRecord(record );
         
         //Update kaltura Id.
-        storage.updateKalturaInternal(kalturaReferenceId, kalturaId);
+        storage.updateKalturaIdForRecord(kalturaReferenceId, kalturaId);
      
         //Load and test kalturaId correct
         DsRecordDto recordUpdated = storage.loadRecord(recordId);
-        assertEquals(kalturaReferenceId,recordUpdated.getKalturaReferenceId());
-        assertEquals(kalturaId,recordUpdated.getKalturaInternalId());
+        assertEquals(kalturaReferenceId,recordUpdated.getReferenceId());
+        assertEquals(kalturaId,recordUpdated.getKalturaId());
     }
 
     
@@ -328,7 +368,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         createMegaParent(parentId,"test.origin");
 
         ArrayList<DsRecordDto> list1 = storage.getRecordsModifiedAfter("test.origin", before, 10000);
-        assertEquals(1001, list1.size()); //100 children +1 parent	    	 	    		    
+        assertEquals(1001, list1.size()); //100 children +1 parent                              
     }
 
     /*
@@ -426,6 +466,4 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertEquals("test_origin3",item2.getOrigin());
 
     }
-
-
 }

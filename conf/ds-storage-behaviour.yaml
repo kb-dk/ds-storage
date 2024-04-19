@@ -6,37 +6,37 @@
 #
 
 
-# update_strategy must match enums defined in open API
+# updateStrategy must match enums defined in open API
 # Origin names must match regexp: a-z][0-9][.]
-allowed_origins:
+origins:
   - name: ds.tv
-    update_strategy: ALL
+    updateStrategy: ALL
   - name: ds.radio
-    update_strategy: ALL
+    updateStrategy: ALL
   - name: ds.radiotv6
-    update_strategy: ALL   
+    updateStrategy: ALL
   - name: doms.radio
-    update_strategy: CHILD
+    updateStrategy: CHILD
   - name: doms.aviser
-    update_strategy: PARENT
+    updateStrategy: PARENT
   - name: origin.strategy.none
-    update_strategy: NONE
+    updateStrategy: NONE
   - name: origin.strategy.all
-    update_strategy: ALL
+    updateStrategy: ALL
   - name: origin.strategy.child
-    update_strategy: CHILD
+    updateStrategy: CHILD
   - name: origin.strategy.parent
-    update_strategy: PARENT
+    updateStrategy: PARENT
   - name: ds.radiotv
-    update_strategy: ALL
+    updateStrategy: ALL
   - name: ds.radiotv6
-    update_strategy: ALL
+    updateStrategy: ALL
   - name : ds.samlingsbilleder
-    update_strategy: NONE
+    updateStrategy: NONE
   - name : ds.maps
-    update_strategy: NONE
+    updateStrategy: NONE
   - name : kb.manus.vmanus.ha
-    update_strategy: NONE
+    updateStrategy: NONE
 
 
 db:

@@ -66,7 +66,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: ["${config:allowed_origins[*].name}"]
+            enum: ["${config:origins[*].name}"]
       responses:
         '200':
           description: OK
@@ -92,7 +92,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: ["${config:allowed_origins[*].name}"]
+            enum: ["${config:origins[*].name}"]
         - name: mTimeFrom
           in: query
           description: 'Format is milliseconds since Epoch with 3 added digits. Value is included in the deletion'
@@ -227,16 +227,16 @@ paths:
     post:
       tags:
         - '${project.name}'    
-      summary: 'Update a record with the Kaltura internal id. '
-      description: 'Update a record with the Kaltura internal id. The record was uploaded to Kaltura with the kalturaReferenceId as metadata.' 
-      operationId: updateKalturaId
+      summary: 'Update a record with the Kaltura id. '
+      description: 'Update a record with the Kaltura id. The record was uploaded to Kaltura with the referenceId as metadata. Knowing the kalturaId is important to find the record(stream) in Kaltura later for update or deletetion etc.' 
+      operationId: updateKalturaIdForRecord
       parameters:
-        - name: kalturaReferenceId
+        - name: referenceId
           in: query
           required: true
           schema:
             type: string
-        - name: kalturaInternalId
+        - name: kalturaId
           in: query
           required: true
           schema:
@@ -267,7 +267,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: ["${config:allowed_origins[*].name}"]
+            enum: ["${config:origins[*].name}"]
         - name: recordType
           in: query
           description: 'Only extract records with this recordtype. This will also load local tree for record. If null all recordstypes will be loaded.'
@@ -307,6 +307,47 @@ paths:
 
 
 
+  /mapping:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Get mapping for a specific referenceId'
+      operationId: getMapping
+      description: 'Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.'
+      parameters:
+        - name: referenceId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Get mapping for a specific referenceId. Will return null if the referenceId is not defined in the mapping'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mapping'
+       
+    
+    post:
+      tags:
+        - '${project.name}'    
+      summary: 'Create a new mapping or update a mappin .'
+      operationId: mappingPost
+      description: 'Create a new mapping or update mapping if referenceId exists. Each record with a stream will have a referenceId (file-id) and needs to be mapped to the KalturaId'
+      requestBody:
+        content:
+          application/json:    # Media type
+            schema:            # Request body contents
+              $ref: '#/components/schemas/Mapping'  # Reference to an object            
+      responses:
+        '204':
+          description: No Content - The request has been executed correct and the server did not deliver any content.
+
+
+
+
+
   # The ping service should be in all projects, should not do any advanced processing
   # and should respond quickly with a simple message, e.g. "pong".
   #
@@ -330,6 +371,8 @@ paths:
             text/plain:
               schema:
                 type: string
+
+
 
   # The status service should be in all projects and should provide a list of running jobs,
   # the overall health of the service and similar. While the endpoint should be kept at
@@ -369,7 +412,7 @@ components:
         name:
           type: string
           description: 'Name of the origin. IDs are prefixed with origin'
-          example: ${config:allowed_origins[0].name}
+          example: ${config:origins[0].name}
         updateStrategy:  
           $ref: '#/components/schemas/UpdateStrategy'
 
@@ -392,7 +435,7 @@ components:
         origin:
           type: string
           description: 'Collection name where the record comes from. Lower characters and dot(.) allowed only.'
-          example: ${config:allowed_origins[0].name}
+          example: ${config:origins[0].name}
         recordType:
           type: string
           description: 'Optional. Examples can be deliverableunit, collection or metadata. Use metadata for records that contains the data. Collection are parent records without metadata.'
@@ -431,13 +474,25 @@ components:
         children:
           $ref: '#/components/schemas/DsRecordList'
           description: 'All child records'  
-        kalturaReferenceId:
+        referenceId:
           type: string
           description: 'The referenceId given when uploading the record to Kaltura. This field is only used for records that has a file associated intended streaming.'
-        kalturaInternalId:
+        kalturaId:
           type: string
-          description: 'The Kaltura internal ID for the record. Only '
+          description: 'The Kaltura  ID for the record. It can be null even if the record is Kaltura but the mapping has not been updated yet.  '
+                                                        
 
+    Mapping:
+      type: object
+      required:
+        - referenceId               
+      properties:
+        referenceId:
+          type: string
+          description: 'Unique identifier for the record. As for now the file-id (filename) for the stream is used. '
+        kalturaId:
+          type: string
+          description: 'The  kaltura ID given to the record in kaltura '
 
 
     DsRecordList:
@@ -461,7 +516,7 @@ components:
         origin:
           type: string
           description: 'Name of the origin'
-          example: ${config:allowed_origins[0].name}
+          example: ${config:origins[0].name}
         count:
           type: integer
           format: int64

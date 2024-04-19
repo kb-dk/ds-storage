@@ -54,7 +54,7 @@ public abstract class DsStorageUnitTestUtil {
      */
     @BeforeEach
     public void beforeEach() throws Exception {                     
-        storage.clearTableRecords();
+        storage.clearMappingAndRecordTable();
         storage.commit();
     }
 
