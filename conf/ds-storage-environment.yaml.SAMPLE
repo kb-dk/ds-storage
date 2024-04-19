@@ -6,11 +6,11 @@
 #
 # update_strategy must match enums defined in open API
 # Origin names must match regexp: a-z][0-9][.]
-allowed_origins:
+origins:
   - name: ds.tv
-    update_strategy: ALL
+    updateStrategy: ALL
   - name: ds.radio
-    update_strategy: ALL
+    updateStrategy: ALL
 
 # Configuration of the backing DB. In stage and production this is always a PostgreSQL database.
 db:
