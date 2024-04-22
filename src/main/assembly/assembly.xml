@@ -4,6 +4,19 @@
     <format>tar.gz</format>
   </formats>
 
+  <files>
+    <file>
+      <source>conf/ocp/ds-storage.xml</source>
+      <outputDirectory>/</outputDirectory>
+      <destName>ds-storage.xml.SAMPLE</destName>
+    </file>
+    <file>
+      <source>src/test/resources/ddl/create_ds_storage.ddl</source>
+      <outputDirectory>/</outputDirectory>
+      <destName>create_ds_storage.ddl</destName>
+    </file>
+  </files>
+
   <dependencySets>
     <dependencySet>
       <outputDirectory>lib</outputDirectory>
@@ -19,7 +32,7 @@
     <fileSet>
       <outputDirectory>conf</outputDirectory>
       <directoryMode>0755</directoryMode>
-      <fileMode>0744</fileMode>
+      <fileMode>0644</fileMode>
       <directory>conf</directory>
       <excludes>
 	      <exclude>ocp/</exclude>
@@ -29,9 +42,19 @@
     <fileSet>
       <outputDirectory>.</outputDirectory>
       <directoryMode>0755</directoryMode>
-      <fileMode>0744</fileMode>
+      <fileMode>0644</fileMode>
       <includes>
           <include>CHANGELOG.md</include>
+          <include>README.md</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>target/ds-storage-${version}</directory>
+      <outputDirectory>.</outputDirectory>
+      <directoryMode>0755</directoryMode>
+      <fileMode>0644</fileMode>
+      <includes>
+        <include>ds-storage.build.properties</include>
       </includes>
     </fileSet>
   </fileSets>

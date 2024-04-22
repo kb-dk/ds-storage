@@ -6,10 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Changed
+
+### Changed
+
 - Support for dynamically updating values in OpenAPI spec. [DRA-139](https://kb-dk.atlassian.net/browse/DRA-139).
+- Change configuration style to camelCase [DRA-431](https://kb-dk.atlassian.net/browse/DRA-431)
 
 ## Added
+- Added sample config files and documentation to distribution tar archive. [DRA-417](https://kb-dk.atlassian.net/browse/DRA-417)
 - new table Mappings with fields (referenceId,kalturaId) and methods to create/update/read entries
 - new service method that will enrich records in the records table with kalturaid from the mapping table
 - New service method  (record/updateKalturaId) to update the kalturaId for a record. Both create new record and update record will set the kalturareferenceid. [DRA-314](https://kb-dk.atlassian.net/browse/DRA-314)
@@ -19,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Switch from Jersey to Apache URI Builder to handle parameters containing '{' [DRA-338](https://kb-dk.atlassian.net/browse/DRA-338)
+- Correct resolving of maven build time in project properties. [DRA-417](https://kb-dk.atlassian.net/browse/DRA-417)
 
 ## [1.18](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.18) 2024-03-08
 
