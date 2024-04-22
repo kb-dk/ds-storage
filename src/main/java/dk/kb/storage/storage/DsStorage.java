@@ -189,8 +189,10 @@ public class DsStorage implements AutoCloseable {
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
 
-    //Optimized SQL that finds missing KalturaIds on records table that have a referenceId but no kalturaId. Can take some time(minutes) first time if million of records miss kalturaId    
-    //select A.id, A.referenceid, B.kalturaid from ds_records A inner join ds_mapping B ON A.referenceid=B.referenceid where  A.kalturaid is null AND b.kalturaid is NOT null         
+    //Optimized SQL that finds missing KalturaIds on records table that have a referenceId but no kalturaId. Can take some time(minutes) first time if million of records miss kalturaId
+    //'INNER JOIN' will only return matched rows from both tables in involved unlike 'LEFT JOIN' that will return non-matched also. 
+    //SELECT A.id, A.referenceid, B.kalturaid from ds_records A INNER JOIN ds_mapping B ON A.referenceid=B.referenceid WHERE  A.kalturaid IS NULL AND b.kalturaid IS NOT NULL         
+    //Performance can be improved by double index (referenceId,kalturaId) but will come a cost when creating/updating records. 
     private static String joinMissingKalturaIdStatement = "SELECT A."+ID_COLUMN+", A."+RECORDS_REFERENCE_ID_COLUMN+", B."+MAPPING_KALTURA_ID_COLUMN+" FROM "+RECORDS_TABLE +
                                                         " A INNER JOIN "+MAPPING_TABLE+" B"+ 
                                                         " ON A."+RECORDS_REFERENCE_ID_COLUMN+"=B."+MAPPING_REFERENCE_ID_COLUMN+
@@ -785,11 +787,18 @@ public class DsStorage implements AutoCloseable {
    
      
     /**
-     * TODO
+     * <p>
+     * Update all records that have referenceId but missing kalturaId.<br>
+     * If the mapping exist in the mapping table rerenceId <-> kalturaId, then the record will be updated with the kaltura.<br>
+     * If the mapping does not exist (yet), the record will not be updated with kaltura id.<br>
+     * <br>
+     * If many records needs to be updated this can take some time. 1M records is estimated to take 15 minutes. 
+     * </p>
+     *    
+     * @return Number of records that was enriched with kalturaId 
      */
    public int updateKalturaIdForRecords() throws Exception {
-
-      System.out.println(joinMissingKalturaIdStatement);
+      
 
       try (PreparedStatement stmt = connection.prepareStatement(joinMissingKalturaIdStatement)) {
 
@@ -802,7 +811,7 @@ public class DsStorage implements AutoCloseable {
                 String referenceId=rs.getString(MAPPING_REFERENCE_ID_COLUMN);
                 String kalturaId=rs.getString(MAPPING_KALTURA_ID_COLUMN);
                 
-                //Update the record with the kalturaId
+                //Update the record with the kalturaId.
                 updateKalturaIdForRecord(referenceId, kalturaId);
                 log.info("Updated kalturaid for record. id={}, referenceid={}, kalturaid{}", id,referenceId,kalturaId);                
                 updated++;

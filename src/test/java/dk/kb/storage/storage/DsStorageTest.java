@@ -217,7 +217,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     * |id1|referenceid1|     (null) |        (This can be enriched with kalturaid)
     * |id1|referenceid2|     (null) |        (this record needs to be enriched, but referenceid2 is not in the mapping table) 
     * |id3|null        |     (null) |        (this record can not be enriched with kalturaid, no referenceId)
-    * |id4|referenceid4|(kalturaid4)|        (this is already as kalturaid)
+    * |id4|referenceid4|(kalturaid4)|        (this  already has kalturaid)
     * 
     * MAPPING table:
     * |REFERENCEID | KALTURAID|
@@ -225,7 +225,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     * |referenceid1|kalturaid1|              (this mappen can be used to enrich record with id1)
     * |referenceid4|kalturaid4|              (no record that has referenceid4, so not used)
     *   
-    * This is the result of the SQL inner join, only one row is generated from about data structure
+    * This is the result of the SQL inner join, only one row is generated from data structure
     * 
     * JOIN-RESULT-SET
     * |ID| REFERENCEID | KALTURAID|
