@@ -190,7 +190,7 @@ public class DsStorage implements AutoCloseable {
 
 
     //Optimized SQL that finds missing KalturaIds on records table that have a referenceId but no kalturaId. Can take some time(minutes) first time if million of records miss kalturaId
-    //'INNER JOIN' will only return matched rows from both tables in involved unlike 'LEFT JOIN' that will return non-matched also. 
+    //'INNER JOIN' will only return matched rows from both table  unlike 'LEFT JOIN' that will return non-matched also. 
     //SELECT A.id, A.referenceid, B.kalturaid from ds_records A INNER JOIN ds_mapping B ON A.referenceid=B.referenceid WHERE  A.kalturaid IS NULL AND b.kalturaid IS NOT NULL         
     //Performance can be improved by double index (referenceId,kalturaId) but will come a cost when creating/updating records. 
     private static String joinMissingKalturaIdStatement = "SELECT A."+ID_COLUMN+", A."+RECORDS_REFERENCE_ID_COLUMN+", B."+MAPPING_KALTURA_ID_COLUMN+" FROM "+RECORDS_TABLE +
