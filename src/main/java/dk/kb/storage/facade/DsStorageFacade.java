@@ -128,7 +128,22 @@ public class DsStorageFacade {
         });
     }
     
-
+    
+    /**
+     * <p>
+     * Update all records that have referenceId but missing kalturaId.<br>
+     * If the mapping exist in the mapping table rerenceId <-> kalturaId, then the record will be updated with the kaltura.<br>
+     * If the mapping does not exist (yet), the record will not be updated with kaltura id.<br>
+     * <br>
+     * If many records needs to be updated this can take some time. 1M records is estimated to take 15 minutes. 
+     * </p>
+     *    
+     * @return Number of records that was enriched with kalturaId 
+     */
+    public static int updateKalturaIdForRecords() {
+       return performStorageAction("updateKalturaIdForRecords", DsStorage::updateKalturaIdForRecords);
+    }  
+    
     public static ArrayList<OriginCountDto> getOriginStatistics() {
         return performStorageAction("getOriginStatistics", DsStorage::getOriginStatictics);
     }

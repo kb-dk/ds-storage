@@ -307,6 +307,26 @@ paths:
 
 
 
+  /records/updateKalturaId:     
+    post:
+      tags:
+        - '${project.name}'    
+      summary: 'Update all records having a referenceIf with the matching Kaltura, if the mapping can be found in the mapping table'
+      description: >
+        Update all records having a referenceId with the matching kalturaId, if the mapping can be found in the mapping table. 
+        If many records needs to be updated this can take some time. Estimated 15 minutes for 1M records.
+        It is possible to update in batches if the mapping table is also updated in batches.                
+      operationId: updateKalturaIdForRecords
+          
+      responses:
+        '200':
+          description: The number of records that was enriched with kalturaId
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32        
+
   /mapping:
     get:
       tags:

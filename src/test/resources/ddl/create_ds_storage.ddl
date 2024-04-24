@@ -28,6 +28,6 @@ CREATE INDEX rt ON ds_records(recordtype);
 CREATE INDEX om ON ds_records (origin, mtime);
 CREATE INDEX orm ON ds_records (origin, recordtype, mtime);
 CREATE INDEX kref ON ds_records (referenceid);
-
+CREATE INDEX kalid ON ds_records (kalturaid);
 
 CREATE UNIQUE INDEX mapping_i ON ds_mapping(refrenceid);

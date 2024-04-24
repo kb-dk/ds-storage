@@ -29,5 +29,6 @@ CREATE INDEX IF NOT EXISTS rt ON ds_records(recordtype);
 CREATE INDEX IF NOT EXISTS om ON ds_records (origin, mtime);
 CREATE INDEX IF NOT EXISTS orm ON ds_records (origin, recordtype, mtime);
 CREATE INDEX IF NOT EXISTS kref ON ds_records (referenceid);
+CREATE INDEX IF NOT EXISTS kalid ON ds_records (kalturaid);
 
 CREATE UNIQUE INDEX IF NOT EXISTS mapping_i ON ds_mapping(referenceid);

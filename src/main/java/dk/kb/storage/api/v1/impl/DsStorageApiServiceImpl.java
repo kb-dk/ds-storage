@@ -311,6 +311,10 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             throw handleException(e);
         }        
     }
-  
+    @Override
+    public Integer updateKalturaIdForRecords() {
+        log.debug("updateKalturaIdForRecords() called with call details: {}", getCallDetails());
+        return DsStorageFacade.updateKalturaIdForRecords();        
+    }  
 
 }
