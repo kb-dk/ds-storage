@@ -108,6 +108,7 @@ public class DsStorageFacade {
                  
                 //If new record has a referenceId that does not match old one, clear the old kalturaId since it will be a new stream.
                 if (record.getKalturaId()== null && record.getReferenceId()  != null && !record.getReferenceId().equals(oldRecord.getReferenceId())) {
+                   System.out.println("clear kalturaId");
                     record.setKalturaId(null); //Notice kalturaId is reset if input record has a kalturaId, but this is not in current scenario                     
                 }                
                 
