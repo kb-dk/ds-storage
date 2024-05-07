@@ -123,8 +123,9 @@ public class DsStorageClient extends DsStorageApi {
             throws IOException {
         URI uri;
         try {
-            uri = new URIBuilder(serviceURI)
-                    .setPath("records")
+            uri = new URIBuilder(serviceURI + "records")
+                    // setPath overwrites paths given in serviceURI
+                    // .setPath("records")
                     .addParameter("origin", origin)
                     .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
                     .addParameter("maxRecords", Long.toString(maxRecords == null ? 10 : maxRecords))
@@ -158,8 +159,9 @@ public class DsStorageClient extends DsStorageApi {
             String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
         URI uri;
         try {
-            uri = new URIBuilder(serviceURI)
-                    .setPath("records")
+            uri = new URIBuilder(serviceURI + "records")
+                    // setPath overwrites paths given in serviceURI
+                    //.setPath("records")
                     .addParameter("origin", origin)
                     .addParameter("recordType", recordType.toString())
                     .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
