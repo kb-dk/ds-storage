@@ -79,7 +79,8 @@ public class DsStorage implements AutoCloseable {
             DATA_COLUMN + " = ? , "+                         
             MTIME_COLUMN + " = ? , "+
             DELETED_COLUMN + " = 0 , "+
-            RECORDS_REFERENCE_ID_COLUMN + " = ? , "+             
+            RECORDS_REFERENCE_ID_COLUMN + " = ? , "+
+            RECORDS_KALTURA_ID_COLUMN + " = ? , "+
             PARENT_ID_COLUMN + " = ?  "+            
             "WHERE "+
             ID_COLUMN + "= ?";
@@ -937,8 +938,9 @@ public class DsStorage implements AutoCloseable {
             stmt.setString(2, record.getData());
             stmt.setLong(3, nowStamp);          
             stmt.setString(4, record.getReferenceId());
-            stmt.setString(5, record.getParentId());
-            stmt.setString(6, record.getId());
+            stmt.setString(5, record.getKalturaId());
+            stmt.setString(6, record.getParentId());            
+            stmt.setString(7, record.getId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             String message = "SQL Exception in updateRecord with id:" + record.getId() + " error:" + e.getMessage();
