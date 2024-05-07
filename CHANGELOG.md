@@ -7,8 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [1.19](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.19) 2024-05-07
 ### Changed
-
 - Support for dynamically updating values in OpenAPI spec. [DRA-139](https://kb-dk.atlassian.net/browse/DRA-139).
 - Change configuration style to camelCase [DRA-431](https://kb-dk.atlassian.net/browse/DRA-431)
 - Changed Nexus used for deployment
