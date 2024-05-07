@@ -101,6 +101,42 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     }
 
+    
+    @Test
+    public void testClearKalturaId() throws Exception {
+        String id ="doms.radio:id1";
+        String origin="doms.radio";
+        String data = "Hello";       
+        String referenceId="referenceId_123";
+        String referenceIdUpdated="referenceId_123_updated";
+        String kalturaId="kalturaId";
+        RecordTypeDto recordType=RecordTypeDto.MANIFESTATION;
+        
+        DsRecordDto record = new DsRecordDto();
+        record.setId(id);
+        record.setOrigin(origin);
+        record.setData(data);
+
+        record.setRecordType(RecordTypeDto.MANIFESTATION);
+        record.setReferenceId(referenceId);
+        record.setKalturaId(kalturaId);
+        DsStorageFacade.createOrUpdateRecord(record);
+        
+        //See referenceId and kalturaId is set correct
+        DsRecordDto newCreatedRecord=DsStorageFacade.getRecordTree(id);
+        assertEquals(referenceId,newCreatedRecord.getReferenceId());
+        assertEquals(kalturaId,newCreatedRecord.getKalturaId());
+
+        //New update record, but the new record does not have kalturaId, but has a difference referenceId
+        record.setReferenceId(referenceIdUpdated);        
+        DsStorageFacade.createOrUpdateRecord(record);        
+        DsRecordDto updatedRecord=DsStorageFacade.getRecordTree(id);
+        //Test kalturaId is reset
+        System.out.println(updatedRecord.getKalturaId());
+        assertNull(updatedRecord.getKalturaId());
+            
+    }
+    
     @Test
     public void testUnknownOrigin() throws Exception {
         String id ="unkown.origin:id1";
