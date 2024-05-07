@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support for dynamically updating values in OpenAPI spec. [DRA-139](https://kb-dk.atlassian.net/browse/DRA-139).
 - Change configuration style to camelCase [DRA-431](https://kb-dk.atlassian.net/browse/DRA-431)
+- Changed Nexus used for deployment
 
 ## Added
 - Added sample config files and documentation to distribution tar archive. [DRA-417](https://kb-dk.atlassian.net/browse/DRA-417)
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Switch from Jersey to Apache URI Builder to handle parameters containing '{' [DRA-338](https://kb-dk.atlassian.net/browse/DRA-338)
 - Correct resolving of maven build time in project properties. [DRA-417](https://kb-dk.atlassian.net/browse/DRA-417)
+- Wrongly defined URIs in the client.
 
 ## [1.18](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.18) 2024-03-08
 
