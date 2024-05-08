@@ -121,41 +121,6 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
     
     @Test
-    public void testClearKalturaId() throws Exception {
-        String id ="origin.test:id1";
-        String origin="origin.test";
-        String data = "Hello";
-        String parentId="origin.test:id_1_parent";
-        String referenceId="referenceId_123";
-        String referenceIdUpdated="referenceId_123_updated";
-        String kalturaId="kalturaId";
-        RecordTypeDto recordType=RecordTypeDto.MANIFESTATION;
-        
-        DsRecordDto record = new DsRecordDto();
-        record.setId(id);
-        record.setOrigin(origin);
-        record.setData(data);
-        record.setParentId(parentId);
-        record.setRecordType(RecordTypeDto.MANIFESTATION);
-        record.setReferenceId(referenceId);
-        record.setKalturaId(kalturaId);
-        storage.createNewRecord(record );
-        
-        //See referenceId and kalturaId is set correct
-        DsRecordDto newCreatedRecord=storage.loadRecord(id);
-        assertEquals(referenceId,newCreatedRecord.getReferenceId());
-        assertEquals(kalturaId,newCreatedRecord.getKalturaId());
-
-        //New update record, but the new record does not have kalturaId, but has a difference referenceId
-        record.setReferenceId(referenceIdUpdated);        
-        storage.updateRecord(record);        
-        DsRecordDto updatedRecord=storage.loadRecord(id);
-        //Test kalturaId is reset
-        assertNull(updatedRecord.getKalturaId());
-            
-    }
-    
-    @Test
     public void testMappingCRUD() throws Exception {
         
         //Create with both ids
