@@ -105,11 +105,7 @@ public class DsStorageFacade {
             if (recordExists) {
                 //Have to load record to see if referenceId has changed. Then we need to clear kalturaId
                 DsRecordDto oldRecord = storage.loadRecord(record.getId());
-                
-                System.out.println("new kal id:"+record.getKalturaId());
-                System.out.println("newRef:"+record.getReferenceId());
-                System.out.println("oldRef:"+oldRecord.getReferenceId());
-                
+              
                 //Keep old kalturaId if referenceid is the same.
                  if (record.getKalturaId() == null && record.getReferenceId() != null && !record.getReferenceId().equals(oldRecord.getReferenceId())) {                   
                     record.setKalturaId(oldRecord.getKalturaId());                      
