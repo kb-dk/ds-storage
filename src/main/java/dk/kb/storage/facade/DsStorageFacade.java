@@ -105,13 +105,15 @@ public class DsStorageFacade {
             if (recordExists) {
                 //Have to load record to see if referenceId has changed. Then we need to clear kalturaId
                 DsRecordDto oldRecord = storage.loadRecord(record.getId());
-                 
-                //If new record has a referenceId that does not match old one, clear the old kalturaId since it will be a new stream.
-                if (record.getKalturaId()== null && record.getReferenceId()  != null && !record.getReferenceId().equals(oldRecord.getReferenceId())) {
-                   System.out.println("clear kalturaId");
-                    record.setKalturaId(null); //Notice kalturaId is reset if input record has a kalturaId, but this is not in current scenario                     
-                }                
                 
+                System.out.println("new kal id:"+record.getKalturaId());
+                System.out.println("newRef:"+record.getReferenceId());
+                System.out.println("oldRef:"+oldRecord.getReferenceId());
+                
+                //Keep old kalturaId if referenceid is the same.
+                 if (record.getKalturaId() == null && record.getReferenceId() != null && !record.getReferenceId().equals(oldRecord.getReferenceId())) {                   
+                    record.setKalturaId(oldRecord.getKalturaId());                      
+                 }                                
                 log.info("Updating record with id:"+record.getId());
                 storage.updateRecord(record);
             } else {               
