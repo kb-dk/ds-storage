@@ -103,14 +103,13 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     
     @Test
-    public void testClearKalturaId() throws Exception {
+    public void testKeepKalturaId() throws Exception {
         String id ="doms.radio:id1";
         String origin="doms.radio";
         String data = "Hello";       
         String referenceId="referenceId_123";
         String referenceIdUpdated="referenceId_123_updated";
-        String kalturaId="kalturaId";
-        RecordTypeDto recordType=RecordTypeDto.MANIFESTATION;
+        String kalturaId="kalturaId";        
         
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
@@ -129,12 +128,10 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
         //New update record, but the new record does not have kalturaId, but has a difference referenceId
         record.setReferenceId(referenceIdUpdated);        
+        record.setKalturaId(null); //blank, but updated post will still have old value
         DsStorageFacade.createOrUpdateRecord(record);        
         DsRecordDto updatedRecord=DsStorageFacade.getRecordTree(id);
-        //Test kalturaId is reset
-        System.out.println(updatedRecord.getKalturaId());
-        assertNull(updatedRecord.getKalturaId());
-            
+        assertEquals(kalturaId,updatedRecord.getKalturaId());            
     }
     
     @Test
