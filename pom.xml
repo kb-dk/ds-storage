@@ -111,6 +111,30 @@
         <project.package>dk.kb.storage</project.package>
     </properties>
 
+    <profiles>
+        <profile>
+            <id>unitTestsOnly</id>
+            <properties>
+                <test.excludedGroups>slow,blocked,integration</test.excludedGroups>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>integrationTests</id>
+            <properties>
+                <test.excludedGroups>slow,blocked</test.excludedGroups>
+            </properties>
+        </profile>
+        <profile>
+            <id>allTests</id>
+            <properties>
+                <test.excludedGroups>blocked</test.excludedGroups>
+            </properties>
+        </profile>
+    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>dk.kb.util</groupId>
