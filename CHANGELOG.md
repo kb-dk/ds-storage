@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
-## [1.19](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.19) 2024-05-07
+## [1.19](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.19) 2024-05-10
 ### Changed
 - Support for dynamically updating values in OpenAPI spec. [DRA-139](https://kb-dk.atlassian.net/browse/DRA-139).
 - Change configuration style to camelCase [DRA-431](https://kb-dk.atlassian.net/browse/DRA-431)
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New service method  (record/updateKalturaId) to update the kalturaId for a record. Both create new record and update record will set the kalturareferenceid. [DRA-314](https://kb-dk.atlassian.net/browse/DRA-314)
 - new service method (records/updateKalturaId) that updates kalturaId for all records that have referenceId and no Kaltura, given the mapping reference<-> KalturaId is found in mapping table.
 - Added two new fields to record: kalturareferenceid and kalturainternalid. The kaltura internal id is required by the frontend for thumbnails and streaming. [DRA-314](https://kb-dk.atlassian.net/browse/DRA-314)
-
+- Added profiles to POM
 
 ### Fixed
 - Switch from Jersey to Apache URI Builder to handle parameters containing '{' [DRA-338](https://kb-dk.atlassian.net/browse/DRA-338)
