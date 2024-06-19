@@ -2,14 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.sbforge</groupId>
-        <artifactId>sbforge-parent</artifactId>
-        <version>25</version>
+        <groupId>dk.statsbiblioteket.sbprojects</groupId>
+        <artifactId>sbprojects-parent</artifactId>
+        <version>80</version>
     </parent>
 
     <groupId>dk.kb.storage</groupId>
     <artifactId>ds-storage</artifactId>
-    <version>1.19-SNAPSHOT</version>
+    <version>1.20-SNAPSHOT</version>
     <packaging>war</packaging>
     <description>
     # Ds-storage(Digitale Samlinger) by the Royal Danish Library. 
@@ -308,6 +308,12 @@
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.jaxrs/jackson-jaxrs-json-provider -->
 
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version> <!-- or the latest version -->
+        </dependency>
+
 
     </dependencies>
 
@@ -558,6 +564,9 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>10.0.12</version>
                 <configuration>
+                    <deployMode>FORK</deployMode>
+                    <jvmArgs>-Xmx1g -Djetty.port=9072</jvmArgs>
+                    <jettyXmls>${project.basedir}/target/jetty-res/jetty-env.xml</jettyXmls>
                     <useTestScope>true</useTestScope>
                     <!-- https://www.eclipse.org/jetty/documentation/jetty-10/programming-guide/index.html#jetty-run-goal -->
                     <!-- https://stackoverflow.com/questions/12493798/jetty-maven-plugin-using-scan -->
@@ -567,9 +576,6 @@
                         <descriptor>${project.basedir}/target/${project.build.finalName}/WEB-INF/web.xml</descriptor>
                         <jettyEnvXml>${project.basedir}/target/jetty-res/jetty-env.xml</jettyEnvXml>
                     </webApp>
-                    <httpConnector>
-                        <port>9072</port>
-                    </httpConnector>
                 </configuration>
             </plugin>
             <plugin>
