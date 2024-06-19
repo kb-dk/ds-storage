@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
@@ -31,6 +32,27 @@ import dk.kb.util.webservice.exception.NotFoundServiceException;
 public class DsStorageFacade {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorageFacade.class);
+
+
+    /**
+     * <p>
+     * Get a list of records after a given mTime. The records will only have fields
+     * id,mTime,referenceid and kalturaid defined 
+     * </p>
+     *
+     *@param origin The origin to fetch records drom
+     *@param mTime only fetch records with mTime larger that this
+     *@param batchSize Number of maximum records to return
+     *
+     * @return List of records only have fields id,mTime,referenceid and kalturaid
+     */
+    public static  ArrayList<DsRecordReferenceIdDto>  getReferenceIds(String origin, long mTime, int batchSize)  {                       
+        String id = String.format(Locale.ROOT, "getReferenceIdr(origin='%s', mTime=%d, batchSize=%d)", origin, mTime, batchSize);
+        return performStorageAction(id, storage -> {             
+            return storage.getReferenceIds(origin, mTime, batchSize);   
+        });
+    }    
+    
 
     
     /**

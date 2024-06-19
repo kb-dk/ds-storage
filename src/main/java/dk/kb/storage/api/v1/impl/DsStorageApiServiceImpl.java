@@ -318,10 +318,12 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         return DsStorageFacade.updateKalturaIdForRecords();        
     }
     
+        
     @Override
-    public DsRecordReferenceIdDto referenceIds(String origin, Integer batchsize, Long mTime) {
-        // TODO Auto-generated method stub
-        return null;
-    }  
+    public List<DsRecordReferenceIdDto> referenceIds(String origin, Integer batchsize, Long mTime) {    
+        log.debug("referenceIds called with call details: {}", getCallDetails());
+        return DsStorageFacade.getReferenceIds(origin,mTime,batchsize);
+    }
+    
 
 }

@@ -117,6 +117,51 @@ paths:
                 type: integer
                 format: int32
 
+
+  /record/referenceids:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Get a list of records having a referenceId after a given lastModified time'
+      description: >
+       Extract a list of records with a given batch size by origin and mTime larger than input.        
+        The records will only has the id,mTime,referenceId and kalturaId fields set.       
+      operationId: referenceIds
+      parameters:
+        - name: origin
+          in: query
+          description: 'The origin to extract records for'
+          required: true
+          schema:
+            type: string
+            example: "ds.tv"
+        - name: mTime
+          in: query
+          description: 'Only extract records after this mTime.'
+          required: false
+          schema:
+            type: integer
+            format: int64
+            example: 1701262548465000
+            default: 0
+        - name: batchsize
+          in: query
+          description: 'Number of records to extract.'
+          required: true
+          schema:
+            type: integer            
+            example: 500
+            default: 500
+     
+      responses:
+        '200':
+          description: 'List of DsRecordReferenceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DsRecordReferenceIdList'        
+
+
   /record/{id}:
     get:
       tags:
@@ -156,50 +201,7 @@ paths:
                 DSRecord:
                   $ref: '#/components/examples/GetDSRecord'
 
-  /record/referenceids:
-    get:
-      tags:
-        - '${project.name}'
-      summary: 'Get a list of records having a referenceId after a given lastModified time'
-      description: >
-       Extract a list of records with a given batch size by origin and mTime larger than input.        
-        The records will only has the id,mTime,referenceId and kalturaId fields set.       
-      operationId: referenceIds
-      parameters:
-        - name: origin
-          in: query
-          description: 'The origin to extract records for'
-          required: true
-          schema:
-            type: string
-            example: "ds.tv"
-        - name: mTime
-          in: query
-          description: 'Only extract records after this mTime.'
-          required: false
-          schema:
-            type: integer
-            format: int64
-            example: 1701262548465000
-            default: 0
-        - name: batchsize
-          in: query
-          description: 'Number of records to extract.'
-          required: true
-          schema:
-            type: integer            
-            example: 500
-            default: 500
-     
-      responses:
-        '200':
-          description: 'The DsRecord'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DsRecordReferenceId'        
-
-
+  
     delete:
       tags:
         - '${project.name}'
@@ -585,6 +587,13 @@ components:
       type: array
       items: 
         $ref: '#/components/schemas/DsRecord'
+
+    DsRecordReferenceIdList:
+      type: array
+      items: 
+        $ref: '#/components/schemas/DsRecordReferenceId'
+
+
 
     OriginList:
       type: array
