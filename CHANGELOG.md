@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New service method  (record/updateKalturaId) to update the kalturaId for a record. Both create new record and update record will set the kalturareferenceid. [DRA-314](https://kb-dk.atlassian.net/browse/DRA-314)
 - new service method (records/updateKalturaId) that updates kalturaId for all records that have referenceId and no Kaltura, given the mapping reference<-> KalturaId is found in mapping table.
 - Added two new fields to record: kalturareferenceid and kalturainternalid. The kaltura internal id is required by the frontend for thumbnails and streaming. [DRA-314](https://kb-dk.atlassian.net/browse/DRA-314)
+- Added new API method (/record/referenceids) to extract records with a minimum of fields. Is used to enrich kalturaid data from referenceId
 
 
 ### Fixed

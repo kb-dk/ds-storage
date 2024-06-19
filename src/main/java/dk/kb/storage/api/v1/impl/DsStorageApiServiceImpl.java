@@ -4,6 +4,7 @@ import dk.kb.storage.api.v1.DsStorageApi;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
@@ -315,6 +316,12 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     public Integer updateKalturaIdForRecords() {
         log.debug("updateKalturaIdForRecords() called with call details: {}", getCallDetails());
         return DsStorageFacade.updateKalturaIdForRecords();        
+    }
+    
+    @Override
+    public DsRecordReferenceIdDto referenceIds(String origin, Integer batchsize, Long mTime) {
+        // TODO Auto-generated method stub
+        return null;
     }  
 
 }
