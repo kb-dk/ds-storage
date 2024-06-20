@@ -5,9 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## Added
+- Added new API method (/record/referenceids) to extract records with a minimum of fields. Is used to enrich kalturaid data from referenceId
+
 
 
 ## [1.19](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.19) 2024-05-10
+
 ### Changed
 - Support for dynamically updating values in OpenAPI spec. [DRA-139](https://kb-dk.atlassian.net/browse/DRA-139).
 - Change configuration style to camelCase [DRA-431](https://kb-dk.atlassian.net/browse/DRA-431)
@@ -22,10 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added two new fields to record: kalturareferenceid and kalturainternalid. The kaltura internal id is required by the frontend for thumbnails and streaming. [DRA-314](https://kb-dk.atlassian.net/browse/DRA-314)
 - Added profiles to POM
 
+
 ### Fixed
 - Switch from Jersey to Apache URI Builder to handle parameters containing '{' [DRA-338](https://kb-dk.atlassian.net/browse/DRA-338)
 - Correct resolving of maven build time in project properties. [DRA-417](https://kb-dk.atlassian.net/browse/DRA-417)
 - Wrongly defined URIs in the client.
+
+
 
 ## [1.18](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.18) 2024-03-08
 

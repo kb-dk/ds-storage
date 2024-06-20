@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -129,6 +130,21 @@ public class DsStorage implements AutoCloseable {
             " AND " + RECORDTYPE_COLUMN + "= ?" +
             " ORDER BY " + MTIME_COLUMN + " DESC";
 
+    
+    //SELECT id,mTime,referenceId,kalturaId FROM ds_records WHERE origin= 'ds.tv' and mTime > 0 ORDER BY mtime ASC LIMIT 50
+    private static final String referenceIdsStatement =
+            "SELECT " + MTIME_COLUMN + ", "
+                      + ID_COLUMN +","
+                      + MTIME_COLUMN+ " ,"
+                      + RECORDS_REFERENCE_ID_COLUMN +" ,"
+                      + RECORDS_KALTURA_ID_COLUMN                      
+                    + " FROM " + RECORDS_TABLE +
+            " WHERE " + ORIGIN_COLUMN + "= ?" +
+            " AND " + MTIME_COLUMN +" > ?" +
+            " ORDER BY " + MTIME_COLUMN + " ASC" +
+            " LIMIT ?";
+     
+    
     // TODO: Optimise this
     // The current implementation creates a temporary table
     // Alternative 1: Make a plain select and step through to the end
@@ -365,6 +381,46 @@ public class DsStorage implements AutoCloseable {
         return records; 
     }
 
+    
+
+    /**
+     * <p>
+     * Get a list of records after a given mTime. The records will only have fields
+     * id,mTime,referenceid and kalturaid defined 
+     * </p>
+     *
+     *@param origin The origin to fetch records from
+     *@param mTime only fetch records with mTime larger that this
+     *@param batchSize Number of maximum records to return
+     *
+     * @return List of records only have fields id,mTime,referenceid and kalturaid
+     */
+    public ArrayList<DsRecordReferenceIdDto> getReferenceIds(String origin, long mTime, int batchSize) throws SQLException {
+
+        if (batchSize <1 || batchSize > 100000) { //No doom switch
+            throw new InvalidArgumentServiceException("Batchsize must be in range 1 to 100000");          
+        }
+        ArrayList<DsRecordReferenceIdDto> records = new ArrayList<DsRecordReferenceIdDto>();
+        try (PreparedStatement stmt = connection.prepareStatement(referenceIdsStatement)) {
+
+            stmt.setString(1, origin);
+            stmt.setLong(2, mTime);
+            stmt.setLong(3, batchSize);
+                        
+            try (ResultSet rs = stmt.executeQuery();) {
+                while (rs.next()) {
+                    DsRecordReferenceIdDto  record = createRecordReferenceIdFromRS(rs);
+                    records.add(record);
+                }
+            }
+        }
+        catch(Exception e) {
+            throw new SQLException("SQL error getReferenceIds",e);
+        }
+
+        return records; 
+    }
+    
     /**
      * Extract max {@code record.mTime} in {@code origin}.
      * @param origin only records from the {@code origin} will be inspected.
@@ -1018,11 +1074,26 @@ public class DsStorage implements AutoCloseable {
         return record;
     }
 
+    
+    private static DsRecordReferenceIdDto createRecordReferenceIdFromRS(ResultSet rs) throws SQLException {
+        String id = rs.getString(ID_COLUMN);                              
+        long mTime = rs.getLong(MTIME_COLUMN);
+        String referenceId = rs.getString(RECORDS_REFERENCE_ID_COLUMN);
+        String kalturaId = rs.getString(RECORDS_KALTURA_ID_COLUMN);
+        
+        DsRecordReferenceIdDto record = new DsRecordReferenceIdDto();
+        record.setId(id);                        
+        record.setmTime(mTime);        
+        record.setReferenceId(referenceId);
+        record.setKalturaId(kalturaId);        
+        return record;
+    }
+
+    
     private static int boolToInt(Boolean isTrue) {
         if (isTrue == null) {
             return 0;
         }
-
         return isTrue ? 1 : 0;
     }
     

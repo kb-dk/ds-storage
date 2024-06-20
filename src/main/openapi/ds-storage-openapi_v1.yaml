@@ -117,6 +117,51 @@ paths:
                 type: integer
                 format: int32
 
+
+  /record/referenceids:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Get a list of records having a referenceId after a given lastModified time'
+      description: >
+       Extract a list of records with a given batch size by origin and mTime larger than input.        
+        The records will only has the id,mTime,referenceId and kalturaId fields set.       
+      operationId: referenceIds
+      parameters:
+        - name: origin
+          in: query
+          description: 'The origin to extract records for'
+          required: true
+          schema:
+            type: string
+            example: "ds.tv"
+        - name: mTime
+          in: query
+          description: 'Only extract records after this mTime.'
+          required: false
+          schema:
+            type: integer
+            format: int64
+            example: 1701262548465000
+            default: 0
+        - name: batchsize
+          in: query
+          description: 'Number of records to extract.'
+          required: true
+          schema:
+            type: integer            
+            example: 500
+            default: 500
+     
+      responses:
+        '200':
+          description: 'List of DsRecordReferenceId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DsRecordReferenceIdList'        
+
+
   /record/{id}:
     get:
       tags:
@@ -156,6 +201,7 @@ paths:
                 DSRecord:
                   $ref: '#/components/examples/GetDSRecord'
 
+  
     delete:
       tags:
         - '${project.name}'
@@ -501,6 +547,28 @@ components:
           type: string
           description: 'The Kaltura  ID for the record. It can be null even if the record is Kaltura but the mapping has not been updated yet.  '
                                                         
+    DsRecordReferenceId:
+      type: object
+      required:
+        - id
+        - origin
+        - recordType
+      properties:
+        id:
+          type: string
+          description: 'Unique identifier for the record. Id must start with the origin followed by : See module description for more about ID naming convention'
+        mTime:
+          type: integer
+          format: int64
+          description: 'Modification time for last create or update of the record. Format is milliseconds since Epoch with 3 added digits . When a record is updated, mTime for parent and child records can also be updated due to updatestrategy defined for that origin.'
+        referenceId:
+          type: string
+          description: 'The referenceId given when uploading the record to Kaltura. This field is only used for records that has a file associated intended streaming.'
+        kalturaId:
+          type: string
+          description: 'The Kaltura  ID for the record. It can be null even if the record is Kaltura but the mapping has not been updated yet.  '
+
+
 
     Mapping:
       type: object
@@ -519,6 +587,13 @@ components:
       type: array
       items: 
         $ref: '#/components/schemas/DsRecord'
+
+    DsRecordReferenceIdList:
+      type: array
+      items: 
+        $ref: '#/components/schemas/DsRecordReferenceId'
+
+
 
     OriginList:
       type: array

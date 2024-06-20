@@ -1,6 +1,7 @@
 package dk.kb.storage.storage;
 
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -156,7 +157,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         mappingDto1.setKalturaId(kalturaId1Updated);
         storage.updateMapping(mappingDto1);
         MappingDto map1Updated = storage.getMappingByReferenceId(id1); //load again
-        assertEquals(kalturaId1Updated,map1Updated.getKalturaId());                
+        assertEquals(kalturaId1Updated,map1Updated.getKalturaId());                        
         
     }
         
@@ -216,9 +217,9 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     * |ID |REFERENCEID |KALTURAID
     * -------------------------------
     * |id1|referenceid1|     (null) |        (This can be enriched with kalturaid)
-    * |id1|referenceid2|     (null) |        (this record needs to be enriched, but referenceid2 is not in the mapping table) 
+    * |id2|referenceid2|     (null) |        (this record needs to be enriched, but referenceid2 is not in the mapping table) 
     * |id3|null        |     (null) |        (this record can not be enriched with kalturaid, no referenceId)
-    * |id4|referenceid4|(kalturaid4)|        (this  already has kalturaid)
+    * |id4|referenceid4| kalturaid4 |        (this  already has kalturaid)
     * 
     * MAPPING table:
     * |REFERENCEID | KALTURAID|
@@ -253,7 +254,33 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         
         //load record1 and see kalturaid is now set
         DsRecordDto recordAfter = storage.loadRecord(recordId);
-        assertEquals("kalturaid1",recordAfter.getKalturaId());        
+        assertEquals("kalturaid1",recordAfter.getKalturaId()); 
+        
+        
+        //batch over records and records are extract with correct values              
+        ArrayList<DsRecordReferenceIdDto> records = storage.getReferenceIds("test_origin1", 0, 10);
+        
+        //records order are id2,id3,id4,id1  (since id1 was modified it is last)
+        DsRecordReferenceIdDto id2 = records.get(0);        
+        assertEquals("id2",id2.getId());
+        assertEquals("referenceid2",id2.getReferenceId());
+        assertNull(id2.getKalturaId());
+        
+        DsRecordReferenceIdDto id3 = records.get(1);        
+        assertEquals("id3",id3.getId());
+        assertNull(id3.getReferenceId());
+        assertNull(id3.getKalturaId());
+        
+        DsRecordReferenceIdDto id4 = records.get(2);        
+        assertEquals("id4",id4.getId());
+        assertEquals("referenceid4",id4.getReferenceId());
+        assertEquals("kalturaid4",id4.getKalturaId());
+                
+        DsRecordReferenceIdDto id1 = records.get(3);        
+        assertEquals("id1",id1.getId());        
+        assertEquals("referenceid1",id1.getReferenceId());
+        assertEquals("kalturaid1",id1.getKalturaId());   
+        assertTrue(id1.getmTime()>0L);
     }
 
     @Test

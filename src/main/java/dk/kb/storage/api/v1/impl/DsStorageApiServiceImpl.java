@@ -4,6 +4,7 @@ import dk.kb.storage.api.v1.DsStorageApi;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
@@ -315,6 +316,27 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     public Integer updateKalturaIdForRecords() {
         log.debug("updateKalturaIdForRecords() called with call details: {}", getCallDetails());
         return DsStorageFacade.updateKalturaIdForRecords();        
-    }  
+    }
+    
+        
+    
+    /**
+    * <p>
+    * Get a list of records after a given mTime. The records will only have fields
+    * id,mTime,referenceid and kalturaid defined 
+    * </p>
+    *
+    * @param origin The origin to fetch records drom    
+    * @param batchSize Number of maximum records to return
+    * @param mTime only fetch records with mTime larger that this
+    *
+    * @return List of records only have fields id,mTime,referenceid and kalturaid
+    */
+    @Override
+    public List<DsRecordReferenceIdDto> referenceIds(String origin, Integer batchsize, Long mTime) {    
+        log.debug("referenceIds called with call details: {}", getCallDetails());
+        return DsStorageFacade.getReferenceIds(origin,mTime,batchsize);
+    }
+    
 
 }
