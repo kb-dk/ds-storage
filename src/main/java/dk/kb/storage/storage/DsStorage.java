@@ -389,16 +389,16 @@ public class DsStorage implements AutoCloseable {
      * id,mTime,referenceid and kalturaid defined 
      * </p>
      *
-     *@param origin The origin to fetch records drom
+     *@param origin The origin to fetch records from
      *@param mTime only fetch records with mTime larger that this
      *@param batchSize Number of maximum records to return
      *
      * @return List of records only have fields id,mTime,referenceid and kalturaid
      */
-    public ArrayList<DsRecordReferenceIdDto> getReferenceIds(String origin, long mTime, int batchSize) throws Exception {
+    public ArrayList<DsRecordReferenceIdDto> getReferenceIds(String origin, long mTime, int batchSize) throws SQLException {
 
         if (batchSize <1 || batchSize > 100000) { //No doom switch
-            throw new Exception("Batchsize must be in range 1 to 100000");          
+            throw new InvalidArgumentServiceException("Batchsize must be in range 1 to 100000");          
         }
         ArrayList<DsRecordReferenceIdDto> records = new ArrayList<DsRecordReferenceIdDto>();
         try (PreparedStatement stmt = connection.prepareStatement(referenceIdsStatement)) {
@@ -415,7 +415,7 @@ public class DsStorage implements AutoCloseable {
             }
         }
         catch(Exception e) {
-            throw new Exception("SQL error getReferenceIds",e);
+            throw new SQLException("SQL error getReferenceIds",e);
         }
 
         return records; 

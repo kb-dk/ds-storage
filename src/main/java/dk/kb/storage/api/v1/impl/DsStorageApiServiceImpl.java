@@ -319,6 +319,19 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     }
     
         
+    
+    /**
+    * <p>
+    * Get a list of records after a given mTime. The records will only have fields
+    * id,mTime,referenceid and kalturaid defined 
+    * </p>
+    *
+    * @param origin The origin to fetch records drom    
+    * @param batchSize Number of maximum records to return
+    * @param mTime only fetch records with mTime larger that this
+    *
+    * @return List of records only have fields id,mTime,referenceid and kalturaid
+    */
     @Override
     public List<DsRecordReferenceIdDto> referenceIds(String origin, Integer batchsize, Long mTime) {    
         log.debug("referenceIds called with call details: {}", getCallDetails());

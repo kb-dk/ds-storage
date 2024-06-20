@@ -47,7 +47,7 @@ public class DsStorageFacade {
      * @return List of records only have fields id,mTime,referenceid and kalturaid
      */
     public static  ArrayList<DsRecordReferenceIdDto>  getReferenceIds(String origin, long mTime, int batchSize)  {                       
-        String id = String.format(Locale.ROOT, "getReferenceIdr(origin='%s', mTime=%d, batchSize=%d)", origin, mTime, batchSize);
+        String id = String.format(Locale.ROOT, "getReferenceIds(origin='%s', mTime=%d, batchSize=%d)", origin, mTime, batchSize);
         return performStorageAction(id, storage -> {             
             return storage.getReferenceIds(origin, mTime, batchSize);   
         });
