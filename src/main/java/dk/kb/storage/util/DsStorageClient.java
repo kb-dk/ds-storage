@@ -16,8 +16,10 @@ package dk.kb.storage.util;
 
 import dk.kb.storage.client.v1.DsStorageApi;
 import dk.kb.storage.invoker.v1.ApiClient;
+import dk.kb.storage.invoker.v1.ApiException;
 import dk.kb.storage.invoker.v1.Configuration;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.util.webservice.exception.InternalServiceException;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
@@ -29,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -64,6 +67,26 @@ public class DsStorageClient extends DsStorageApi {
         log.info("Created OpenAPI client for '" + serviceURI + "'");
     }
 
+    
+    /**
+     * <p>
+     * Get a list of records having a referenceId after a given lastModified time
+     * Extract a list of records with a given batch size by origin and mTime larger than input. 
+     * The records will only has the id,mTime,referenceId and kalturaId fields set.         
+     * <p/>
+     *  
+     *  @param origin The Origin to extract records from
+     *  @param batchSize How many records to fetch.
+     *  @param mTimeFrom Only retrieve records after mTimeFrom
+     * 
+     * @throws ApiException  
+     * 
+     */
+    public List<DsRecordReferenceIdDto> getDsRecordsReferenceIdModifiedAfter(String origin,int batchSize,long mTimeFrom) throws ApiException {        
+       return super.referenceIds(origin, batchSize,mTimeFrom);                
+    }
+    
+    
     /**
      * Call the remote ds-storage {@link #getRecordsModifiedAfter} and return the response in the form of a Stream 
      * of records.
