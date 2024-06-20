@@ -6,9 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ## Added
+
+
+## [1.21](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.19) 2024-06-20
+## Added
 - Added new API method (/record/referenceids) to extract records with a minimum of fields. Is used to enrich kalturaid data from referenceId
-
-
 
 ## [1.19](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.19) 2024-05-10
 
