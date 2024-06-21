@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ## Added
 
+## Changed
+- Bumped kb-util version to improve YAML logging.
 
 ## [1.21](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.19) 2024-06-20
 ## Added
