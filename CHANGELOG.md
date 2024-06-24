@@ -5,10 +5,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [1.22](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.22) 2024-06-24
+
 ## Added
 - Added createMapping method (referenceid <-> kalturaId) to client.
 
-## [1.21](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.19) 2024-06-20
+## Changed
+- Bumped kb-util version to improve YAML logging.
+
+
+## [1.21](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.21) 2024-06-20
 ## Added
 - Added new API method (/record/referenceids) to extract records with a minimum of fields. Is used to enrich kalturaid data from referenceId
 
