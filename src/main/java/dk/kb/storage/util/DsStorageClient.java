@@ -20,6 +20,7 @@ import dk.kb.storage.invoker.v1.ApiException;
 import dk.kb.storage.invoker.v1.Configuration;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
+import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.util.webservice.exception.InternalServiceException;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
@@ -68,6 +69,20 @@ public class DsStorageClient extends DsStorageApi {
     }
 
     
+    /**
+     * <p>
+     * If the mapping does not exist a new entry will be created in the mapping table.<br>
+     * The referenceid can not be null, but kalturaId can be null.<br>
+     * If the mapping already exist for the referenceid, the kalturaId value will be updated
+     * </p>
+     * 
+     * @param mappingDto The mapping entry to be create or updated
+     * 
+     */
+    public void updateMappings(MappingDto mapping) throws ApiException {               
+       super.mappingPost(mapping);                       
+    }
+            
     /**
      * <p>
      * Get a list of records having a referenceId after a given lastModified time
