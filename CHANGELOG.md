@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [2.0.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.0.0) 2024-07-01
+- Bumped version to fix x.y.z release format
+
 ## [1.22](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-1.22) 2024-06-24
 
 ## Added
