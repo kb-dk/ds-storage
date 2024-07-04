@@ -870,7 +870,7 @@ public class DsStorage implements AutoCloseable {
                 
                 //Update the record with the kalturaId.
                 updateKalturaIdForRecord(referenceId, kalturaId);
-                log.info("Updated kalturaid for record. id={}, referenceid={}, kalturaid{}", id,referenceId,kalturaId);                
+                log.info("Updated kalturaid for record. id={}, referenceid={}, kalturaid={}", id,referenceId,kalturaId);                
                 updated++;
               }
                            
