@@ -4,7 +4,7 @@ import dk.kb.storage.api.v1.DsStorageApi;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
+import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
@@ -327,15 +327,29 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     * </p>
     *
     * @param origin The origin to fetch records drom    
-    * @param batchSize Number of maximum records to return
+    * @param maxRecords Number of maximum records to return
     * @param mTime only fetch records with mTime larger that this
     *
     * @return List of records only have fields id,mTime,referenceid and kalturaid
     */
     @Override
-    public List<DsRecordReferenceIdDto> referenceIds(String origin, Integer batchsize, Long mTime) {    
+    public StreamingOutput getMinimalRecords(String origin, Integer maxRecords, Long mTime) {
         log.debug("referenceIds called with call details: {}", getCallDetails());
-        return DsStorageFacade.getReferenceIds(origin,mTime,batchsize);
+
+        // Both mTime and maxRecords defaults should be set in the OpenAPI YAML, but the current version of
+        // the OpenAPI generator does not support defaults for longs (int64)
+        long finalMTime = mTime == null ? 0L : mTime;
+        long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
+
+        long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin, finalMTime); //TODO Victor. Shouldnt this also use recordType when counting?
+        setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), recordsInOrigin);
+
+        return output -> {
+            try (ExportWriter writer = ExportWriterFactory.wrap(
+                    output, httpServletResponse, ExportWriterFactory.FORMAT.json, false, "records")) {
+                DsStorageFacade.getMinimalRecordsModifiedAfter(writer, origin, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
+            }
+        };
     }
     
 

@@ -17,6 +17,7 @@ package dk.kb.storage.integration;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.invoker.v1.ApiException;
 import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.util.DsStorageClient;
@@ -210,6 +211,31 @@ public class DsStorageClientTest {
             System.out.println(records.getResponseHeaders());
             assertEquals(3L, count, "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),"The highest modification time should be present");
+        }
+    }
+
+    @Test
+    public void testRemoteMinimalRecordsStream() throws IOException {
+        try (ContinuationStream<DsRecordMinimalDto, Long> records = remote.getDsRecordsMinimalModifiedAfterStream(
+                "ds.tv", 5, 0L)){
+            long count = records.count();
+
+            assertEquals(5L, count, "The requested number of records should be received");
+            assertNotNull(records.getContinuationToken(),"The highest modification time should be present");
+
+        }
+
+    }
+
+    @Test
+    public void testRemoteMinimalRecordsContent() throws IOException {
+        try (ContinuationInputStream recordsIS = remote.getMinimalRecordsModifiedAfterJSON(
+                "ds.tv", 0L, 10L)) {
+            String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
+            assertTrue(recordsStr.contains("\"id\":\"ds.tv:oai"),
+                    "At least 1 JSON block for a record should be returned");
+            // Minimal records shouldn't contain data
+            assertFalse(recordsStr.contains("\"data\":"));
         }
     }
 

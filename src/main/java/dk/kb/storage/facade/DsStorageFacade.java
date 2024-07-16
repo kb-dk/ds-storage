@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
+import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
@@ -46,12 +46,39 @@ public class DsStorageFacade {
      *
      * @return List of records only have fields id,mTime,referenceid and kalturaid
      */
-    public static  ArrayList<DsRecordReferenceIdDto>  getReferenceIds(String origin, long mTime, int batchSize)  {                       
+    public static  ArrayList<DsRecordMinimalDto>  getReferenceIds(String origin, long mTime, int batchSize)  {                       
         String id = String.format(Locale.ROOT, "getReferenceIds(origin='%s', mTime=%d, batchSize=%d)", origin, mTime, batchSize);
         return performStorageAction(id, storage -> {             
             return storage.getReferenceIds(origin, mTime, batchSize);   
         });
-    }    
+    }
+
+    public static Long getMinimalRecordsModifiedAfter(
+            ExportWriter writer, String origin, long mTime, long maxRecords, int batchSize) {
+        String id = String.format(Locale.ROOT, "getMinimalRecordsModifiedAfter(origin='%s', mTime=%d, maxRecords=%d, batchSize=%d)",
+                origin, mTime, maxRecords, batchSize);
+        long pending = maxRecords == -1 ? Long.MAX_VALUE : maxRecords; // -1 = all records
+        final AtomicLong lastMTime = new AtomicLong(mTime);
+        long totalDelivered = 0L;
+        while (pending > 0) {
+            int request = pending < batchSize ? (int) pending : batchSize;
+            long delivered = performStorageAction(id, storage -> {
+                ArrayList<DsRecordMinimalDto> records = storage.getReferenceIds(origin, lastMTime.get(), request);
+                writer.writeAll(records);
+                if (!records.isEmpty()) {
+                    lastMTime.set(records.get(records.size()-1).getmTime());
+                }
+                return (long)records.size();
+            });
+            if (delivered == 0) {
+                break;
+            }
+            pending -= delivered;
+            totalDelivered += delivered;
+        }
+        log.info("Delivered '{}' records", totalDelivered);
+        return totalDelivered;
+    }
     
 
     
