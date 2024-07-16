@@ -6,10 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.1.1) 2024-07-16
 ## Added
 - Added updateReferenceIdForReocrd method. The method is also added to the client.
 
-## [2.1.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.1.0) 2024-07-016
+## [2.1.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.1.0) 2024-07-16
 ### Changed
 - Refactored endpoint record/referenceId to records/minimal 
 - Updated client with a ContinuationStream method calling the endpoint records/minimal
