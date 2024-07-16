@@ -94,6 +94,13 @@ public class DsStorage implements AutoCloseable {
             RECORDS_REFERENCE_ID_COLUMN + "= ?";
     
 
+    private static String updateReferenceIdStatement = "UPDATE " + RECORDS_TABLE + " SET  "+ 
+            RECORDS_REFERENCE_ID_COLUMN + " = ? ,"+
+            MTIME_COLUMN + " = ?  "+
+            "WHERE "+
+            ID_COLUMN + "= ?";
+    
+
     private static String markRecordForDeleteStatement = "UPDATE " + RECORDS_TABLE + " SET  "+           
             DELETED_COLUMN + " = 1,  "+
             MTIME_COLUMN + " = ? "+
@@ -1021,6 +1028,23 @@ public class DsStorage implements AutoCloseable {
         }
 
     }
+    
+    public void updateReferenceIdForRecord(String recordId, String referenceId) throws Exception {
+        
+        long nowStamp = UniqueTimestampGenerator.next();      
+        try (PreparedStatement stmt = connection.prepareStatement(updateReferenceIdStatement)) {
+            stmt.setString(1, referenceId);
+            stmt.setLong(2, nowStamp);
+            stmt.setString(3, recordId);  
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            String message = "SQL Exception in updateReferenceIdForRecord for referenceId:" + referenceId + " error:" + e.getMessage();
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+
+    }
+    
     
     /* 
      * Convert a row in the mapping table to a mappingDto object. 

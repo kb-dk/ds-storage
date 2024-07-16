@@ -247,6 +247,30 @@ paths:
         '204':
           description: No Content - The request has been executed correct and the server did not deliver any content.
 
+  /record/updateReferenceId:
+    post:
+      tags:
+        - '${project.name}'    
+      summary: 'Update a record with referenceId '
+      description: 'Update a record with the referenceId. The referenceId is a value in the external system. For preservica origin it is the stream file name ' 
+      operationId: updateReferenceIdForRecord
+      parameters:
+        - name: recordId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: referenceId
+          in: query
+          required: true
+          schema:
+            type: string
+          
+      responses:
+        '204':
+          description: No Content - The request has been executed correct and the server did not deliver any content.
+
+  
   
   
   
