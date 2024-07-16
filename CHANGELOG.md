@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Refactored endpoint record/referenceId to records/minimal 
+- Updated client with a ContinuationStream method calling the endpoint records/minimal
+- Deprecated the client method getDsRecordsReferenceIdModifiedAfter
+
 
 ## [2.0.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.0.0) 2024-07-01
 - Bumped version to fix x.y.z release format
