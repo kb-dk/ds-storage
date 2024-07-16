@@ -82,12 +82,12 @@ public class DsStorageClient extends DsStorageApi {
     public void updateMappings(MappingDto mapping) throws ApiException {               
        super.mappingPost(mapping);                       
     }
-            
+
     /**
-     * <p>
+     * This method is deprecated. See: {@link #getDsRecordsMinimalModifiedAfterStream(String, int, long)}
      * Get a list of records having a referenceId after a given lastModified time
-     * Extract a list of records with a given batch size by origin and mTime larger than input. 
-     * The records will only has the id,mTime,referenceId and kalturaId fields set.         
+     * Extract a list of records with a given batch size by origin and mTime larger than input.
+     * The records will only have the id, mTime, referenceId and kalturaId fields set.
      * <p/>
      *  
      *  @param origin The Origin to extract records from
@@ -97,10 +97,10 @@ public class DsStorageClient extends DsStorageApi {
      * @throws ApiException  
      * 
      */
-    public List<DsRecordMinimalDto> getDsRecordsReferenceIdModifiedAfter(String origin,int batchSize,long mTimeFrom) throws ApiException {        
-       return super.getMinimalRecords(origin, batchSize,mTimeFrom);
+    @Deprecated
+    public List<DsRecordMinimalDto> getDsRecordsReferenceIdModifiedAfter(String origin,int batchSize,long mTimeFrom) throws ApiException {
+        return super.getMinimalRecords(origin, batchSize, mTimeFrom);
     }
-    
     
     /**
      * Call the remote ds-storage {@link #getRecordsModifiedAfter} and return the response in the form of a Stream 
@@ -210,6 +210,61 @@ public class DsStorageClient extends DsStorageApi {
                     "getRecordsModifiedAfterLocalTreeJSON(origin='%s', recordType='%s', mTime=%d, maxRecords=%d): " +
                             "Unable to construct URI",
                     origin, recordType, mTime, maxRecords);
+            log.warn(message, e);
+            throw new InternalServiceException(message);
+        }
+
+        log.debug("Opening streaming connection to '{}'", uri);
+        return ContinuationInputStream.from(uri, Long::valueOf);
+    }
+
+    /**
+     * Call the remote ds-storage {@link #getMinimalRecords(String, Integer, Long)} and return the response in the form of a Stream
+     * of records. Get a stream of minimal records having a referenceId after a given lastModified time. The records will only have the id, mTime, referenceId and kalturaId fields
+     * available.
+     * <p>
+     * The stream is unbounded by memory and gives access to the highest modification time (microseconds since
+     * Epoch 1970) for any record that will be delivered by the stream.
+     * <p>
+     * Important: Ensure that the returned stream is closed to avoid resource leaks.
+     * @param origin     the origin for the records.
+     * @param mTimeFrom      Exclusive start time for records to deliver:
+     *                   Epoch time in microseconds (milliseconds times 1000).
+     * @param maxRecords the maximum number of records to deliver. -1 means no limit.
+     * @return a stream of records from the remote ds-storage.
+     * @throws IOException if the connection to the remote ds-storage failed.
+     */
+    public ContinuationStream<DsRecordMinimalDto, Long> getDsRecordsMinimalModifiedAfterStream(String origin, int maxRecords, long mTimeFrom) throws IOException {
+        return getMinimalRecordsModifiedAfterJSON(origin, mTimeFrom, (long) maxRecords)
+                .stream(DsRecordMinimalDto.class);
+    }
+
+    /**
+     * Call the remote ds-storage {@link #getMinimalRecords} and return the JSON response unchanged as a wrapped bytestream.
+     * <p>
+     * Important: Ensure that the returned stream is closed to avoid resource leaks.
+     * @param origin     the origin for the records.
+     * @param mTime      exclusive start time for records to deliver:
+     *                   Epoch time in microseconds (milliseconds times 1000).
+     * @param maxRecords the maximum number of records to deliver. -1 means no limit.
+     * @return a raw bytestream with the response from the remote ds-storage.
+     * @throws IOException if the connection to the remote ds-storage failed.
+     */
+    public ContinuationInputStream<Long> getMinimalRecordsModifiedAfterJSON(String origin, Long mTime, Long maxRecords)
+            throws IOException {
+        URI uri;
+        try {
+            uri = new URIBuilder(serviceURI + "records/minimal")
+                    // setPath overwrites paths given in serviceURI
+                    // .setPath("records")
+                    .addParameter("origin", origin)
+                    .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
+                    .addParameter("maxRecords", Long.toString(maxRecords == null ? 10 : maxRecords))
+                    .build();
+        } catch (URISyntaxException e) {
+            String message = String.format(Locale.ROOT,
+                    "getMinimalRecordsModifiedAfterJSON(origin='%s', mTime=%d, maxRecords=%d): Unable to construct URI",
+                    origin, mTime, maxRecords);
             log.warn(message, e);
             throw new InternalServiceException(message);
         }
