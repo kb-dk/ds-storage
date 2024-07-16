@@ -97,7 +97,6 @@ public class DsStorageClient extends DsStorageApi {
      * @throws ApiException  
      * 
      */
-    @Deprecated
     public List<DsRecordMinimalDto> getDsRecordsReferenceIdModifiedAfter(String origin,int batchSize,long mTimeFrom) throws ApiException {
         return super.getMinimalRecords(origin, batchSize, mTimeFrom);
     }
