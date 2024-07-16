@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
+import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
@@ -46,12 +46,12 @@ public class DsStorageFacade {
      *
      * @return List of records only have fields id,mTime,referenceid and kalturaid
      */
-    public static  ArrayList<DsRecordReferenceIdDto>  getReferenceIds(String origin, long mTime, int batchSize)  {                       
+    public static  ArrayList<DsRecordMinimalDto>  getReferenceIds(String origin, long mTime, int batchSize)  {                       
         String id = String.format(Locale.ROOT, "getReferenceIds(origin='%s', mTime=%d, batchSize=%d)", origin, mTime, batchSize);
         return performStorageAction(id, storage -> {             
             return storage.getReferenceIds(origin, mTime, batchSize);   
         });
-    }    
+    }
     
 
     

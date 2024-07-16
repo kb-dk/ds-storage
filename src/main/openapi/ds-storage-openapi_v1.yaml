@@ -159,7 +159,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DsRecordReferenceIdList'        
+                $ref: '#/components/schemas/DsRecordMinimalList'
 
 
   /record/{id}:
@@ -547,7 +547,7 @@ components:
           type: string
           description: 'The Kaltura  ID for the record. It can be null even if the record is Kaltura but the mapping has not been updated yet.  '
                                                         
-    DsRecordReferenceId:
+    DsRecordMinimal:
       type: object
       required:
         - id
@@ -588,10 +588,10 @@ components:
       items: 
         $ref: '#/components/schemas/DsRecord'
 
-    DsRecordReferenceIdList:
+    DsRecordMinimalList:
       type: array
       items: 
-        $ref: '#/components/schemas/DsRecordReferenceId'
+        $ref: '#/components/schemas/DsRecordMinimal'
 
 
 

@@ -19,7 +19,7 @@ import dk.kb.storage.invoker.v1.ApiClient;
 import dk.kb.storage.invoker.v1.ApiException;
 import dk.kb.storage.invoker.v1.Configuration;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
+import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.util.webservice.exception.InternalServiceException;
@@ -76,7 +76,7 @@ public class DsStorageClient extends DsStorageApi {
      * If the mapping already exist for the referenceid, the kalturaId value will be updated
      * </p>
      * 
-     * @param mappingDto The mapping entry to be create or updated
+     * @param mapping The mapping entry to be created or updated
      * 
      */
     public void updateMappings(MappingDto mapping) throws ApiException {               
@@ -97,7 +97,7 @@ public class DsStorageClient extends DsStorageApi {
      * @throws ApiException  
      * 
      */
-    public List<DsRecordReferenceIdDto> getDsRecordsReferenceIdModifiedAfter(String origin,int batchSize,long mTimeFrom) throws ApiException {        
+    public List<DsRecordMinimalDto> getDsRecordsReferenceIdModifiedAfter(String origin,int batchSize,long mTimeFrom) throws ApiException {        
        return super.referenceIds(origin, batchSize,mTimeFrom);                
     }
     

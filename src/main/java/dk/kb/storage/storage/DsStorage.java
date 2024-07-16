@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
+import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -395,12 +395,12 @@ public class DsStorage implements AutoCloseable {
      *
      * @return List of records only have fields id,mTime,referenceid and kalturaid
      */
-    public ArrayList<DsRecordReferenceIdDto> getReferenceIds(String origin, long mTime, int batchSize) throws SQLException {
+    public ArrayList<DsRecordMinimalDto> getReferenceIds(String origin, long mTime, int batchSize) throws SQLException {
 
         if (batchSize <1 || batchSize > 100000) { //No doom switch
             throw new InvalidArgumentServiceException("Batchsize must be in range 1 to 100000");          
         }
-        ArrayList<DsRecordReferenceIdDto> records = new ArrayList<DsRecordReferenceIdDto>();
+        ArrayList<DsRecordMinimalDto> records = new ArrayList<DsRecordMinimalDto>();
         try (PreparedStatement stmt = connection.prepareStatement(referenceIdsStatement)) {
 
             stmt.setString(1, origin);
@@ -409,7 +409,7 @@ public class DsStorage implements AutoCloseable {
                         
             try (ResultSet rs = stmt.executeQuery();) {
                 while (rs.next()) {
-                    DsRecordReferenceIdDto  record = createRecordReferenceIdFromRS(rs);
+                    DsRecordMinimalDto  record = createRecordReferenceIdFromRS(rs);
                     records.add(record);
                 }
             }
@@ -1075,13 +1075,13 @@ public class DsStorage implements AutoCloseable {
     }
 
     
-    private static DsRecordReferenceIdDto createRecordReferenceIdFromRS(ResultSet rs) throws SQLException {
+    private static DsRecordMinimalDto createRecordReferenceIdFromRS(ResultSet rs) throws SQLException {
         String id = rs.getString(ID_COLUMN);                              
         long mTime = rs.getLong(MTIME_COLUMN);
         String referenceId = rs.getString(RECORDS_REFERENCE_ID_COLUMN);
         String kalturaId = rs.getString(RECORDS_KALTURA_ID_COLUMN);
         
-        DsRecordReferenceIdDto record = new DsRecordReferenceIdDto();
+        DsRecordMinimalDto record = new DsRecordMinimalDto();
         record.setId(id);                        
         record.setmTime(mTime);        
         record.setReferenceId(referenceId);

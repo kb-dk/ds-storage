@@ -1,7 +1,7 @@
 package dk.kb.storage.storage;
 
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.DsRecordReferenceIdDto;
+import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -258,25 +258,25 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         
         
         //batch over records and records are extract with correct values              
-        ArrayList<DsRecordReferenceIdDto> records = storage.getReferenceIds("test_origin1", 0, 10);
+        ArrayList<DsRecordMinimalDto> records = storage.getReferenceIds("test_origin1", 0, 10);
         
         //records order are id2,id3,id4,id1  (since id1 was modified it is last)
-        DsRecordReferenceIdDto id2 = records.get(0);        
+        DsRecordMinimalDto id2 = records.get(0);        
         assertEquals("id2",id2.getId());
         assertEquals("referenceid2",id2.getReferenceId());
         assertNull(id2.getKalturaId());
         
-        DsRecordReferenceIdDto id3 = records.get(1);        
+        DsRecordMinimalDto id3 = records.get(1);        
         assertEquals("id3",id3.getId());
         assertNull(id3.getReferenceId());
         assertNull(id3.getKalturaId());
         
-        DsRecordReferenceIdDto id4 = records.get(2);        
+        DsRecordMinimalDto id4 = records.get(2);        
         assertEquals("id4",id4.getId());
         assertEquals("referenceid4",id4.getReferenceId());
         assertEquals("kalturaid4",id4.getKalturaId());
                 
-        DsRecordReferenceIdDto id1 = records.get(3);        
+        DsRecordMinimalDto id1 = records.get(3);        
         assertEquals("id1",id1.getId());        
         assertEquals("referenceid1",id1.getReferenceId());
         assertEquals("kalturaid1",id1.getKalturaId());   
