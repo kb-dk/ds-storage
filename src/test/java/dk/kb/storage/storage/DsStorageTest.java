@@ -186,12 +186,13 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
     @Test
     public void testReferenceId() throws Exception {
+        String data="some data";
         String recordId="id_123";
         String referenceId="reference_123";        
         DsRecordDto record = new DsRecordDto();
         record.setId(recordId);
         record.setOrigin("origin_123");
-        record.setData("");        
+        record.setData(data);        
         record.setRecordType(RecordTypeDto.MANIFESTATION);        
         storage.createNewRecord(record );
         
@@ -201,6 +202,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         //Load and test referenceId is correct
         DsRecordDto recordUpdated = storage.loadRecord(recordId);
         assertEquals(referenceId,recordUpdated.getReferenceId());       
+        assertEquals(data,recordUpdated.getData());//Data not modified
     }
 
     
