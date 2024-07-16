@@ -184,6 +184,21 @@ public class DsStorageFacade {
         });
     }
     
+    /**
+     * Update reference id for a record. The referenceId is the id value for the record in the external system. For preservica referenceId is the name of the stream file.
+     * 
+     * @param recordId Id of the record to update
+     * @param reference The referenceId to set for the record
+     */
+    public static void updateReferenceIdForRecord(String recordId, String referenceId){
+         performStorageAction("updateKalturaIdForRecord(" + referenceId + ")", storage -> {
+         storage.updateReferenceIdForRecord(recordId,referenceId);         
+        return null;    // Something must be returned
+        });
+    }
+    
+    
+    
     
     /**
      * <p>

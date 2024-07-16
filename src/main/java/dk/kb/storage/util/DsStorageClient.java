@@ -272,6 +272,22 @@ public class DsStorageClient extends DsStorageApi {
         return ContinuationInputStream.from(uri, Long::valueOf);
     }
 
+    
+    /**
+     * Update the referenceId for a record <br>
+     * The referenceId is a id in the external system for the record. <br>
+     * For preservica records the referenceId is the name of the stream file.
+     *  
+     *  @param recordId Id of the record to update referenceId for
+     *  @param referenceId The referenceId to set for the record
+     * 
+     * @throws ApiException  
+     * 
+     */
+    public void updateReferenceIdForRecord(String recordId,String referenceId) throws ApiException {
+        super.updateReferenceIdForRecord(recordId, referenceId);
+    }
+    
     /**
      * Deconstruct the given URI and use the components to create an ApiClient.
      * @param serviceURIString an URI to a service.

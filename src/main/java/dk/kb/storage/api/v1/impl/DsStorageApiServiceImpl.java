@@ -292,6 +292,17 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             throw handleException(e);
         }
     }
+    
+    @Override
+    public void updateReferenceIdForRecord(String recordId, String referenceId) {
+        try {
+            log.debug("updateReferenceIdForRecord() called with call details: {}", getCallDetails());
+            DsStorageFacade.updateReferenceIdForRecord(recordId,referenceId);               
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+    
       
     @Override
     public void mappingPost(MappingDto mappingDto) {
