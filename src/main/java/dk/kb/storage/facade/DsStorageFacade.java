@@ -52,6 +52,33 @@ public class DsStorageFacade {
             return storage.getReferenceIds(origin, mTime, batchSize);   
         });
     }
+
+    public static Long getMinimalRecordsModifiedAfter(
+            ExportWriter writer, String origin, long mTime, long maxRecords, int batchSize) {
+        String id = String.format(Locale.ROOT, "getMinimalRecordsModifiedAfter(origin='%s', mTime=%d, maxRecords=%d, batchSize=%d)",
+                origin, mTime, maxRecords, batchSize);
+        long pending = maxRecords == -1 ? Long.MAX_VALUE : maxRecords; // -1 = all records
+        final AtomicLong lastMTime = new AtomicLong(mTime);
+        long totalDelivered = 0L;
+        while (pending > 0) {
+            int request = pending < batchSize ? (int) pending : batchSize;
+            long delivered = performStorageAction(id, storage -> {
+                ArrayList<DsRecordMinimalDto> records = storage.getReferenceIds(origin, lastMTime.get(), request);
+                writer.writeAll(records);
+                if (!records.isEmpty()) {
+                    lastMTime.set(records.get(records.size()-1).getmTime());
+                }
+                return (long)records.size();
+            });
+            if (delivered == 0) {
+                break;
+            }
+            pending -= delivered;
+            totalDelivered += delivered;
+        }
+        log.info("Delivered '{}' records", totalDelivered);
+        return totalDelivered;
+    }
     
 
     
