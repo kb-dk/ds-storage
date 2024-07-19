@@ -6,8 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- Removed non-resolvable git.tag from build.properties
+
 ## [2.1.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.1.1) 2024-07-16
-## Added
+### Added
 - Added updateReferenceIdForReocrd method. The method is also added to the client.
 
 ## [2.1.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.1.0) 2024-07-16
