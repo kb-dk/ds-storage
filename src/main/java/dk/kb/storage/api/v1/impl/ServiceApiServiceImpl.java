@@ -107,7 +107,6 @@ public class ServiceApiServiceImpl extends ImplBase implements ServiceApi {
                 .gitCommitChecksum(BuildInfoManager.getGitCommitChecksum())
                 .gitBranch(BuildInfoManager.getGitBranch())
                 .gitClosestTag(BuildInfoManager.getGitClosestTag())
-                .gitCurrentTag(BuildInfoManager.getGitCurrentTag())
                 .gitCommitTime(BuildInfoManager.getGitCommitTime())
                 .health("ok");
     }
