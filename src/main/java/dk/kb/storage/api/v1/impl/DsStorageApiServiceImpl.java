@@ -15,6 +15,7 @@ import dk.kb.util.webservice.stream.ExportWriter;
 import dk.kb.util.webservice.stream.ExportWriterFactory;
 import dk.kb.util.webservice.stream.ContinuationUtil;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.cxf.interceptor.InInterceptors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,7 @@ import java.util.List;
  * ds-storage by the Royal Danish Library
  *
  */
+@InInterceptors(interceptors = "dk.kb.storage.webservice.KBAuthorizationInterceptor")
 public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
 
     private Logger log = LoggerFactory.getLogger(this.toString());
