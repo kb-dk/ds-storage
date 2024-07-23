@@ -115,7 +115,7 @@
         <dependency>
             <groupId>dk.kb.util</groupId>
             <artifactId>kb-util</artifactId>
-            <version>1.5.5</version>
+            <version>1.5.9</version>
             <exclusions>
                 <exclusion>
                     <!-- kb-util has 2.3.3, but transitive resolving has 2.4.0 somewhere-->
@@ -208,6 +208,21 @@
                     <!-- The slf4j-simple logs to stderr and stdout, ignoring logback.xml -->
                     <artifactId>slf4j-simple</artifactId>
                     <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- OAuth  support -->
+        <!-- https://mvnrepository.com/artifact/org.keycloak/keycloak-core -->
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-core</artifactId>
+            <version>24.0.1</version>
+            <exclusions>
+                <exclusion>
+                    <!-- mockserver-junit-jupiter has 1.1, but transitive resolving has 1.2.2 somewhere-->
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

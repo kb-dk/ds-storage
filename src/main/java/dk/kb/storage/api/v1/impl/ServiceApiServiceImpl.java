@@ -6,8 +6,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
-import dk.kb.storage.model.v1.StatusDto;
+import java.util.Set;
 
+import dk.kb.storage.model.v1.StatusDto;
+import dk.kb.storage.model.v1.WhoamiDto;
+import dk.kb.storage.model.v1.WhoamiTokenDto;
+import dk.kb.storage.webservice.KBAuthorizationInterceptor;
 import dk.kb.util.BuildInfoManager;
 import dk.kb.util.webservice.exception.ServiceException;
 import dk.kb.util.webservice.exception.InternalServiceException;
@@ -19,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.io.File;
@@ -42,6 +47,8 @@ import javax.ws.rs.ext.Providers;
 import javax.ws.rs.core.MediaType;
 import org.apache.cxf.jaxrs.model.wadl.Description;
 import org.apache.cxf.jaxrs.model.wadl.DocTarget;
+import org.apache.cxf.jaxrs.utils.JAXRSUtils;
+import org.apache.cxf.message.Message;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.*;
 
@@ -111,5 +118,29 @@ public class ServiceApiServiceImpl extends ImplBase implements ServiceApi {
                 .health("ok");
     }
 
+    /**
+     * Extract info from OAUth2 accessTokens.
+     * @return OAUth2 roles from the caller's accessToken, if present.
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public WhoamiDto probeWhoami() {
+        WhoamiDto whoami = new WhoamiDto();
+        WhoamiTokenDto token = new WhoamiTokenDto();
+        whoami.setToken(token);
 
+        Message message = JAXRSUtils.getCurrentMessage();
+
+        token.setPresent(message.containsKey(KBAuthorizationInterceptor.ACCESS_TOKEN_STRING));
+        token.setValid(Boolean.TRUE.equals(message.get(KBAuthorizationInterceptor.VALID_TOKEN)));
+        if (message.containsKey(KBAuthorizationInterceptor.FAILED_REASON)) {
+            token.setError(message.get(KBAuthorizationInterceptor.FAILED_REASON).toString());
+        }
+        Object roles = message.get(KBAuthorizationInterceptor.TOKEN_ROLES);
+        if (roles != null) {
+            token.setRoles(new ArrayList<>((Set<String>)roles));
+        }
+        return whoami;
+    }
+        
 }
