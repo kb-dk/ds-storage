@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.3.0)
+### Changed
+- Changed connection pool size from 10 to 100
+
 ## [2.2.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.2.0)
 ### Added
 - Enabled OAuth2 on /select (solrSearch) endpoint. Much is copy-paste from ds-image to see it working in two different modules.
