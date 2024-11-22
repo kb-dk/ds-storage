@@ -41,7 +41,7 @@ import java.util.List;
 @InInterceptors(interceptors = "dk.kb.storage.webservice.KBAuthorizationInterceptor")
 public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
 
-    private Logger log = LoggerFactory.getLogger(this.toString());
+    private static final Logger log = LoggerFactory.getLogger(DsStorageApiServiceImpl.class);
 
     /*
      * How to access the various web contexts. See
