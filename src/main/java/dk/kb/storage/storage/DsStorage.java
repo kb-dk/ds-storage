@@ -261,8 +261,8 @@ public class DsStorage implements AutoCloseable {
          * dataSource.setMaxWaitMillis(AlmaPickupNumbersPropertiesHolder.
          * PICKUPNUMBERS_DATABASE_POOL_CONNECT_TIMEOUT);
          */
-        dataSource.setMaxTotal(10); //
-
+        dataSource.setMaxTotal(100); //Used to be 10.
+        
         INITDATE = new Date();
 
         log.info("DsStorage initialized with driverName='{}', driverURL='{}'", driverName, driverUrl);
@@ -285,7 +285,7 @@ public class DsStorage implements AutoCloseable {
                 }
                 DsRecordDto  record = createRecordFromRS(rs);                            
                 return record;
-            }
+            }        
         }
     }
     
