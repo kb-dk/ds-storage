@@ -10,11 +10,9 @@
 # Origin names must match regexp: a-z][0-9][.]
 origins:
   - name: ds.tv
-    updateStrategy: ALL
+    updateStrategy: NONE
   - name: ds.radio
-    updateStrategy: ALL
-  - name: ds.radiotv6
-    updateStrategy: ALL
+    updateStrategy: NONE
   - name: doms.radio
     updateStrategy: CHILD
   - name: doms.aviser
@@ -27,10 +25,6 @@ origins:
     updateStrategy: CHILD
   - name: origin.strategy.parent
     updateStrategy: PARENT
-  - name: ds.radiotv
-    updateStrategy: ALL
-  - name: ds.radiotv6
-    updateStrategy: ALL
   - name : ds.samlingsbilleder
     updateStrategy: NONE
   - name : ds.maps

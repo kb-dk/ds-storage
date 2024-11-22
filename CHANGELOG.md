@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 - make all loggers static
 
+## [2.3.1](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.3.1)
+### Changed
+- make all loggers static
+- changed UPDATE_STRATEGY to NONE for ds.tv and ds.radio recordBase (origin)
+
+
 ## [2.3.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.3.0)
 ### Changed
 - Changed connection pool size from 10 to 100
