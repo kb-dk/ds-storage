@@ -26,7 +26,7 @@ Plans are to refactor common functionality out into kb-util/template projects.
 - Removed non-resolvable git.tag from build.properties
 - Removed double logging of part of the URL by bumping kb util to v1.5.10
 
-## [2.1.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.1.1) 2024-07-16
+## [2.1.1](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.1.1) 2024-07-16
 ### Added
 - Added updateReferenceIdForReocrd method. The method is also added to the client.
 
