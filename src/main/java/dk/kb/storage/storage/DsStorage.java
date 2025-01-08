@@ -7,6 +7,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
@@ -236,6 +237,9 @@ public class DsStorage implements AutoCloseable {
     private Connection connection;
 
     public static void initialize(String driverName, String driverUrl, String userName, String password) {
+        
+        int connectionPoolSize = ServiceConfig.getConnectionPoolSize();
+        
         dataSource = new BasicDataSource();
         dataSource.setDriverClassName(driverName);
         dataSource.setUsername(userName);
@@ -261,11 +265,11 @@ public class DsStorage implements AutoCloseable {
          * dataSource.setMaxWaitMillis(AlmaPickupNumbersPropertiesHolder.
          * PICKUPNUMBERS_DATABASE_POOL_CONNECT_TIMEOUT);
          */
-        dataSource.setMaxTotal(100); //Used to be 10.
-        
+        //Idle settings defaults (min/max) has good values.     
+        dataSource.setMaxOpenPreparedStatements(connectionPoolSize);
         INITDATE = new Date();
 
-        log.info("DsStorage initialized with driverName='{}', driverURL='{}'", driverName, driverUrl);
+        log.info("DsStorage initialized with driverName='{}', driverURL='{}', connectionPoolSize='{}' ", driverName, driverUrl,connectionPoolSize);
     }
 
     public DsStorage() throws SQLException {

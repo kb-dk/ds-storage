@@ -98,6 +98,11 @@ public class ServiceConfig {
 		return dbPassword;
 	}
 
+	public static int getConnectionPoolSize() {
+	   int connectionPoolSize= serviceConfig.getInteger("db.connectionPoolSize",10); //Default 10
+	    return connectionPoolSize;
+	}
+	
 	public static int getDBBatchSize() {
 		return serviceConfig.getInteger("db.batch.size", DB_BATCH_SIZE_DEFAULT);
 	}
