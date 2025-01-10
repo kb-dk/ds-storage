@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Property for database connection pool size. Under 'db' property new property: 'connectionPoolSize'. Reasonable values are from 10 to 100. 
 
+### Fixed
+- Fixed inclusion of the same dependencies from multiple sources.
+
 ## [2.3.2](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.3.2) 2025-01-07
 ### Changed
 - Upgraded dependency cxf-rt-transports-http to v.3.6.4 (fix memory leak)
