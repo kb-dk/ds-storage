@@ -279,7 +279,7 @@ public class DsStorageFacade {
      */
     public static Long getRecordsByRecordTypeModifiedAfterWithLocalTree(
             ExportWriter writer, String origin, RecordTypeDto recordType, long mTime, long maxRecords, int batchSize) {
-        String id = String.format(Locale.ROOT, "writeRecordsByRecordTypeModifiedAfterWithLocalTree(origin='%s', recordType='%s' mTime=%d, maxRecords=%d, batchSize=%d)",
+        String id = String.format(Locale.ROOT, "getRecordsByRecordTypeModifiedAfterWithLocalTree(origin='%s', recordType='%s' mTime=%d, maxRecords=%d, batchSize=%d)",
                                   origin, recordType, mTime, maxRecords, batchSize);
         long pending = maxRecords == -1 ? Long.MAX_VALUE : maxRecords; // -1 = all records
         final AtomicLong lastMTime = new AtomicLong(mTime);
