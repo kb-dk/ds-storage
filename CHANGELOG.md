@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Bumped SwaggerUI dependency to v5.18.2
+
 ### Added
 - Property for database connection pool size. Under 'db' property new property: 'connectionPoolSize'. Reasonable values are from 10 to 100. 
 
