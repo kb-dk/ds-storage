@@ -22,18 +22,28 @@ import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.webservice.KBAuthorizationInterceptor;
+import dk.kb.util.webservice.HttpRequestService2Service;
 import dk.kb.util.webservice.exception.InternalServiceException;
+import dk.kb.util.webservice.exception.ServiceException;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
 import dk.kb.util.webservice.stream.ContinuationStream;
+
+
+import org.apache.cxf.jaxrs.utils.JAXRSUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
 
 /**
  * Client for the service. Intended for use by other projects that calls this service.
@@ -49,7 +59,7 @@ public class DsStorageClient extends DsStorageApi {
     private final String serviceURI;
 
     public static final String STORAGE_SERVER_URL_KEY = ".storage.url";
-    
+
     /**
      * Creates a client for the remote ds-storage service.
      * <p>
@@ -68,7 +78,7 @@ public class DsStorageClient extends DsStorageApi {
         log.info("Created OpenAPI client for '" + serviceURI + "'");
     }
 
-    
+
     /**
      * <p>
      * If the mapping does not exist a new entry will be created in the mapping table.<br>
@@ -80,7 +90,7 @@ public class DsStorageClient extends DsStorageApi {
      * 
      */
     public void updateMappings(MappingDto mapping) throws ApiException {               
-       super.mappingPost(mapping);                       
+        super.mappingPost(mapping);                       
     }
 
     /**
@@ -100,7 +110,7 @@ public class DsStorageClient extends DsStorageApi {
     public List<DsRecordMinimalDto> getDsRecordsReferenceIdModifiedAfter(String origin,int batchSize,long mTimeFrom) throws ApiException {
         return super.getMinimalRecords(origin, batchSize, mTimeFrom);
     }
-    
+
     /**
      * Call the remote ds-storage {@link #getRecordsModifiedAfter} and return the response in the form of a Stream 
      * of records.
@@ -196,6 +206,7 @@ public class DsStorageClient extends DsStorageApi {
             String origin, RecordTypeDto recordType, Long mTime, Long maxRecords) throws IOException {
         URI uri;
         try {
+
             uri = new URIBuilder(serviceURI + "records")
                     // setPath overwrites paths given in serviceURI
                     //.setPath("records")
@@ -208,13 +219,22 @@ public class DsStorageClient extends DsStorageApi {
             String message = String.format(Locale.ROOT,
                     "getRecordsModifiedAfterLocalTreeJSON(origin='%s', recordType='%s', mTime=%d, maxRecords=%d): " +
                             "Unable to construct URI",
-                    origin, recordType, mTime, maxRecords);
+                            origin, recordType, mTime, maxRecords);
             log.warn(message, e);
             throw new InternalServiceException(message);
         }
 
         log.debug("Opening streaming connection to '{}'", uri);
-        return ContinuationInputStream.from(uri, Long::valueOf);
+        Map<String, String> requestHeaders = new HashMap<String, String>();
+        String token= (String) JAXRSUtils.getCurrentMessage().get(KBAuthorizationInterceptor.ACCESS_TOKEN_STRING);
+        log.info("Calling ds-storage from continuation stream with 'Authorization'-parameter header token:"+token);
+        if (token != null) {                                          
+            requestHeaders.put("Authorization","Bearer "+token);
+            log.info("setting token:"+token);
+        }
+
+        // return ContinuationInputStream.from(uri, Long::valueOf);
+        return HttpRequestService2Service.continuationInputStreamFromWithOAUthToken(uri, Long::valueOf,requestHeaders);
     }
 
     /**
@@ -237,6 +257,118 @@ public class DsStorageClient extends DsStorageApi {
         return getMinimalRecordsModifiedAfterJSON(origin, mTimeFrom, (long) maxRecords)
                 .stream(DsRecordMinimalDto.class);
     }
+
+
+    /**
+    * <p>
+    * Make service call to another webservice and set the same OAuth token on the call that was used for the initiating service call. 
+    * <p>
+    * Maybe this method should be extended to also take additional RequestHeaders, but implement this if situation occurs. 
+    *
+    * @param uri the full URI with path and parameters set.
+    * @param httpMethod The http-method to use for the service call. GET, POST, DELETE etc.
+    * @param objectClass The DTO type that the response should be parsed to.
+    * @return DtoObject (objectClass) of the same type at given as input. 
+    * @throws ServiceException If anything unexpected happens.   
+    **/    
+/*
+    public  <T> T xmakeUrlCallWithOAuthToken (URI uri , String httpMethod, T objectClass) throws ServiceException {                 
+        //The token (message) will be set if the service method that initiated this call required OAuth token. 
+        String token= (String) JAXRSUtils.getCurrentMessage().get(KBAuthorizationInterceptor.ACCESS_TOKEN_STRING); 
+        Map<String, String> requestHeaders= new HashMap<String, String>();
+        if (token != null) {                                          
+            requestHeaders.put("Authorization","Bearer "+token);
+            log.debug("OAuth2 Bearer token added to service2service call");
+        }
+        else {
+             log.debug("Making service2service call without OAuth token");  
+        }
+             
+        try {
+            HttpURLConnection con = HttpRequestsgetHttpURLConnection(uri, httpMethod, requestHeaders);
+
+            int status = con.getResponseCode();
+            if (status < 200 || status > 299) { // Could be mapped to a more precise exception type, but an exception here is most likely a coding error. 
+                String msg="Got HTTP " + status + " establishing connection to '" + uri + "'"+ con.getResponseCode();
+                log.error(msg);
+                throw new InternalServiceException(msg);
+                // TODO: Consider if the error stream should be logged. It can be arbitrarily large (TOES)
+            }
+            
+            String json = IOUtils.toString(con.getInputStream(), StandardCharsets.UTF_8);          
+
+            ObjectMapper mapper = new ObjectMapper();
+            @SuppressWarnings("unchecked")
+            T dto = (T) mapper.readValue(json, objectClass.getClass());           
+            return dto;
+        }
+        catch(Exception e) { 
+            log.error(e.getMessage(),e);
+            throw new InternalServiceException(e.getMessage()); 
+        }
+    }
+*/
+
+    @Override
+    public DsRecordDto getRecord(String id, Boolean includeLocalTree) throws ApiException{       
+        try {
+            URI uri = new URIBuilder(serviceURI + "record/"+id) //Set the full path, then add parameters. Id is part of url and not parameter                                                
+                .addParameter("includeLocalTree",""+includeLocalTree)               
+                .build();
+            return  HttpRequestService2Service.httpCallWithOAuthToken(uri,"GET",new DsRecordDto());              
+        }
+        catch(Exception e) {
+            throw new ApiException(e);
+        }                        
+
+    }
+    /*
+    @Override
+    public DsRecordDto getRecordOLD(String id, Boolean includeLocalTree) throws ApiException{        
+
+        URI uri;
+
+        log.debug("2");
+      try {
+          uri = new URIBuilder(serviceURI + "record/"+id)
+                    // setPath overwrites paths given in serviceURI                                
+                    .addParameter("includeLocalTree",""+includeLocalTree)
+                    .build();
+      }
+      catch(Exception e) {
+          throw new ApiException (e);
+      }
+
+        String token= (String) JAXRSUtils.getCurrentMessage().get(KBAuthorizationInterceptor.ACCESS_TOKEN_STRING);
+        Map<String, String> requestHeaders= new HashMap<String, String>();
+        log.info("Calling ds-storage with 'Authorization'-parameter header token:"+token);
+        if (token != null) {                                          
+          requestHeaders.put("Authorization","Bearer "+token);
+        log.info("setting token:"+token);
+        }
+
+        log.debug("TEG Opening streaming connection to '{}'", uri);
+        try {
+          HttpURLConnection con = getHttpURLConnection(uri, requestHeaders);
+          String json = IOUtils.toString(con.getInputStream(), StandardCharsets.UTF_8);          
+
+          ObjectMapper mapper = new ObjectMapper();
+          DsRecordDto dto = mapper.readValue(json, DsRecordDto.class);           
+          log.info("Transformed to DTO");
+          return dto;
+        }
+        catch(Throwable e) {      
+          log.error("Error transforming:",e);
+            e.printStackTrace();
+            throw new ApiException (e);
+        }
+
+        //   return ContinuationInputStream.from(uri, Long::valueOf);
+
+
+    }
+     */
+
 
     /**
      * Call the remote ds-storage {@link #getMinimalRecords} and return the JSON response unchanged as a wrapped bytestream.
@@ -272,7 +404,7 @@ public class DsStorageClient extends DsStorageApi {
         return ContinuationInputStream.from(uri, Long::valueOf);
     }
 
-    
+
     /**
      * Update the referenceId for a record <br>
      * The referenceId is a id in the external system for the record. <br>
@@ -287,7 +419,7 @@ public class DsStorageClient extends DsStorageApi {
     public void updateReferenceIdForRecord(String recordId,String referenceId) throws ApiException {
         super.updateReferenceIdForRecord(recordId, referenceId);
     }
-    
+
     /**
      * Deconstruct the given URI and use the components to create an ApiClient.
      * @param serviceURIString an URI to a service.
@@ -304,4 +436,25 @@ public class DsStorageClient extends DsStorageApi {
                 setPort(serviceURI.getPort()).
                 setBasePath(serviceURI.getRawPath());
     }
+
+    /**
+    * Invoke a HTTP of a given HttpMethod and requestHeaders.
+    * 
+    * @param uri the full URI with path and parameters set.
+    * @param httpMethod The http-method to use for the service call. GET, POST, DELETE etc. 
+    * @return HttpUrlConnection that will have the status code and response can be read with an InputStream. 
+    */
+    private static HttpURLConnection xgetHttpURLConnection(URI uri, String httpMethod, Map<String, String> requestHeaders) throws IOException {
+        //Do not log requestHeader since this would expose a valid OAuth token in the log file.
+        log.debug("Opening streaming connection to '{}' with, method={}", uri, httpMethod);
+        HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
+        con.setRequestProperty("Content-Type","application/json");
+        con.setRequestMethod(httpMethod);
+        con.setInstanceFollowRedirects(true);
+        if (requestHeaders != null) {
+            requestHeaders.forEach(con::setRequestProperty);
+        }      
+        return con;
+    }
+
 }

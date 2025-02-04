@@ -82,6 +82,9 @@ paths:
       tags:
         - '${project.name}'
       summary: Delete records from the storage for the origin within the timeframe.
+      security: 
+        - KBOAuth:
+          - any   
       description: >
         Delete records from the storage for the origin within the timeframe. Records will be deleted and not just marked as deleted. mTimeFrom and mTimeTo will be included in the deletion range.
       operationId: deleteRecordsForOrigin
@@ -122,6 +125,9 @@ paths:
       tags:
         - '${project.name}'
       summary: 'Read a specific record by ID.'
+      security: 
+        - KBOAuth:
+          - any   
       description: >
         Extract a specific record by ID. Parent and children recordIds will also be include.
         If setting includeLocalTree=true the local recordTree with parent record and children records will also be loaded as objects.  
