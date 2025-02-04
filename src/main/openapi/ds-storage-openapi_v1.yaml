@@ -55,6 +55,9 @@ paths:
       tags:
         - '${project.name}'
       summary: Delete all records for an origin that has deleted flag set.
+      security: 
+        - KBOAuth:
+          - any   
       description: >
         Notice that applications retrieving records from the deleted origin never will know that the records were deleted
         unless the application retrieves the records after they have been marked with the delete flag.
@@ -167,6 +170,9 @@ paths:
       tags:
         - '${project.name}'
       summary: 'Mark a record with delete flag.'
+      security: 
+        - KBOAuth:
+          - any   
       description: >
         This will not delete the record in the database but only mark it as deleted.
       operationId: markRecordForDelete
@@ -217,6 +223,9 @@ paths:
       tags:
         - '${project.name}'    
       summary: 'Create a new record or update an existing record.'
+      security: 
+        - KBOAuth:
+          - any   
       description: 'A record can have a single optional parent and may have multiple children'
       requestBody:
         content:
@@ -235,6 +244,9 @@ paths:
       tags:
         - '${project.name}'    
       summary: 'Update a record with the Kaltura id. '
+      security: 
+        - KBOAuth:
+          - any   
       description: 'Update a record with the Kaltura id. The record was uploaded to Kaltura with the referenceId as metadata. Knowing the kalturaId is important to find the record(stream) in Kaltura later for update or deletetion etc.' 
       operationId: updateKalturaIdForRecord
       parameters:
@@ -258,6 +270,9 @@ paths:
       tags:
         - '${project.name}'    
       summary: 'Update a record with referenceId '
+      security: 
+        - KBOAuth:
+          - any   
       description: 'Update a record with the referenceId. The referenceId is a value in the external system. For preservica origin it is the stream file name ' 
       operationId: updateReferenceIdForRecord
       parameters:
@@ -285,6 +300,9 @@ paths:
       tags:
         - '${project.name}'
       summary: 'Extract X records from a origin.'
+      security: 
+        - KBOAuth:
+          - any   
       description: >
         Extract X records from a specified origin after a given mTime and up to a defined maximum mTime. 
         The records are returned in sorted order by mTime increasing. Records marked for delete will also be returned.
@@ -341,6 +359,9 @@ paths:
       tags:
         - '${project.name}'
       summary: 'Get a stream of minimal records having a referenceId after a given lastModified time'
+      security: 
+        - KBOAuth:
+          - any   
       description: >
         Extract a list of records with a given batch size by origin and mTime larger than input.        
          The records will only have the id, mTime, referenceId and kalturaId fields. This means that no actual data can be retrieved through this endpoint. It can however be used
@@ -386,6 +407,9 @@ paths:
       tags:
         - '${project.name}'    
       summary: 'Update all records having a referenceIf with the matching Kaltura, if the mapping can be found in the mapping table'
+      security: 
+        - KBOAuth:
+          - any   
       description: >
         Update all records having a referenceId with the matching kalturaId, if the mapping can be found in the mapping table. 
         If many records needs to be updated this can take some time. Estimated 15 minutes for 1M records.
@@ -406,6 +430,9 @@ paths:
       tags:
         - '${project.name}'
       summary: 'Get mapping for a specific referenceId'
+      security: 
+        - KBOAuth:
+          - any   
       operationId: getMapping
       description: 'Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.'
       parameters:
@@ -427,6 +454,9 @@ paths:
       tags:
         - '${project.name}'    
       summary: 'Create a new mapping or update a mappin .'
+      security: 
+        - KBOAuth:
+          - any   
       operationId: mappingPost
       description: 'Create a new mapping or update mapping if referenceId exists. Each record with a stream will have a referenceId (file-id) and needs to be mapped to the KalturaId'
       requestBody:

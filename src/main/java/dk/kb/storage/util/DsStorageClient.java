@@ -23,7 +23,7 @@ import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.webservice.KBAuthorizationInterceptor;
-import dk.kb.util.webservice.HttpRequestService2Service;
+import dk.kb.util.webservice.Service2ServiceRequest;
 import dk.kb.util.webservice.exception.InternalServiceException;
 import dk.kb.util.webservice.exception.ServiceException;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
@@ -234,7 +234,7 @@ public class DsStorageClient extends DsStorageApi {
         }
 
         // return ContinuationInputStream.from(uri, Long::valueOf);
-        return HttpRequestService2Service.continuationInputStreamFromWithOAUthToken(uri, Long::valueOf,requestHeaders);
+        return Service2ServiceRequest.continuationInputStreamFromWithOAUthToken(uri, Long::valueOf,requestHeaders);
     }
 
     /**
@@ -315,7 +315,7 @@ public class DsStorageClient extends DsStorageApi {
             URI uri = new URIBuilder(serviceURI + "record/"+id) //Set the full path, then add parameters. Id is part of url and not parameter                                                
                 .addParameter("includeLocalTree",""+includeLocalTree)               
                 .build();
-            return  HttpRequestService2Service.httpCallWithOAuthToken(uri,"GET",new DsRecordDto());              
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET",new DsRecordDto());              
         }
         catch(Exception e) {
             throw new ApiException(e);
