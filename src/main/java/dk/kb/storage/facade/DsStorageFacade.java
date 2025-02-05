@@ -48,9 +48,7 @@ public class DsStorageFacade {
      */
     public static  ArrayList<DsRecordMinimalDto>  getReferenceIds(String origin, long mTime, int batchSize)  {                       
         String id = String.format(Locale.ROOT, "getReferenceIds(origin='%s', mTime=%d, batchSize=%d)", origin, mTime, batchSize);
-        return performStorageAction(id, storage -> {             
-            return storage.getReferenceIds(origin, mTime, batchSize);   
-        });
+        return performStorageAction(id, storage -> storage.getReferenceIds(origin, mTime, batchSize));
     }
 
     public static Long getMinimalRecordsModifiedAfter(
@@ -92,9 +90,7 @@ public class DsStorageFacade {
      * 
      */
     public static MappingDto getMapping(String referenceId)  {                       
-        return performStorageAction("getMapping(" + referenceId + ")", storage -> {             
-            return storage.getMappingByReferenceId(referenceId);   
-        });
+        return performStorageAction("getMapping(" + referenceId + ")", storage -> storage.getMappingByReferenceId(referenceId));
     }    
     
 
