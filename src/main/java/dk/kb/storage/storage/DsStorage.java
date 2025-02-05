@@ -373,16 +373,7 @@ public class DsStorage implements AutoCloseable {
         ArrayList<DsRecordDto > records = new ArrayList<DsRecordDto >();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterParentsOnlyStatement)) {
 
-            stmt.setString(1, origin);
-            stmt.setLong(2, mTime);
-            stmt.setLong(3, batchSize);
-            try (ResultSet rs = stmt.executeQuery();) {
-                while (rs.next()) {
-                    DsRecordDto  record = createRecordFromRS(rs);
-                    records.add(record);
-
-                }
-            }
+            prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
         }
         catch(Exception e) {
             throw new Exception("SQL error getModifiedAfterParentsOn",e);
@@ -392,7 +383,26 @@ public class DsStorage implements AutoCloseable {
         return records; 
     }
 
-    
+    /**
+     * Prepare the SQL statement, execute the SQL query and convert the result set into DS Records that are added to the records array.
+     * @param origin to query against.
+     * @param mTime to retrieve records from.
+     * @param batchSize to retrieve.
+     * @param records array where records are added.
+     * @param stmt the already prepared statement.
+     */
+    private void prepareStatementAndGetRecords(String origin, long mTime, int batchSize, ArrayList<DsRecordDto> records, PreparedStatement stmt) throws SQLException {
+        stmt.setString(1, origin);
+        stmt.setLong(2, mTime);
+        stmt.setLong(3, batchSize);
+        try (ResultSet rs = stmt.executeQuery();) {
+            while (rs.next()) {
+                DsRecordDto  record = createRecordFromRS(rs);
+                records.add(record);
+            }
+        }
+    }
+
 
     /**
      * <p>
@@ -597,15 +607,7 @@ public class DsStorage implements AutoCloseable {
         ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement)) {
 
-            stmt.setString(1, origin);
-            stmt.setLong(2, mTime);
-            stmt.setLong(3, batchSize);
-            try (ResultSet rs = stmt.executeQuery();) {
-                while (rs.next()) {
-                    DsRecordDto record = createRecordFromRS(rs);
-                    records.add(record);
-                }
-            }
+            prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
         }
         catch(Exception e) {
             String message = "SQL Exception in getRecordsModifiedAfter";
@@ -668,16 +670,7 @@ public class DsStorage implements AutoCloseable {
         ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterChildrenOnlyStatement)) {
 
-            stmt.setString(1, origin);
-            stmt.setLong(2, mTime);
-            stmt.setLong(3, batchSize);
-            try (ResultSet rs = stmt.executeQuery();) {
-                while (rs.next()) {
-                    DsRecordDto record = createRecordFromRS(rs);
-                    records.add(record);
-
-                }
-            }
+            prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
         }
         catch(Exception e) {
             String message = "SQL Exception in getModifiedAfterChildrenOnly";
