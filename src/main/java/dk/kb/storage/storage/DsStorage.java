@@ -283,7 +283,7 @@ public class DsStorage implements AutoCloseable {
         try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement)) {
             stmt.setString(1, id);
 
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
                     return null;// Or throw exception?
                 }
@@ -301,7 +301,7 @@ public class DsStorage implements AutoCloseable {
         try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement)) {
             stmt.setString(1, id);
 
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
                     return null;
                 }
@@ -319,7 +319,7 @@ public class DsStorage implements AutoCloseable {
         try (PreparedStatement stmt = connection.prepareStatement(recordIdExistsStatement)) {
             stmt.setString(1, id);
 
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 rs.next(); //Count has always next
                 int count = rs.getInt("COUNT");
                 return  count == 1;             
@@ -333,7 +333,7 @@ public class DsStorage implements AutoCloseable {
         ArrayList<String> childIds = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(childrenIdsStatement)) {
             stmt.setString(1, parentId);
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     String id = rs.getString(ID_COLUMN);
                     childIds.add(id);
@@ -395,7 +395,7 @@ public class DsStorage implements AutoCloseable {
         stmt.setString(1, origin);
         stmt.setLong(2, mTime);
         stmt.setLong(3, batchSize);
-        try (ResultSet rs = stmt.executeQuery();) {
+        try (ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 DsRecordDto  record = createRecordFromRS(rs);
                 records.add(record);
@@ -428,7 +428,7 @@ public class DsStorage implements AutoCloseable {
             stmt.setLong(2, mTime);
             stmt.setLong(3, batchSize);
                         
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     DsRecordMinimalDto  record = createRecordReferenceIdFromRS(rs);
                     records.add(record);
@@ -638,7 +638,7 @@ public class DsStorage implements AutoCloseable {
             stmt.setString(2, recordType.getValue());
             stmt.setLong(3, mTime);
             stmt.setLong(4, batchSize);
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {                    
                     recordsIds.add(rs.getString(ID_COLUMN));
                 }
@@ -686,7 +686,7 @@ public class DsStorage implements AutoCloseable {
         ArrayList<OriginCountDto> originCountList = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(originsStatisticsStatement)) {
             
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     OriginCountDto originStats = new OriginCountDto();                    
                     String origin = rs.getString(ORIGIN_COLUMN);
@@ -832,7 +832,7 @@ public class DsStorage implements AutoCloseable {
        try (PreparedStatement stmt = connection.prepareStatement(mappingByIdStatement)) {
            stmt.setString(1, referenceId);
  
-           try (ResultSet rs = stmt.executeQuery();) {
+           try (ResultSet rs = stmt.executeQuery()) {
                if (!rs.next()) {
                  return null; //ID not found
                }
@@ -865,7 +865,7 @@ public class DsStorage implements AutoCloseable {
 
           int updated=0;
 
-          try (ResultSet rs = stmt.executeQuery();) {
+          try (ResultSet rs = stmt.executeQuery()) {
               while(rs.next()) {
            
                 String id=rs.getString(ID_COLUMN);
