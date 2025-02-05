@@ -3,8 +3,6 @@ package dk.kb.storage.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import dk.kb.storage.storage.DsStorage;
-
 /**
  * Generate a new unique timestamp. The format is System.currentTimeMillis() with 3 added digits.
  * If systemtime is : 1637057234458 the timestamp will be 1637057234458000
