@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
  * Generate a new unique timestamp. The format is System.currentTimeMillis() with 3 added digits.
  * If systemtime is : 1637057234458 the timestamp will be 1637057234458000
  * If another timestamp is required at same millis it will 1637057234458001 etc.
- * 
+ * <p>
  * To convert a timestamp to a date in millis just remove the last 0 digits.
- * 
+ * <p>
  *
  * If the maximum of 999 is reached for the additional nanos, it will trigger a 1 millis sleep. But this will likely never happen.
  * Stress test of just this method could not generate more than 200 uniquestamps within the same millis. 

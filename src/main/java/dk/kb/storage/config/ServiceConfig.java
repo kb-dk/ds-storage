@@ -36,7 +36,7 @@ public class ServiceConfig {
 	 * Initialized the configuration from the provided configFile.
 	 * This should normally be called from {@link dk.kb.storage.webservice.ContextListener} as
 	 * part of web server initialization of the container.
-	 * @param configFile the configuration to load.
+	 * @param configFiles the YAML files which the configuration is loaded from.
 	 * @throws IOException if the configuration could not be loaded or parsed.
 	 */
 	public static synchronized void initialize(String... configFiles) throws IOException {

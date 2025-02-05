@@ -75,7 +75,7 @@ public class KBOAuth2Handler {
 
     /**
      * Fetches KB OAuth2 settings from the configuration and initializes the handler.
-     *
+     * <p>
      * If no OAUth2 configuration is present, a warning is logged and attempts to access OAuth-annotated endpoints
      * will fail, unless the role {@code public} is specified in the {@link KBAuthorization} annotation.
      */

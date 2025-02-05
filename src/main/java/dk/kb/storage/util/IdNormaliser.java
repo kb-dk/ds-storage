@@ -23,7 +23,7 @@ public class IdNormaliser {
     
     /**
      * Normalise the ID. Invalid characters will be replaced.
-     * @param id 
+     * @param id to normalise.
      */
     public static String normaliseId(String id)  throws Exception{
      String orgId= id;

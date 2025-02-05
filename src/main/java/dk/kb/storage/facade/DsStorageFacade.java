@@ -188,7 +188,7 @@ public class DsStorageFacade {
      * Update reference id for a record. The referenceId is the id value for the record in the external system. For preservica referenceId is the name of the stream file.
      * 
      * @param recordId Id of the record to update
-     * @param reference The referenceId to set for the record
+     * @param referenceId The referenceId to set for the record
      */
     public static void updateReferenceIdForRecord(String recordId, String referenceId){
          performStorageAction("updateKalturaIdForRecord(" + referenceId + ")", storage -> {
@@ -327,8 +327,7 @@ public class DsStorageFacade {
      *   
      *  @param recordId The record id . If inludeLocalTree is set the object tree will be returned with a pointer to this record   
      *  @param  includeLocalTree Load the parent and children as object and not just IDs.
-     *  @Throws NotFoundServiceException if record is not found     
-     * 
+     *
      */
     public static DsRecordDto getRecord(String recordId, Boolean includeLocalTree) {
       if (!includeLocalTree) {
@@ -346,7 +345,7 @@ public class DsStorageFacade {
     
     /**
      * Load a record with childrenIds
-     * 
+     * <p>
      * Return null if record does not exist
      * 
      */
@@ -360,12 +359,11 @@ public class DsStorageFacade {
 
     /**
      *   Will load full object tree. The DsDecordDto return will a pointer the record with the recordId in the tree
-     *       
+     * <p>
      *  Logic: Find top parent recursive and load children.
      * 
      *  @param recordId The full object tree will be returned with a pointer to this record   
      * 
-     *  @Throws NotFoundServiceException if record is not found
      */
     public static DsRecordDto getRecordTree(String recordId) {
              
@@ -391,7 +389,6 @@ public class DsStorageFacade {
      * 
      *  @param recordId The local object tree will be returned with a pointer to this record   
      * 
-     *  @Throws NotFoundServiceException if record is not found
      */
     private static DsRecordDto getRecordTreeLocal(String recordId) {
            
@@ -408,11 +405,11 @@ public class DsStorageFacade {
     /**
      * Will recursive go up in the tree to find the top parent.
      * Throws an exception if a cycle is detected.
-     * If a parent does not exists it will return last valid record instead. This is due to inconsistent data.
+     * If a parent does not exist it will return last valid record instead. This is due to inconsistent data.
      *  
-     * @param record
+     * @param record to retrieve parent for.
      * @throws InternalServiceException If a cycle is detected.
-     * @return
+     * @return parent record
      */
     private static DsRecordDto getTopParent(DsRecordDto record) throws InternalServiceException{
     
@@ -626,7 +623,7 @@ public class DsStorageFacade {
     /**
      * Validate recordType is not null
      * 
-     * @param type 
+     * @param type Record type to validate
      */
     private static void validateRecordType(RecordTypeDto type) {
         if (type==null) {
@@ -637,7 +634,7 @@ public class DsStorageFacade {
     
     /**
      * Starts a storage transaction and performs the given action on it, returning the result from the action.
-     *
+     * <p>
      * If the action throws an exception, a {@link DsStorage#rollback()} is performed.
      * If the action passes without exceptions, a {@link DsStorage#commit()} is performed.
      * @param actionID a debug-oriented ID for the action, typically the name of the calling method.
@@ -686,8 +683,7 @@ public class DsStorageFacade {
      * 
      * @param currentRecord Top record in the object tree. The tree will only be loaded from this node and down.
      * @param previousIdsForCycleDetection Set to keep track of cycles. When calling this method supply it with a new empty HashSet
-     * @param recordId This is the recordId that will be put into the returnObject   
-     * @param returnObject This List will always has 1 element matching the recordId  
+     * @param origo     record used as recursive parameter
      */
     
     private static void loadAndSetChildRelations(DsRecordDto currentRecord, HashSet<String> previousIdsForCycleDetection, DsRecordDto origo) throws SQLException {
@@ -720,8 +716,8 @@ public class DsStorageFacade {
      * 1) Load the parent if it exists, and this will be set as parent. Parent will not point down to this child
      * 2) Load all children and set them as children. The children will not point back to this parent.   
      * 
-     * @param record The input record with the local tree set     *
-     * @exception Will throw InvalidArgumentServiceException if a record has over 1000 children. It is not expected any caller wants this, but has made a mistake.      
+     * @param record The input record with the local tree set
+     * @exception InvalidArgumentServiceException is thrown if a record has over 1000 children. It is not expected any caller would want this, but is instead seen as mistake.
      */
     
     private static void setLocalTreeForRecord(DsRecordDto record)  {

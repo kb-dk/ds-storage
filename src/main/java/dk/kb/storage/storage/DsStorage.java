@@ -361,7 +361,7 @@ public class DsStorage implements AutoCloseable {
     /**
      * Will only extract with records strightly  larger than mTime!
      * Will be sorted by mTime. Latest is last
-     * 
+     * <p>
      * Only parents posts (those that have children) will be load or only children (those that have parent)
      * 
      */
@@ -585,7 +585,7 @@ public class DsStorage implements AutoCloseable {
     /**
      * Will only extract with records strightly  larger than mTime!
      * Will be sorted by mTime. Latest is last
-     *
+     * <p>
      * Will extract all no matter of parent or child ids
      *
      */
@@ -656,7 +656,7 @@ public class DsStorage implements AutoCloseable {
     /**
      * Will only extract with records strightly larger than mTime!
      * Will be sorted by mTime. Latest is last
-     * 
+     * <p>
      * Will only fetch children records. That is those that has a parent.
      * 
      */
@@ -825,12 +825,12 @@ public class DsStorage implements AutoCloseable {
      /**
       * Get a mappingDto by referenceId. 
       * 
-      * @param refenceId The id key for the mapping
+      * @param referenceId The id key for the mapping
       * @return referenceId  Return a mappingDto if referenceId exists. Null if the referenceId is not found in the mapping
-      * 
-      * @throws Exception
+      *
+      * @throws SQLException if anything goes wrong while getting mapping for referenceId.
       */
-    public MappingDto getMappingByReferenceId(String referenceId) throws Exception {
+    public MappingDto getMappingByReferenceId(String referenceId) throws SQLException {
 
        if (referenceId == null) {
            throw new InvalidArgumentServiceException("referenceId must not be null"); 
@@ -966,7 +966,7 @@ public class DsStorage implements AutoCloseable {
      * 
      * Update a mapping with a new kalturaId
      * 
-     * @param mappingDto
+     * @param mappingDto containing a referenceId and a kalturaId
      * @throws Exception Will throw exception if id is not found
      */     
     public void updateMapping(MappingDto mappingDto) throws Exception {
