@@ -35,7 +35,7 @@ import ch.qos.logback.core.util.StatusPrinter;
 
 /**
  * Listener to handle the various setups and configuration sanity checks that can be carried out at when the
- * context is deployed/initalized.
+ * context is deployed/initialized.
  */
 
 public class ContextListener implements ServletContextListener {
@@ -126,7 +126,7 @@ public class ContextListener implements ServletContextListener {
      * </pre>
      * as the JNDI injection is performed <strong>after</strong> the {@code include}.
      * <p>
-     * The workaround is to programatically perform the same environment lookup and reconfigure logback to use
+     * The workaround is to programmatically perform the same environment lookup and reconfigure logback to use
      * the right logback setup file.
      * <p>
      * To complicate matters further, logback require included files to encapsulate the concrete setup in
@@ -142,7 +142,7 @@ public class ContextListener implements ServletContextListener {
             }
 
         } catch (Exception e) {
-            // We might want to skip this logging as it will log to the unconfigured logback at this point
+            // We might want to skip this logging as it will log to the un-configured logback at this point
             log.debug("Logback config 'logback-test.xml' not found. Attempting explicit logback configuration");
         }
 

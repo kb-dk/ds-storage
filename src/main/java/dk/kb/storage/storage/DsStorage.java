@@ -214,7 +214,8 @@ public class DsStorage implements AutoCloseable {
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
 
-    //Optimized SQL that finds missing KalturaIds on records table that have a referenceId but no kalturaId. Can take some time(minutes) first time if million of records miss kalturaId
+    //Optimized SQL that finds missing KalturaIds on records table that have a referenceId but no kalturaId. Can take some time(minutes) first time if millions of records miss
+    // kalturaId
     //'INNER JOIN' will only return matched rows from both table  unlike 'LEFT JOIN' that will return non-matched also. 
     //SELECT A.id, A.referenceid, B.kalturaid from ds_records A INNER JOIN ds_mapping B ON A.referenceid=B.referenceid WHERE  A.kalturaid IS NULL AND b.kalturaid IS NOT NULL         
     //Performance can be improved by double index (referenceId,kalturaId) but will come a cost when creating/updating records. 
@@ -351,15 +352,15 @@ public class DsStorage implements AutoCloseable {
      */
     public void clearMappingAndRecordTable() throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(clearTableRecordsStatement)) {
-            stmt.execute(); //No resultset to close
+            stmt.execute(); //No result set to close
         }        
         try (PreparedStatement stmt = connection.prepareStatement(clearTableMappingsStatement)) {
-            stmt.execute(); //No resultset to close
+            stmt.execute(); //No result set to close
         }
     }
 
     /**
-     * Will only extract with records strightly  larger than mTime!
+     * Will only extract with records strictly larger than mTime!
      * Will be sorted by mTime. Latest is last
      * <p>
      * Only parents posts (those that have children) will be load or only children (those that have parent)
@@ -407,7 +408,7 @@ public class DsStorage implements AutoCloseable {
     /**
      * <p>
      * Get a list of records after a given mTime. The records will only have fields
-     * id,mTime,referenceid and kalturaid defined 
+     * id, mTime, referenceid and kalturaid defined
      * </p>
      *
      *@param origin The origin to fetch records from
@@ -446,7 +447,7 @@ public class DsStorage implements AutoCloseable {
      * Extract max {@code record.mTime} in {@code origin}.
      * @param origin only records from the {@code origin} will be inspected.
      * @param recordType only records with the given type will be inspected.
-     * @return max {@code record.mTime} within the given {@code origin} and woth the given {@code recordType} or 0
+     * @return max {@code record.mTime} within the given {@code origin} and with the given {@code recordType} or 0
      *         if there were no records.
      */
     public long getMaxMtime(String origin, RecordTypeDto recordType) throws SQLException {
@@ -593,7 +594,7 @@ public class DsStorage implements AutoCloseable {
     }
 
     /**
-     * Will only extract with records strightly  larger than mTime!
+     * Will only extract with records strictly larger than mTime!
      * Will be sorted by mTime. Latest is last
      * <p>
      * Will extract all no matter of parent or child ids
@@ -656,7 +657,7 @@ public class DsStorage implements AutoCloseable {
 
 
     /**
-     * Will only extract with records strightly larger than mTime!
+     * Will only extract with records strictly larger than mTime!
      * Will be sorted by mTime. Latest is last
      * <p>
      * Will only fetch children records. That is those that has a parent.
@@ -850,7 +851,7 @@ public class DsStorage implements AutoCloseable {
     /**
      * <p>
      * Update all records that have referenceId but missing kalturaId.<br>
-     * If the mapping exist in the mapping table rerenceId <-> kalturaId, then the record will be updated with the kaltura.<br>
+     * If the mapping exist in the mapping table referenceId <-> kalturaId, then the record will be updated with the kaltura.<br>
      * If the mapping does not exist (yet), the record will not be updated with kaltura id.<br>
      * <br>
      * If many records needs to be updated this can take some time. 1M records is estimated to take 15 minutes. 
@@ -916,7 +917,7 @@ public class DsStorage implements AutoCloseable {
     /**
      * Delete all records for an origin that has been modified time interval. The records will be deleted and not just marked for deletion
      * 
-     * @param origin The origin for the collection. Value must be define in the configuration
+     * @param origin The origin for the collection. Value must be defined in the configuration
      * @param mTimeFrom modified time from. Format is millis +3 digits
      * @param mTimeTo modified time to. Format is millis +3 digits
      */    
@@ -1088,7 +1089,7 @@ public class DsStorage implements AutoCloseable {
         record.setReferenceId(referenceId);
         record.setKalturaId(kalturaId);
 
-        //Set the two dates as human readable
+        //Set the two dates as human-readable.
         record.setcTimeHuman(convertToHumanDate(cTime));
         record.setmTimeHuman(convertToHumanDate(mTime));
         
@@ -1119,7 +1120,7 @@ public class DsStorage implements AutoCloseable {
     }
     
    /*
-   * Method is syncronized because simpledateformat is not thread safe. Faster to reuse syncronized than to construct new every time.
+   * Method is synchronized because simple dateformat is not thread safe. Faster to reuse synchronized than to construct new every time.
    */
     private static synchronized String convertToHumanDate(long millis_time_1000) {
      return dateFormat.format(new Date(millis_time_1000/1000));
@@ -1156,7 +1157,7 @@ public class DsStorage implements AutoCloseable {
         }
     }
 
-    // This is called by from InialialziationContextListener by the Web-container
+    // This is called from InitializationContextListener by the Web-container
     // when server is shutdown,
     // Just to be sure the DB lock file is free.
     public static void shutdown() {

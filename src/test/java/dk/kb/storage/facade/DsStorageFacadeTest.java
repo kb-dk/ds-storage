@@ -19,7 +19,7 @@ import dk.kb.util.webservice.exception.InternalServiceException;
 public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     
-    //THIS UNTTEST MUST BE UPDATED WHEN VALIDATION RULES ARE MORE CLEAR!
+    //THIS UNITTEST MUST BE UPDATED WHEN VALIDATION RULES ARE MORE CLEAR!
     @Test
     public void testInvalidId()  {
         //TODO describe flow below
@@ -97,7 +97,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         assertEquals(origin,recordUpdated .getOrigin());
         assertEquals(parentIdUpdated,record.getParentId());        
         assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
-        assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                	                           
+        assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on update
 
 
     }
@@ -137,8 +137,8 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     @Test
     public void testUnknownOrigin() {
-        String id ="unkown.origin:id1";
-        String origin="unkown.origin";	    	
+        String id ="unknown.origin:id1";
+        String origin="unknown.origin";
         String data = "Hello";
 
         DsRecordDto record = new DsRecordDto();
@@ -176,7 +176,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     - name: origin_strategy_child    
       updateStrategy: CHILD
 
-    - name: oritin.strategy.parent
+    - name: origin.strategy.parent
       updateStrategy: PARENT
      *  
      * The 4 unittest has minor differences in assertions about that is updated
@@ -316,7 +316,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     @Test
     public void testParentCycle() throws Exception {
-        //Datastructure is a tree with 3 nodes and depth=2. Node at deepth2  points back to top node.        
+        //Data structure is a tree with 3 nodes and depth=2. Node at depth2  points back to top node.
         
         createParentCycle("doms.aviser");
         try {
@@ -331,7 +331,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     @Test
     public void testRecordTree() throws Exception {        
-        //Datastructure is a tree with 5 nodes and depth=2. (See method for visualization)       
+        //Data structure is a tree with 5 nodes and depth=2. (See method for visualization)
         //Test 1: Load parent and test tree is correct
         //Test 2: Load of the children at depth 1 and test tree is correct
         //Test 3: Load of the children at depth 2 and test tree is correct
@@ -350,7 +350,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
      
         DsRecordDto record = DsStorageFacade.getRecordTree(parentId);       
         
-        //Check it is parent we have
+        //Check it is a parent record we have by assert that it have no parents it self.
         assertEquals(parentId,record.getId());
         assertNull(record.getParent());
       
@@ -403,7 +403,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     @Test
     public void testLocalRecordTree() throws Exception {        
-        //Datastructure is a tree with 5 nodes and depth=2. (See method for visualization)       
+        //Data structure is a tree with 5 nodes and depth=2. (See method for visualization)
         //Test 1: Load c1 
         //Test 2: Load p
         //Test 3: Load c1_1

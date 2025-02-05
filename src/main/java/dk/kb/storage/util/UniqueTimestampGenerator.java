@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  *
  * If the maximum of 999 is reached for the additional nanos, it will trigger a 1 millis sleep. But this will likely never happen.
- * Stress test of just this method could not generate more than 200 uniquestamps within the same millis. 
+ * Stress test of just this method could not generate more than 200 unique timestamps within the same millis.
  *
  */
 public class UniqueTimestampGenerator {

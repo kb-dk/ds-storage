@@ -26,7 +26,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
     @Test
     public void testBasicCRUD() throws Exception {
-        //TODO rescribe flow below
+        //TODO describe flow below
 
         //Test record not exist
         assertFalse(storage.recordExists("origin:unknown"));
@@ -35,8 +35,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         String origin="origin.test";
         String data = "Hello";
         String parentId="origin.test:id_1_parent";
-        String refenceId="kalturaRefenceId_123";
-        String refenceIdUpdated="kalturaRefenceId_123_updated";
+        String referenceId="kalturaReferenceId_123";
+        String referenceIdUpdated="kalturaReferenceId_123_updated";
         RecordTypeDto recordType=RecordTypeDto.MANIFESTATION;
         
         DsRecordDto record = new DsRecordDto();
@@ -45,7 +45,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         record.setData(data);
         record.setParentId(parentId);
         record.setRecordType(RecordTypeDto.MANIFESTATION);
-        record.setReferenceId(refenceId);
+        record.setReferenceId(referenceId);
         storage.createNewRecord(record );
 
         //Test record not exist
@@ -61,7 +61,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertTrue(recordLoaded.getmTime() > 0);
         Assertions.assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
         Assertions.assertEquals(recordType, recordLoaded.getRecordType());
-        Assertions.assertEquals(refenceId, recordLoaded.getReferenceId());
+        Assertions.assertEquals(referenceId, recordLoaded.getReferenceId());
         
         //Now update
 
@@ -71,7 +71,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
         record.setData(dataUpdate);
         record.setParentId(parentIdUpdated);            
-        record.setReferenceId(refenceIdUpdated);
+        record.setReferenceId(referenceIdUpdated);
         storage.updateRecord(record);
 
         //Check new updated record is correct.
@@ -81,8 +81,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertEquals(origin,recordUpdated .getOrigin());
         Assertions.assertEquals(parentIdUpdated,record.getParentId());        
         Assertions.assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
-        Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                                            
-        Assertions.assertEquals(refenceIdUpdated, recordUpdated.getReferenceId());
+        Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on update
+        Assertions.assertEquals(referenceIdUpdated, recordUpdated.getReferenceId());
         
         //Mark record for delete                
         storage.markRecordForDelete(id);
@@ -196,7 +196,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         record.setRecordType(RecordTypeDto.MANIFESTATION);        
         storage.createNewRecord(record );
         
-        //Update refereneId Id.
+        //Update referenceId Id.
         storage.updateReferenceIdForRecord(recordId,referenceId);
      
         //Load and test referenceId is correct
@@ -376,7 +376,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         ArrayList<DsRecordDto> list2 = storage.getModifiedAfterParentsOnly("test.origin", before, 100);
         assertEquals(1, list2.size());
 
-        //Noone after last
+        //None after last
         long lastModified = list2.get(0).getmTime();
 
         ArrayList<DsRecordDto> list3 = storage.getModifiedAfterParentsOnly("test.origin", lastModified, 100);
@@ -396,7 +396,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         ArrayList<DsRecordDto> list2 = storage.getModifiedAfterChildrenOnly("test.origin", before, 1000);
         assertEquals(1000, list2.size());
 
-        //Noone after last
+        //None after last
         long lastModified = list2.get(999).getmTime();
 
         ArrayList<DsRecordDto> list3 = storage.getModifiedAfterChildrenOnly("test.origin", lastModified, 1000);

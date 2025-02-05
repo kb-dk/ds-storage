@@ -82,7 +82,7 @@ public class KBAuthorizationInterceptor extends AbstractPhaseInterceptor<Message
     public static final String ENDPOINT_ROLES = "EndpointRoles"; // Set<String>
 
     /**
-     * Whether or not the access token validates.
+     * Whether the access token validates.
      * If the value is false, {@link #TOKEN_ROLES} will be empty and {@link #FAILED_REASON} will be present.
      */
     public static final String VALID_TOKEN = "ValidToken"; // Boolean
@@ -215,7 +215,7 @@ public class KBAuthorizationInterceptor extends AbstractPhaseInterceptor<Message
     }
 
     /**
-     * @return human readable name for the implementation class and method for the endpoint requested by the Message.
+     * @return human-readable name for the implementation class and method for the endpoint requested by the Message.
      */
     private String getEndpointName(Message message) {
         final String endpointClassName = message.getExchange().getEndpoint().getEndpointInfo().getName().getLocalPart();
