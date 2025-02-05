@@ -292,8 +292,8 @@ public class DsStorageFacade {
                 ArrayList<String> ids = storage.getRecordsIdsByRecordTypeModifiedAfter(origin, recordType,lastMTime.get(), request);
 
                 ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
-                for (int i=0;i<ids.size();i++) {
-                    records.add(getRecord(ids.get(i)));
+                for (String singleId : ids) {
+                    records.add(getRecord(singleId));
                 }
                                 
                 // We have to load the localTree for the records                

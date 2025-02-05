@@ -170,7 +170,7 @@ public class DsStorageClientTest {
     @Test
     public void testRemoteRecordsTreeRaw() throws IOException {
   
-        try (ContinuationInputStream recordsIS = remote.getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
+        try (ContinuationInputStream<Long> recordsIS = remote.getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
                              "ds.radio", RecordTypeDto.DELIVERABLEUNIT,  0L, 3L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
             assertTrue(recordsStr.contains("\"id\":\"ds.radio:oai"),
@@ -229,7 +229,7 @@ public class DsStorageClientTest {
 
     @Test
     public void testRemoteMinimalRecordsContent() throws IOException {
-        try (ContinuationInputStream recordsIS = remote.getMinimalRecordsModifiedAfterJSON(
+        try (ContinuationInputStream<Long> recordsIS = remote.getMinimalRecordsModifiedAfterJSON(
                 "ds.tv", 0L, 10L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
             assertTrue(recordsStr.contains("\"id\":\"ds.tv:oai"),
