@@ -50,7 +50,7 @@ public class H2DbUtil {
     }
     
     //Use KB-util to resolve file. 
-    protected static File getFile(String resource) throws IOException {
+    protected static File getFile(String resource) {
        return Resolver.getPathFromClasspath(resource).toFile(); 
     }
 

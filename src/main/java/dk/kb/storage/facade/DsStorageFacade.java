@@ -682,7 +682,7 @@ public class DsStorageFacade {
      * @param origo     record used as recursive parameter
      */
     
-    private static void loadAndSetChildRelations(DsRecordDto currentRecord, HashSet<String> previousIdsForCycleDetection, DsRecordDto origo) throws SQLException {
+    private static void loadAndSetChildRelations(DsRecordDto currentRecord, HashSet<String> previousIdsForCycleDetection, DsRecordDto origo)  {
        
                 
         List<String> childrenIds = currentRecord.getChildrenIds();                

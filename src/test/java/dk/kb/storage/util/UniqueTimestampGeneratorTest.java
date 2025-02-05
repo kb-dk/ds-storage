@@ -15,7 +15,7 @@ public class UniqueTimestampGeneratorTest {
 
 
     @Test
-    public void testUniqueTimestamps() throws Exception {
+    public void testUniqueTimestamps() {
 
         int numberOfTimeStamps =10000; // Need at least 1000 to test nano overflow
         ArrayList<Long> stamps = new ArrayList<> ();

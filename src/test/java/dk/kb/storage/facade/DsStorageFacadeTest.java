@@ -20,7 +20,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     //THIS UNTTEST MUST BE UPDATED WHEN VALIDATION RULES ARE MORE CLEAR!
     @Test
-    public void testInvalidId() throws Exception {
+    public void testInvalidId()  {
         //TODO describe flow below
 
         
@@ -43,7 +43,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     
     @Test
-    public void testCreateAndUpdate() throws Exception {
+    public void testCreateAndUpdate() {
         //TODO describe flow below
 
         try {
@@ -103,7 +103,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     
     @Test
-    public void testKeepKalturaId() throws Exception {
+    public void testKeepKalturaId() {
         String id ="doms.radio:id1";
         String origin="doms.radio";
         String data = "Hello";       
@@ -135,7 +135,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     }
     
     @Test
-    public void testUnknownOrigin() throws Exception {
+    public void testUnknownOrigin() {
         String id ="unkown.origin:id1";
         String origin="unkown.origin";	    	
         String data = "Hello";
@@ -282,7 +282,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
 
     @Test
-    public void testIdStartsWithOrigin() throws Exception {
+    public void testIdStartsWithOrigin() {
         String id ="origin.unknown:id1";
         String origin="origin.strategy.none";      
         
@@ -441,7 +441,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         assertEquals(2, child1_1.getParent().getChildrenIds().size()); //But id's to children must be there
     }
    
-    private void createTestHierachyParentAndTwoChildren(String origin) throws Exception {
+    private void createTestHierachyParentAndTwoChildren(String origin) {
         String parentId="parent";
 
         DsRecordDto parentRecord = new DsRecordDto();
@@ -480,7 +480,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
      * 
      * 
      */
-    private void createParentCycle(String origin) throws Exception {
+    private void createParentCycle(String origin) {
         DsRecordDto parentRecord = new DsRecordDto();
         parentRecord.setId(origin+":p1");
         parentRecord.setOrigin(origin);
@@ -523,7 +523,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
      *           c1_2     c1_1   
      * 
      */
-    private void createTestDepth2Tree(String origin) throws Exception {
+    private void createTestDepth2Tree(String origin) {
         String parentId="p";
 
         DsRecordDto p = new DsRecordDto();
@@ -569,7 +569,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     }
     @Test    
-    public void testCreateAndUpdateMapping() throws Exception {
+    public void testCreateAndUpdateMapping() {
     
         String refId="referenceid_unittest_id123";
         try {
