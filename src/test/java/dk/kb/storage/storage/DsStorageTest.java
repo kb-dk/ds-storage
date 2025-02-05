@@ -335,10 +335,6 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertEquals(0, maxAfter, "Max mTime with start afterTime should be 0");
         List<DsRecordDto> bRecords = storage.getRecordsModifiedAfter("test.origin", beforeTime, 100);
 
-//        System.out.println("First record: " + bRecords.get(0).getmTime());
-//        System.out.println("Stated mTime: " + maxBefore);
-//        System.out.println("Last  record: " + bRecords.get(bRecords.size()-1).getmTime());
-
         assertEquals(maxBefore, bRecords.get(bRecords.size()-1).getmTime(),
                      "The mTime for the last bRecord should match maxBefore");
     }
@@ -360,10 +356,6 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertTrue(maxMiddle < afterTime, "Max mTime with start in the middle should be before afterTime");
         assertEquals(0, maxAfter, "Max mTime with start afterTime should be 0");
         List<String> bRecords = storage.getRecordsIdsByRecordTypeModifiedAfter("test.origin", RecordTypeDto.MANIFESTATION, beforeTime, 100);
-
-//        System.out.println("First record: " + bRecords.get(0).getmTime());
-//        System.out.println("Stated mTime: " + maxBefore);
-//        System.out.println("Last  record: " + bRecords.get(bRecords.size()-1).getmTime());
 
         assertEquals(maxBefore, storage.loadRecord(bRecords.get(bRecords.size()-1)).getmTime(),
                      "The mTime for the last bRecord should match maxBefore");
