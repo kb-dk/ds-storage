@@ -45,16 +45,6 @@ public class ServiceConfig {
 		loadAllowedOrigins();
 	}
 
-	/**
-	 * Demonstration of a first-class property, meaning that an explicit method has been provided.
-	 * @see #getConfig() for alternative.
-	 * @return the "Hello World" lines defined in the config file.
-	 */
-	public static List<String> getHelloLines() {
-		List<String> lines = serviceConfig.getList("helloLines");
-		return lines;
-	}
-
 	private static void loadAllowedOrigins() throws IOException{
 
 		List<YAML> origins = serviceConfig.getYAMLList("origins");
