@@ -143,7 +143,7 @@ public class DsStorageFacade {
                 record.setOrgid(orgId); //set this before changing value below
                 record.setId(idNorm);                
                 record.setIdError(true);
-                log.warn("ID was normalized from:"+orgId + " to "+ idNorm);
+                log.warn("ID was normalized from: '{}' to '{}'", orgId, idNorm);
             }
             
             if (record.getParentId() != null) { //Also normalize parentID
@@ -159,10 +159,10 @@ public class DsStorageFacade {
                  if (record.getKalturaId() == null && record.getReferenceId() != null && !record.getReferenceId().equals(oldRecord.getReferenceId())) {                   
                     record.setKalturaId(oldRecord.getKalturaId());                      
                  }                                
-                log.info("Updating record with id:"+record.getId());
+                log.info("Updating record with id: '{}'", record.getId());
                 storage.updateRecord(record);
             } else {               
-                log.info("Creating new record with id:"+record.getId());
+                log.info("Creating new record with id: '{}'", record.getId());
                 storage.createNewRecord(record);
             }
             updateMTimeForParentChild(storage,record.getId());
@@ -418,13 +418,13 @@ public class DsStorageFacade {
       while (topParent.getParentId() != null) {          
       
           if (ids.contains(topParent.getId())) {
-              log.error("Cycle detected for recordId:"+topParent.getId());
+              log.error("Cycle detected for recordId: '{}'", topParent.getId());
               throw new InternalServiceException("Cycle detected for recordId:"+topParent.getId());              
           }          
           ids.add(topParent.getId());
           DsRecordDto nextParent = getRecord(topParent.getParentId());                                           
           if (nextParent==null) { //inconsistent data.
-              log.warn("Inconsistent data. Parent with ID does not exist:"+topParent.getParentId() + " and is set for record:"+topParent.getId());            
+              log.warn("Inconsistent data. Parent with ID does not exist: '{}' and is set for record: '{}'", topParent.getParentId(), topParent.getId());
               return topParent; 
           }
           topParent=nextParent;
@@ -456,7 +456,7 @@ public class DsStorageFacade {
             String idNorm = IdNormaliser.normaliseId(recordId);            
             int updated = storage.markRecordForDelete(idNorm);
             updateMTimeForParentChild(storage,recordId);
-            log.info("Record marked for delete:"+recordId);
+            log.info("Record marked for delete: '{}'", recordId);
             return updated;
         });
     }
@@ -467,7 +467,7 @@ public class DsStorageFacade {
             validateOriginExists(origin);
 
             int numberDeleted =  storage.deleteMarkedForDelete(origin);
-            log.info("Delete marked for delete records for origin:"+origin +" number deleted:"+numberDeleted);
+            log.info("Deleted all marked for delete records for origin: '{}'. Number deleted: '{}'", origin, numberDeleted);
             //We are not touching parent/children relation when deleting for real.
             return numberDeleted;
         });
@@ -527,7 +527,7 @@ public class DsStorageFacade {
         OriginDto origin = ServiceConfig.getAllowedOrigins().get(record.getOrigin());       
         UpdateStrategyDto updateStrategy = origin.getUpdateStrategy();
 
-        log.info("Updating parent/child relation for recordId:"+recordId +" with updateStrategy:"+updateStrategy);
+        log.info("Updating parent/child relation for recordId: '{}' with updateStrategy: '{}'", recordId, updateStrategy);
 
         switch (updateStrategy) {
             case NONE:
@@ -559,7 +559,7 @@ public class DsStorageFacade {
         for (String childId : childrenIds) {
            int updated = storage.updateMTimeForRecord(childId);
            if (updated == 0) {
-               log.warn("Children with id does not exist:"+childId);
+               log.warn("Children with id does not exist: '{}'", childId);
            }
         }
     }

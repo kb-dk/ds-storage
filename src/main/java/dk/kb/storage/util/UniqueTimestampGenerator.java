@@ -34,7 +34,7 @@ public class UniqueTimestampGenerator {
 				Thread.sleep(1L);
 			}
 			catch(Exception e) {				
-				log.error("Error in generating timestamp:"+e.getMessage());
+				log.error("Error in generating timestamp: '{}'", e.getMessage());
 			}
 			lastUsedAdditionalNanos=0;//Reset to next milis
 			sysTime = System.currentTimeMillis();

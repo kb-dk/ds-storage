@@ -70,10 +70,10 @@ public class ServiceConfig {
 			originDto.setName(name);
 			originDto.setUpdateStrategy(UpdateStrategyDto.valueOf(updateStrategy));                	
 			allowedOrigins.put(name, originDto);
-            log.info("Updatestrategy loaded for origin:"+originDto.getName()  +" with update strategy:"+originDto.getUpdateStrategy());
+            log.info("Updatestrategy loaded for origin: '{}' with update strategy: '{}'", originDto.getName(), originDto.getUpdateStrategy());
 		}
 
-		log.info("Allowed origin loaded from config. Number of origins:"+allowedOrigins.size());
+		log.info("Allowed origin loaded from config. Number of origins: '{}'", allowedOrigins.size());
 		
 	}
 

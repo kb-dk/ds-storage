@@ -33,10 +33,10 @@ public class H2DbUtil {
 
         try (Connection connection = DriverManager.getConnection(url,username,password)){
             File file = getFile(CREATE_TABLES_DDL_FILE);
-            log.info("Running DDL script:" + file.getAbsolutePath());
+            log.info("Running DDL script: {}", file.getAbsolutePath());
 
             if (!file.exists()) {
-                log.error("DDL script not found:" + file.getAbsolutePath());
+                log.error("DDL script not found: {}", file.getAbsolutePath());
                 throw new RuntimeException("DDL Script file not found:" + file.getAbsolutePath());
             }
 

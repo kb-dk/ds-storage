@@ -69,7 +69,7 @@ public class DsStorageClientTest {
     public void testGetRecord() throws ApiException {      
         String id = "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744";
         DsRecordDto record = remote.getRecord(id,false); 
-        log.info("Loaded record from storage with id:"+record.getId());
+        log.info("Loaded record from storage with id: '{}'", record.getId());
         assertEquals(id, "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744"); 
     }
 
@@ -195,7 +195,7 @@ public class DsStorageClientTest {
             assertEquals(numberOfRecords, recordList.size(), "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),
                     "The highest modification time should be present");
-            log.debug("Stated highest modification time was " + records.getContinuationToken());
+            log.debug("Stated highest modification time was: '{}'", records.getContinuationToken());
             assertEquals(recordList.get(recordList.size()-1).getmTime(),
                          records.getContinuationToken(),
                     "Received highest mTime should match stated highest mTime");

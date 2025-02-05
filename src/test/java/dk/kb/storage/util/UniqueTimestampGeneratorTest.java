@@ -25,7 +25,7 @@ public class UniqueTimestampGeneratorTest {
         for (int i = 0;i<numberOfTimeStamps;i++) { 	    		
             stamps.add(UniqueTimestampGenerator.next());	    		
         }
-        log.info("Generated "+numberOfTimeStamps +" in "+(System.currentTimeMillis()-start +" millis"));
+        log.info("Generated '{}' in '{}' millis", numberOfTimeStamps, (System.currentTimeMillis()-start));
 
         //Test they are different and increasing
         for (int i = 0;i<numberOfTimeStamps-1;i++) { 	    		              

@@ -51,8 +51,8 @@ public class IdNormaliser {
         }
         id = NO_GO.matcher(id).replaceAll(".");
 
-        if (!validateID(id)) { //If this happen we probably have to fix this method
-            log.error("Unable to normalize id:"+orgId);      
+        if (!validateID(id)) { //If this happens we probably have to fix this method
+            log.error("Unable to normalize id: '{}'", orgId);
             throw new InvalidArgumentServiceException("ID  syntax was not valid normalisation could not correct it:"+orgId);
         }
                 

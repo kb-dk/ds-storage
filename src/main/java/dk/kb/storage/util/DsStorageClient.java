@@ -65,7 +65,7 @@ public class DsStorageClient extends DsStorageApi {
     public DsStorageClient(String serviceURI) {
         super(createClient(serviceURI));
         this.serviceURI = serviceURI;
-        log.info("Created OpenAPI client for '" + serviceURI + "'");
+        log.info("Created OpenAPI client for '{}'", serviceURI);
     }
 
     

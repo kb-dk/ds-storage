@@ -95,7 +95,7 @@ public class KBAuthorizationInterceptor extends AbstractPhaseInterceptor<Message
     public KBAuthorizationInterceptor() {
         super(Phase.PRE_INVOKE);
         KBOAuth2Handler.getInstance(); // Fail/log early
-        log.info("Created " + this);
+        log.info("Created '{}'", this);
     }
 
     
