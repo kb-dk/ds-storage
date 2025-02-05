@@ -3,6 +3,7 @@ package dk.kb.storage.facade;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -69,7 +70,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         DsStorageFacade.createOrUpdateRecord(record );
 
         DsRecordDto recordLoaded = DsStorageFacade.getRecord(id,false);
-        assertTrue(recordLoaded != null);
+        assertNotNull(recordLoaded);
 
         //Load and check values are correct
         assertEquals(id,recordLoaded.getId());
@@ -350,8 +351,8 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         DsRecordDto record = DsStorageFacade.getRecordTree(parentId);       
         
         //Check it is parent we have
-        assertEquals(parentId,record.getId());        
-        assertTrue(record.getParent() == null);        
+        assertEquals(parentId,record.getId());
+        assertNull(record.getParent());
       
         //Check children loaded as records
         assertEquals(record.getChildren().size(), 2);               
