@@ -330,7 +330,7 @@ public class DsStorage implements AutoCloseable {
 
     public ArrayList<String> getChildrenIds(String parentId) throws SQLException {
 
-        ArrayList<String> childIds = new ArrayList<String>();
+        ArrayList<String> childIds = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(childrenIdsStatement)) {
             stmt.setString(1, parentId);
             try (ResultSet rs = stmt.executeQuery();) {
@@ -370,7 +370,7 @@ public class DsStorage implements AutoCloseable {
         if (batchSize <1 || batchSize > 100000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 100000");          
         }
-        ArrayList<DsRecordDto > records = new ArrayList<DsRecordDto >();
+        ArrayList<DsRecordDto > records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterParentsOnlyStatement)) {
 
             prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
@@ -421,7 +421,7 @@ public class DsStorage implements AutoCloseable {
         if (batchSize <1 || batchSize > 100000) { //No doom switch
             throw new InvalidArgumentServiceException("Batchsize must be in range 1 to 100000");          
         }
-        ArrayList<DsRecordMinimalDto> records = new ArrayList<DsRecordMinimalDto>();
+        ArrayList<DsRecordMinimalDto> records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(referenceIdsStatement)) {
 
             stmt.setString(1, origin);
@@ -604,7 +604,7 @@ public class DsStorage implements AutoCloseable {
         if (batchSize <1 || batchSize > 10000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 10000");
         }
-        ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
+        ArrayList<DsRecordDto> records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement)) {
 
             prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
@@ -631,7 +631,7 @@ public class DsStorage implements AutoCloseable {
         if (batchSize <1 || batchSize > 10000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 10000");   
         }
-        ArrayList<String> recordsIds = new ArrayList<String>();
+        ArrayList<String> recordsIds = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsIDByRecordTypeModifiedAfterStatement)) {
                        
             stmt.setString(1, origin);
@@ -667,7 +667,7 @@ public class DsStorage implements AutoCloseable {
         if (batchSize <1 || batchSize > 100000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 100000");          
         }
-        ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
+        ArrayList<DsRecordDto> records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterChildrenOnlyStatement)) {
 
             prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
@@ -683,7 +683,7 @@ public class DsStorage implements AutoCloseable {
 
     public ArrayList<OriginCountDto> getOriginStatictics() throws SQLException {
 
-        ArrayList<OriginCountDto> originCountList = new ArrayList<OriginCountDto>();
+        ArrayList<OriginCountDto> originCountList = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(originsStatisticsStatement)) {
             
             try (ResultSet rs = stmt.executeQuery();) {

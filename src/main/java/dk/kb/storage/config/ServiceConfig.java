@@ -23,7 +23,7 @@ public class ServiceConfig {
 	  public static final int DB_BATCH_SIZE_DEFAULT = 100;
 
 	//key is origin
-	private static final HashMap<String,OriginDto> allowedOrigins = new HashMap<String,OriginDto>();
+	private static final HashMap<String,OriginDto> allowedOrigins = new HashMap<>();
     
 	
 	/**

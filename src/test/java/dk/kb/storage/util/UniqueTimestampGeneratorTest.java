@@ -18,7 +18,7 @@ public class UniqueTimestampGeneratorTest {
     public void testUniqueTimestamps() throws Exception {
 
         int numberOfTimeStamps =10000; // Need at least 1000 to test nano overflow
-        ArrayList<Long> stamps = new ArrayList<Long> ();
+        ArrayList<Long> stamps = new ArrayList<> ();
 
         long start=System.currentTimeMillis();
 

@@ -87,7 +87,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             log.debug("getOriginConfiguration() called with call details: {}", getCallDetails());
 
             //TODO MOVE TO FACEDE
-            List<OriginDto> originList = new ArrayList<OriginDto>();
+            List<OriginDto> originList = new ArrayList<>();
             HashMap<String, OriginDto> allowedOrigins = ServiceConfig.getAllowedOrigins();
             for (String originName : allowedOrigins.keySet()) {
                 originList.add(allowedOrigins.get(originName));

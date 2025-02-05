@@ -291,7 +291,7 @@ public class DsStorageFacade {
                 //important. Only load Id's for performance. Then load the recordTree
                 ArrayList<String> ids = storage.getRecordsIdsByRecordTypeModifiedAfter(origin, recordType,lastMTime.get(), request);
 
-                ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
+                ArrayList<DsRecordDto> records = new ArrayList<>();
                 for (String singleId : ids) {
                     records.add(getRecord(singleId));
                 }
@@ -413,7 +413,7 @@ public class DsStorageFacade {
      */
     private static DsRecordDto getTopParent(DsRecordDto record) throws InternalServiceException{
     
-      HashSet<String> ids = new HashSet<String>();   
+      HashSet<String> ids = new HashSet<>();
       DsRecordDto topParent = record;
       while (topParent.getParentId() != null) {          
       
@@ -690,7 +690,7 @@ public class DsStorageFacade {
        
                 
         List<String> childrenIds = currentRecord.getChildrenIds();                
-        List<DsRecordDto> childrenRecords = new ArrayList<DsRecordDto>(); 
+        List<DsRecordDto> childrenRecords = new ArrayList<>();
         for (String childId: childrenIds) {
                         
             //DsRecordDto child = getRecord(childId);          
