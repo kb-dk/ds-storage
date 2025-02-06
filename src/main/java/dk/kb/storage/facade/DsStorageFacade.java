@@ -37,20 +37,18 @@ public class DsStorageFacade {
     /**
      * <p>
      * Get a list of records after a given mTime. The records will only have fields
-     * id,mTime,referenceid and kalturaid defined 
+     * id, mTime, referenceid and kalturaid defined
      * </p>
      *
-     *@param origin The origin to fetch records drom
+     *@param origin The origin to fetch records from
      *@param mTime only fetch records with mTime larger that this
      *@param batchSize Number of maximum records to return
      *
-     * @return List of records only have fields id,mTime,referenceid and kalturaid
+     * @return List of records only have fields id, mTime, referenceid and kalturaid
      */
     public static  ArrayList<DsRecordMinimalDto>  getReferenceIds(String origin, long mTime, int batchSize)  {                       
         String id = String.format(Locale.ROOT, "getReferenceIds(origin='%s', mTime=%d, batchSize=%d)", origin, mTime, batchSize);
-        return performStorageAction(id, storage -> {             
-            return storage.getReferenceIds(origin, mTime, batchSize);   
-        });
+        return performStorageAction(id, storage -> storage.getReferenceIds(origin, mTime, batchSize));
     }
 
     public static Long getMinimalRecordsModifiedAfter(
@@ -92,9 +90,7 @@ public class DsStorageFacade {
      * 
      */
     public static MappingDto getMapping(String referenceId)  {                       
-        return performStorageAction("getMapping(" + referenceId + ")", storage -> {             
-            return storage.getMappingByReferenceId(referenceId);   
-        });
+        return performStorageAction("getMapping(" + referenceId + ")", storage -> storage.getMappingByReferenceId(referenceId));
     }    
     
 
@@ -105,7 +101,7 @@ public class DsStorageFacade {
      * If the mapping already exist for the referenceid, the kalturaId value will be updated
      * </p>
      * 
-     * @param mappingDto The mapping entry to be create or updated
+     * @param mappingDto The mapping entry to be created or updated
      * 
      */
     public static void createOrUpdateMapping(MappingDto mappingDto)  {
@@ -143,7 +139,7 @@ public class DsStorageFacade {
                 record.setOrgid(orgId); //set this before changing value below
                 record.setId(idNorm);                
                 record.setIdError(true);
-                log.warn("ID was normalized from:"+orgId + " to "+ idNorm);
+                log.warn("ID was normalized from: '{}' to '{}'", orgId, idNorm);
             }
             
             if (record.getParentId() != null) { //Also normalize parentID
@@ -159,10 +155,10 @@ public class DsStorageFacade {
                  if (record.getKalturaId() == null && record.getReferenceId() != null && !record.getReferenceId().equals(oldRecord.getReferenceId())) {                   
                     record.setKalturaId(oldRecord.getKalturaId());                      
                  }                                
-                log.info("Updating record with id:"+record.getId());
+                log.info("Updating record with id: '{}'", record.getId());
                 storage.updateRecord(record);
             } else {               
-                log.info("Creating new record with id:"+record.getId());
+                log.info("Creating new record with id: '{}'", record.getId());
                 storage.createNewRecord(record);
             }
             updateMTimeForParentChild(storage,record.getId());
@@ -172,7 +168,7 @@ public class DsStorageFacade {
 
     
     /**
-     * Update kaltura id for a record. The kaltura id is given to the record when uploaded to Kaltura. The Kaltura Id must then later be updated with this method.
+     * Update kaltura id for a record. The kaltura id is given to the record when uploaded to Kaltura. The Kaltura id must then later be updated with this method.
      * 
      * @param referenceId The referenceId given to the record when uploaded to Kaltura
      * @param kalturaId The Kaltura id in the kaltura system. The id is given to a record after upload.
@@ -187,8 +183,8 @@ public class DsStorageFacade {
     /**
      * Update reference id for a record. The referenceId is the id value for the record in the external system. For preservica referenceId is the name of the stream file.
      * 
-     * @param recordId Id of the record to update
-     * @param reference The referenceId to set for the record
+     * @param recordId of the record to update
+     * @param referenceId The referenceId to set for the record
      */
     public static void updateReferenceIdForRecord(String recordId, String referenceId){
          performStorageAction("updateKalturaIdForRecord(" + referenceId + ")", storage -> {
@@ -203,7 +199,7 @@ public class DsStorageFacade {
     /**
      * <p>
      * Update all records that have referenceId but missing kalturaId.<br>
-     * If the mapping exist in the mapping table rerenceId <-> kalturaId, then the record will be updated with the kaltura.<br>
+     * If the mapping exist in the mapping table referenceId <-> kalturaId, then the record will be updated with the kaltura.<br>
      * If the mapping does not exist (yet), the record will not be updated with kaltura id.<br>
      * <br>
      * If many records needs to be updated this can take some time. 1M records is estimated to take 15 minutes. 
@@ -288,12 +284,12 @@ public class DsStorageFacade {
             int request = pending < batchSize ? (int) pending : batchSize;
             long delivered = performStorageAction(id, storage -> {
 
-                //important. Only load Id's for performance. Then load the recordTree
+                //important. Only load id's for performance. Then load the recordTree
                 ArrayList<String> ids = storage.getRecordsIdsByRecordTypeModifiedAfter(origin, recordType,lastMTime.get(), request);
 
-                ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
-                for (int i=0;i<ids.size();i++) {
-                    records.add(getRecord(ids.get(i)));
+                ArrayList<DsRecordDto> records = new ArrayList<>();
+                for (String singleId : ids) {
+                    records.add(getRecord(singleId));
                 }
                                 
                 // We have to load the localTree for the records                
@@ -319,16 +315,15 @@ public class DsStorageFacade {
     
     /**
      *  Load a record with childrenIds and parentId if they exist 
-     *  If includeLocalTree is true also load the local tree for the given record. Parent will be loaded and all children. Siblings will not be loaded.  
+     *  If the value includeLocalTree is true also load the local tree for the given record. Parent will be loaded and all children. Siblings will not be loaded.
      *  <ol>
      *    <li>If there is a parent record, the given record will point to it, but the parent will not point back to this child</li>
      *    <li>If there is a parent record, the given record will point to it, but the parent will not point back to this child</li>
      *  </ol>
      *   
-     *  @param recordId The record id . If inludeLocalTree is set the object tree will be returned with a pointer to this record   
+     *  @param recordId The record id . If includeLocalTree is set the object tree will be returned with a pointer to this record
      *  @param  includeLocalTree Load the parent and children as object and not just IDs.
-     *  @Throws NotFoundServiceException if record is not found     
-     * 
+     *
      */
     public static DsRecordDto getRecord(String recordId, Boolean includeLocalTree) {
       if (!includeLocalTree) {
@@ -346,7 +341,7 @@ public class DsStorageFacade {
     
     /**
      * Load a record with childrenIds
-     * 
+     * <p>
      * Return null if record does not exist
      * 
      */
@@ -359,13 +354,12 @@ public class DsStorageFacade {
     }
 
     /**
-     *   Will load full object tree. The DsDecordDto return will a pointer the record with the recordId in the tree
-     *       
+     *   Will load full object tree. The DsRecordDto return will a pointer the record with the recordId in the tree
+     * <p>
      *  Logic: Find top parent recursive and load children.
      * 
      *  @param recordId The full object tree will be returned with a pointer to this record   
      * 
-     *  @Throws NotFoundServiceException if record is not found
      */
     public static DsRecordDto getRecordTree(String recordId) {
              
@@ -375,7 +369,7 @@ public class DsStorageFacade {
                 
          DsRecordDto topParent = getTopParent(record); //this will also detect a cycle.              
                   
-         loadAndSetChildRelations(topParent,new HashSet<>(), record); //Resursive method     
+         loadAndSetChildRelations(topParent,new HashSet<>(), record); //Recursive method
                     
          return record;
          
@@ -391,7 +385,6 @@ public class DsStorageFacade {
      * 
      *  @param recordId The local object tree will be returned with a pointer to this record   
      * 
-     *  @Throws NotFoundServiceException if record is not found
      */
     private static DsRecordDto getRecordTreeLocal(String recordId) {
            
@@ -408,26 +401,26 @@ public class DsStorageFacade {
     /**
      * Will recursive go up in the tree to find the top parent.
      * Throws an exception if a cycle is detected.
-     * If a parent does not exists it will return last valid record instead. This is due to inconsistent data.
+     * If a parent does not exist it will return last valid record instead. This is due to inconsistent data.
      *  
-     * @param record
+     * @param record to retrieve parent for.
      * @throws InternalServiceException If a cycle is detected.
-     * @return
+     * @return parent record
      */
     private static DsRecordDto getTopParent(DsRecordDto record) throws InternalServiceException{
     
-      HashSet<String> ids = new HashSet<String>();   
+      HashSet<String> ids = new HashSet<>();
       DsRecordDto topParent = record;
       while (topParent.getParentId() != null) {          
       
           if (ids.contains(topParent.getId())) {
-              log.error("Cycle detected for recordId:"+topParent.getId());
+              log.error("Cycle detected for recordId: '{}'", topParent.getId());
               throw new InternalServiceException("Cycle detected for recordId:"+topParent.getId());              
           }          
           ids.add(topParent.getId());
           DsRecordDto nextParent = getRecord(topParent.getParentId());                                           
           if (nextParent==null) { //inconsistent data.
-              log.warn("Inconsistent data. Parent with ID does not exist:"+topParent.getParentId() + " and is set for record:"+topParent.getId());            
+              log.warn("Inconsistent data. Parent with ID does not exist: '{}' and is set for record: '{}'", topParent.getParentId(), topParent.getId());
               return topParent; 
           }
           topParent=nextParent;
@@ -439,7 +432,7 @@ public class DsStorageFacade {
     /**
      * Delete all records for an origin that has been modified time interval. The records will be deleted and not just marked for deletion
      * 
-     * @param origin The origin for the collection. Value must be define in the configuration
+     * @param origin The origin for the collection. Value must be defined in the configuration
      * @param mTimeFrom modified time from. Format is millis +3 digits
      * @param mTimeTo modified time to. Format is millis +3 digits
      */
@@ -459,7 +452,7 @@ public class DsStorageFacade {
             String idNorm = IdNormaliser.normaliseId(recordId);            
             int updated = storage.markRecordForDelete(idNorm);
             updateMTimeForParentChild(storage,recordId);
-            log.info("Record marked for delete:"+recordId);
+            log.info("Record marked for delete: '{}'", recordId);
             return updated;
         });
     }
@@ -470,7 +463,7 @@ public class DsStorageFacade {
             validateOriginExists(origin);
 
             int numberDeleted =  storage.deleteMarkedForDelete(origin);
-            log.info("Delete marked for delete records for origin:"+origin +" number deleted:"+numberDeleted);
+            log.info("Deleted all marked for delete records for origin: '{}'. Number deleted: '{}'", origin, numberDeleted);
             //We are not touching parent/children relation when deleting for real.
             return numberDeleted;
         });
@@ -515,22 +508,22 @@ public class DsStorageFacade {
 
 
     /*
-     * This is called when ever a record is modified (create/update/markfordelete). The recordId here
+     * This is called whenever a record is modified (create/update/markfordelete). The recordId here
      * has already been assigned a new mTime. Update mTime for parent and/or children according to  update strategy for that origin.
      * 
-     * This method will not commit/rollback as this is handled by the calling metod. 
+     * This method will not commit/rollback as this is handled by the calling method.
      * 
      * See UpdateStrategyDto
      */
-    private static void updateMTimeForParentChild(DsStorage storage,String recordId) throws Exception{
-        DsRecordDto record=  storage.loadRecord(recordId); //Notice for performancing tuning, recordDto this can sometimes be given to the method. No premature optimization...
+    private static void updateMTimeForParentChild(DsStorage storage, String recordId) throws Exception{
+        DsRecordDto record=  storage.loadRecord(recordId); //Notice for performance tuning, recordDto can sometimes be given to the method. No premature optimization...
         if (record==null) { //Can happen when marking records for delete and record is not in storage.            
             return;            
         }
         OriginDto origin = ServiceConfig.getAllowedOrigins().get(record.getOrigin());       
         UpdateStrategyDto updateStrategy = origin.getUpdateStrategy();
 
-        log.info("Updating parent/child relation for recordId:"+recordId +" with updateStrategy:"+updateStrategy);
+        log.info("Updating parent/child relation for recordId: '{}' with updateStrategy: '{}'", recordId, updateStrategy);
 
         switch (updateStrategy) {
             case NONE:
@@ -562,7 +555,7 @@ public class DsStorageFacade {
         for (String childId : childrenIds) {
            int updated = storage.updateMTimeForRecord(childId);
            if (updated == 0) {
-               log.warn("Children with id does not exist:"+childId);
+               log.warn("Children with id does not exist: '{}'", childId);
            }
         }
     }
@@ -574,7 +567,7 @@ public class DsStorageFacade {
      * @throws Exception if updating failed.
      */
      private static void updateMTimeForParent(DsStorage storage, DsRecordDto record) throws Exception {
-        //Notice for performancing tuning, recordDto this can sometimes be given to the method. No premature optimization...
+        //Notice for performance tuning, recordDto can sometimes be given to the method. No premature optimization...
         boolean hasParent = (record.getParentId() != null);
         if (!hasParent) {
             return;
@@ -626,7 +619,7 @@ public class DsStorageFacade {
     /**
      * Validate recordType is not null
      * 
-     * @param type 
+     * @param type Record type to validate
      */
     private static void validateRecordType(RecordTypeDto type) {
         if (type==null) {
@@ -637,7 +630,7 @@ public class DsStorageFacade {
     
     /**
      * Starts a storage transaction and performs the given action on it, returning the result from the action.
-     *
+     * <p>
      * If the action throws an exception, a {@link DsStorage#rollback()} is performed.
      * If the action passes without exceptions, a {@link DsStorage#commit()} is performed.
      * @param actionID a debug-oriented ID for the action, typically the name of the calling method.
@@ -686,15 +679,14 @@ public class DsStorageFacade {
      * 
      * @param currentRecord Top record in the object tree. The tree will only be loaded from this node and down.
      * @param previousIdsForCycleDetection Set to keep track of cycles. When calling this method supply it with a new empty HashSet
-     * @param recordId This is the recordId that will be put into the returnObject   
-     * @param returnObject This List will always has 1 element matching the recordId  
+     * @param origo     record used as recursive parameter
      */
     
-    private static void loadAndSetChildRelations(DsRecordDto currentRecord, HashSet<String> previousIdsForCycleDetection, DsRecordDto origo) throws SQLException {
+    private static void loadAndSetChildRelations(DsRecordDto currentRecord, HashSet<String> previousIdsForCycleDetection, DsRecordDto origo)  {
        
                 
         List<String> childrenIds = currentRecord.getChildrenIds();                
-        List<DsRecordDto> childrenRecords = new ArrayList<DsRecordDto>(); 
+        List<DsRecordDto> childrenRecords = new ArrayList<>();
         for (String childId: childrenIds) {
                         
             //DsRecordDto child = getRecord(childId);          
@@ -720,8 +712,8 @@ public class DsStorageFacade {
      * 1) Load the parent if it exists, and this will be set as parent. Parent will not point down to this child
      * 2) Load all children and set them as children. The children will not point back to this parent.   
      * 
-     * @param record The input record with the local tree set     *
-     * @exception Will throw InvalidArgumentServiceException if a record has over 1000 children. It is not expected any caller wants this, but has made a mistake.      
+     * @param record The input record with the local tree set
+     * @exception InvalidArgumentServiceException is thrown if a record has over 1000 children. It is not expected any caller would want this, but is instead seen as mistake.
      */
     
     private static void setLocalTreeForRecord(DsRecordDto record)  {
@@ -755,7 +747,7 @@ public class DsStorageFacade {
     @FunctionalInterface
     private interface StorageAction<T> {
         /**
-         * Access or modify the given storage inside of a transaction.
+         * Access or modify the given storage inside a transaction.
          * If the method throws an exception, it will be logged, a {@link DsStorage#rollback()} will be performed and
          * a wrapping {@link dk.kb.util.webservice.exception.ServiceException} will be thrown.
          * @param storage a storage ready for requests and updates.

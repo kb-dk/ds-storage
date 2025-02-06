@@ -1,7 +1,6 @@
 package dk.kb.storage.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -12,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import dk.kb.util.Resolver;
 
 /*
- * When running in Jetty mode, it needs to setup the database. This class can not in test packages or it can not be loaded
+ * When running in Jetty mode, it needs to set up the database. This class can not in test packages or it can not be loaded
  * 
  */
 public class H2DbUtil {
@@ -33,10 +32,10 @@ public class H2DbUtil {
 
         try (Connection connection = DriverManager.getConnection(url,username,password)){
             File file = getFile(CREATE_TABLES_DDL_FILE);
-            log.info("Running DDL script:" + file.getAbsolutePath());
+            log.info("Running DDL script: {}", file.getAbsolutePath());
 
             if (!file.exists()) {
-                log.error("DDL script not found:" + file.getAbsolutePath());
+                log.error("DDL script not found: {}", file.getAbsolutePath());
                 throw new RuntimeException("DDL Script file not found:" + file.getAbsolutePath());
             }
 
@@ -50,7 +49,7 @@ public class H2DbUtil {
     }
     
     //Use KB-util to resolve file. 
-    protected static File getFile(String resource) throws IOException {
+    protected static File getFile(String resource) {
        return Resolver.getPathFromClasspath(resource).toFile(); 
     }
 

@@ -65,7 +65,7 @@ public class DsStorageClient extends DsStorageApi {
     public DsStorageClient(String serviceURI) {
         super(createClient(serviceURI));
         this.serviceURI = serviceURI;
-        log.info("Created OpenAPI client for '" + serviceURI + "'");
+        log.info("Created OpenAPI client for '{}'", serviceURI);
     }
 
     
@@ -275,10 +275,10 @@ public class DsStorageClient extends DsStorageApi {
     
     /**
      * Update the referenceId for a record <br>
-     * The referenceId is a id in the external system for the record. <br>
+     * The referenceId is an id in the external system for the record. <br>
      * For preservica records the referenceId is the name of the stream file.
      *  
-     *  @param recordId Id of the record to update referenceId for
+     *  @param recordId of the record to update referenceId for
      *  @param referenceId The referenceId to set for the record
      * 
      * @throws ApiException  
@@ -290,7 +290,7 @@ public class DsStorageClient extends DsStorageApi {
     
     /**
      * Deconstruct the given URI and use the components to create an ApiClient.
-     * @param serviceURIString an URI to a service.
+     * @param serviceURIString a URI to a service.
      * @return an ApiClient constructed from the serviceURIString.
      */
     private static ApiClient createClient(String serviceURIString) {

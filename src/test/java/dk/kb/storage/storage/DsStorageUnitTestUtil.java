@@ -50,7 +50,7 @@ public abstract class DsStorageUnitTestUtil {
 
     /*
      * Delete all records between each unittest. The clearTableRecords is only called from here. 
-     * The facade class is reponsible for committing transactions. So clean up between unittests.
+     * The facade class is responsible for committing transactions. So clean up between unittests.
      */
     @BeforeEach
     public void beforeEach() throws Exception {                     
@@ -62,7 +62,7 @@ public abstract class DsStorageUnitTestUtil {
     @AfterAll
     public static void afterClass() {
         // No reason to delete DB data file after test, since we clear table it before each test.
-        // This way you can open the DB in a DB-browser after a unittest and see the result.
+        // This way you can open the DB in a DB-browser after the unittest and see the result.
         // Just run that single test and look in the DB
         DsStorage.shutdown();
 

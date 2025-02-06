@@ -23,7 +23,7 @@ public class ServiceConfig {
 	  public static final int DB_BATCH_SIZE_DEFAULT = 100;
 
 	//key is origin
-	private static final HashMap<String,OriginDto> allowedOrigins = new HashMap<String,OriginDto>();
+	private static final HashMap<String,OriginDto> allowedOrigins = new HashMap<>();
     
 	
 	/**
@@ -36,7 +36,7 @@ public class ServiceConfig {
 	 * Initialized the configuration from the provided configFile.
 	 * This should normally be called from {@link dk.kb.storage.webservice.ContextListener} as
 	 * part of web server initialization of the container.
-	 * @param configFile the configuration to load.
+	 * @param configFiles the YAML files which the configuration is loaded from.
 	 * @throws IOException if the configuration could not be loaded or parsed.
 	 */
 	public static synchronized void initialize(String... configFiles) throws IOException {
@@ -45,20 +45,10 @@ public class ServiceConfig {
 		loadAllowedOrigins();
 	}
 
-	/**
-	 * Demonstration of a first-class property, meaning that an explicit method has been provided.
-	 * @see #getConfig() for alternative.
-	 * @return the "Hello World" lines defined in the config file.
-	 */
-	public static List<String> getHelloLines() {
-		List<String> lines = serviceConfig.getList("helloLines");
-		return lines;
-	}
-
 	private static void loadAllowedOrigins() throws IOException{
 
 		List<YAML> origins = serviceConfig.getYAMLList("origins");
-		//Load updtateStategy for each
+		//Load updateStrategy for each
 		for (YAML origin: origins) {
 			String name = origin.getString("name");
 			if (!IdNormaliser.validateOrigin(name)) {
@@ -70,10 +60,10 @@ public class ServiceConfig {
 			originDto.setName(name);
 			originDto.setUpdateStrategy(UpdateStrategyDto.valueOf(updateStrategy));                	
 			allowedOrigins.put(name, originDto);
-            log.info("Updatestrategy loaded for origin:"+originDto.getName()  +" with update strategy:"+originDto.getUpdateStrategy());
+            log.info("Updatestrategy loaded for origin: '{}' with update strategy: '{}'", originDto.getName(), originDto.getUpdateStrategy());
 		}
 
-		log.info("Allowed origin loaded from config. Number of origins:"+allowedOrigins.size());
+		log.info("Allowed origin loaded from config. Number of origins: '{}'", allowedOrigins.size());
 		
 	}
 

@@ -75,7 +75,7 @@ public class KBOAuth2Handler {
 
     /**
      * Fetches KB OAuth2 settings from the configuration and initializes the handler.
-     *
+     * <p>
      * If no OAUth2 configuration is present, a warning is logged and attempts to access OAuth-annotated endpoints
      * will fail, unless the role {@code public} is specified in the {@link KBAuthorization} annotation.
      */
@@ -98,20 +98,20 @@ public class KBOAuth2Handler {
         baseurl = trimTrailingSlash(conf.getString("baseurl", null));
         if (baseurl == null && mode != MODE.OFFLINE) {
             log.warn("OAuth-enabled endpoints will fail: " +
-                     "No security.baseurl defined and security.mode=" + mode);
+                     "No security.baseurl defined and security.mode='{}'", mode);
         }
 
         realms = new HashSet<>(conf.getList("realms", Collections.emptyList()));
         if (realms.isEmpty() && mode != MODE.OFFLINE) {
             log.warn("OAuth-enabled endpoints will fail: " +
-                     "No .security.realms defined and security.mode=" + mode);
+                     "No .security.realms defined and security.mode='{}'", mode);
         }
 
         keysTTL = conf.getInteger(".public_keys.ttl_seconds", 600);
 
         realmKeys = new TimeMap<>(keysTTL*1000L); // The TimeMap operates in milliseconds
 
-        log.info("Created " + this);
+        log.info("Created '{}'", this);
     }
 
     /**
@@ -215,7 +215,7 @@ public class KBOAuth2Handler {
                         "Authorization failed as there were no Authorization defined in request and " +
                         "endpoint " + endpoint + " requires it to be present with one of the roles " + endpointRoles));
             default: {
-                log.error("Unknown authorization mode: " + mode);
+                log.error("Unknown authorization mode: '{}'", mode);
                 throw new Fault(new InternalServiceException("Unknown authorization mode" + mode));
             }
         }
@@ -272,7 +272,7 @@ public class KBOAuth2Handler {
             throw new VerificationException("No issuer (iss) present in access token payload");
         }
         if (mode == MODE.OFFLINE) {
-            log.debug("Authorization mode is " + MODE.OFFLINE + ": Skipping realmURL, publicKey and expiration checks");
+            log.debug("Authorization mode is '{}: Skipping realmURL, publicKey and expiration checks", MODE.OFFLINE);
 
             try {
                 JWSInput jws = new JWSInput(encodedAccessToken);
@@ -351,7 +351,7 @@ public class KBOAuth2Handler {
             String error = String.format(
                     Locale.ROOT, "The provided realm '%s' from iss '%s' was not on the list of allowed realms",
                     tokenRealm, issuer);
-            log.warn(error + " " + realms);
+            log.warn("{} {}", error, realms);
             throw new VerificationException(error);
         }
         return tokenRealm;
@@ -420,7 +420,7 @@ public class KBOAuth2Handler {
              publicKey = extractPublicKey(kid, publicKeysString);
              realmKeys.put(cacheKey, publicKey);
          } catch (IOException e) {
-             log.warn("Could not get public key for kid " + kid + " in realm " + realm + " from " + publicKeyURL, e);
+             log.warn("Could not get public key for kid '{}' in realm '{}' from '{}'", kid, realm, publicKeyURL, e);
              throw new VerificationException("Could not get public key for kid " + kid + " in realm " + realm, e);
          }
          return publicKey;
