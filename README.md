@@ -31,9 +31,9 @@ mvn package
 ## Setup required to run the project local 
 Create local yaml-file: Take a copy of 'ds-storage-behaviour.yaml'  and name it'ds-storage-environment.yaml'
 
-Update the dbURL for the h2-database file to your environment. Ie. replace XXX with your user.
+Update the dbURL for the h2-database file to your environment. I.e. replace XXX with your user.
 
-The H2 will be created if does not exists and data will be persistent between sessions. Delete the h2-file if you want to reset the database.
+The H2 will be created if it does not exist and data will be persistent between sessions. Delete the h2-file if you want to reset the database.
 
 
 ## Test the webservice with
