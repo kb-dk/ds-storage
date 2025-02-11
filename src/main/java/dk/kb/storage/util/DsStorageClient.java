@@ -21,11 +21,13 @@ import dk.kb.storage.invoker.v1.Configuration;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
+import dk.kb.storage.model.v1.OriginCountDto;
+import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.model.v1.RecordsCountDto;
 import dk.kb.storage.webservice.KBAuthorizationInterceptor;
 import dk.kb.util.webservice.Service2ServiceRequest;
 import dk.kb.util.webservice.exception.InternalServiceException;
-import dk.kb.util.webservice.exception.ServiceException;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
 import dk.kb.util.webservice.stream.ContinuationStream;
 
@@ -39,6 +41,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -78,37 +81,218 @@ public class DsStorageClient extends DsStorageApi {
         log.info("Created OpenAPI client for '" + serviceURI + "'");
     }
 
-
     /**
-     * <p>
-     * If the mapping does not exist a new entry will be created in the mapping table.<br>
-     * The referenceid can not be null, but kalturaId can be null.<br>
-     * If the mapping already exist for the referenceid, the kalturaId value will be updated
-     * </p>
-     * 
-     * @param mapping The mapping entry to be created or updated
-     * 
+     * Retrieve a list of configured origins with their respective update strategy
+     * This endpoint delivers a list of all configured origins. An origin defines which collection data comes from. This could for instance be the Radio &amp; TV collection at The Royal Danish Library, which has the origin defined as &#39;ds.radiotv&#39;. The update strategy defines how data from the specific origin is updated, when a record is added, modified or deleted. 
+     * @return List&lt;OriginDto&gt;
+     * @throws ApiException if fails to make API call
      */
-    public void updateMappings(MappingDto mapping) throws ApiException {               
-        super.mappingPost(mapping);                       
+    @Override
+    public List<OriginDto> getOriginConfiguration () throws ApiException{       
+        try {
+            URI uri = new URIBuilder(serviceURI + "origin/config")                                                                
+                    .build();
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET",new ArrayList<OriginDto>(),null);              
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            throw new ApiException(e);
+        }                        
+
     }
 
     /**
-     * This method is deprecated. See: {@link #getDsRecordsMinimalModifiedAfterStream(String, int, long)}
-     * Get a list of records having a referenceId after a given lastModified time
-     * Extract a list of records with a given batch size by origin and mTime larger than input.
-     * The records will only have the id, mTime, referenceId and kalturaId fields set.
-     * <p/>
-     *  
-     *  @param origin The Origin to extract records from
-     *  @param batchSize How many records to fetch.
-     *  @param mTimeFrom Only retrieve records after mTimeFrom
+     * Show amount of records in each origin
      * 
-     * @throws ApiException  
-     * 
+     * @return List&lt;OriginCountDto&gt;
+     * @throws ApiException if fails to make API call
      */
-    public List<DsRecordMinimalDto> getDsRecordsReferenceIdModifiedAfter(String origin,int batchSize,long mTimeFrom) throws ApiException {
-        return super.getMinimalRecords(origin, batchSize, mTimeFrom);
+    @Override
+    public List<OriginCountDto> getOriginStatistics() throws ApiException {
+        try {
+            URI uri = new URIBuilder(serviceURI + "/origin/stats")                                                                
+                    .build();
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET",new ArrayList<OriginCountDto>(),null);              
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            throw new ApiException(e);
+        }                                
+    }
+
+
+    /**
+     * <p>
+     * This method can not be called on ds-storage client. Must be called directly on ds-storage
+     * <p>
+     * 
+     * Delete all records for an origin that has deleted flag set.
+     * Notice that applications retrieving records from the deleted origin never will know that the records were deleted unless the application retrieves the records after they have been marked with the delete flag. 
+     * @param origin The origin to delete records from. (required)
+     * @return Integer
+     * @throws ApiException if fails to make API call
+     */
+    @Override
+    public RecordsCountDto deleteMarkedForDelete(String origin) throws ApiException {        
+        throw new ApiException(403, "Method deleteMarkedForDelete not allowed to be called on StorageClient");
+    }
+
+
+    /** 
+     * <p>
+     * This method can not be called on ds-storage client. Must be called directly on ds-storage
+     * <p>
+     * 
+     * Delete records from the storage for the origin within the timeframe.
+     * Delete records from the storage for the origin within the timeframe. Records will be deleted and not just marked as deleted. mTimeFrom and mTimeTo will be included in the deletion range. 
+     * @param origin The origin to delete records from. (required)
+     * @param mTimeFrom Format is milliseconds since Epoch with 3 added digits. Value is included in the deletion (required)
+     * @param mTimeTo Format is milliseconds since Epoch with 3 added digits. Value is included in the deletion (required)
+     * @return Integer
+     * @throws ApiException if fails to make API call
+     */
+    @Override
+    public RecordsCountDto deleteRecordsForOrigin(String origin, Long mTimeFrom, Long mTimeTo) throws ApiException {
+        throw new ApiException(403, "Method deleteRecordsForOrigin not allowed to be called on StorageClient");          
+    }
+
+    
+    /**
+     * <p>
+     * This method can not be called on ds-storage client. Must be called directly on ds-storage
+     * <p>
+     * 
+     * 
+     * Update all records having a referenceIf with the matching Kaltura, if the mapping can be found in the mapping table
+     * Update all records having a referenceId with the matching kalturaId, if the mapping can be found in the mapping table.  If many records needs to be updated this can take some time. Estimated 15 minutes for 1M records. It is possible to update in batches if the mapping table is also updated in batches.                 
+     * @return RecordsCountDto
+     * @throws ApiException if fails to make API call
+     */
+    @Override
+    public RecordsCountDto updateKalturaIdForRecords() throws ApiException {
+        throw new ApiException(403, "Method updateKalturaIdForRecords not allowed to be called on StorageClient");          
+    }
+    
+    /**
+     * Read a specific record by ID.
+     * Extract a specific record by ID. Parent and children recordIds will also be include. If setting includeLocalTree&#x3D;true the local recordTree with parent record and children records will also be loaded as objects.   A record marked with delete flag will also be returned. If a record is not found in ds-storage, the endpoint will throw an exception. 
+     * @param id Record ID (required)
+     * @param includeLocalTree Also load parent and direct children as objects (optional, default to false)
+     * @return DsRecordDto
+     * @throws ApiException if fails to make API call
+     */
+    @Override
+    public DsRecordDto getRecord(String id, Boolean includeLocalTree) throws ApiException{       
+        try {
+            URI uri = new URIBuilder(serviceURI + "record/"+id) //Set the full path, then add parameters. Id is part of url and not parameter                                                
+                    .addParameter("includeLocalTree",""+includeLocalTree)               
+                    .build();
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET",new DsRecordDto(),null);              
+        }
+        catch(Exception e) {
+            throw new ApiException(e);
+        }                        
+    }
+
+
+    /**
+     * Create a new record or update an existing record.
+     * A record can have a single optional parent and may have multiple children
+     * @param dsRecordDto  (optional)
+     * @throws ApiException if fails to make API call
+     */
+    @Override
+    public void recordPost(DsRecordDto dsRecordDto) throws ApiException {
+        try {
+            URI uri = new URIBuilder(serviceURI + "record") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+                    .build();
+            Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, dsRecordDto);              
+        }
+        catch(Exception e) {
+            throw new ApiException(e);
+        }                        
+    }
+
+    /**
+     * Mark a record with delete flag.
+     * This will not delete the record in the database but only mark it as deleted. 
+     * @param id Record ID (required)
+     * @return Integer
+     * @throws ApiException if fails to make API call
+     */
+    @Override
+    public RecordsCountDto markRecordForDelete (String id) throws ApiException {
+        try {                          
+            URI uri = new URIBuilder(serviceURI + "record/"+id)                                                                
+                    .build();
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"DELETE",new RecordsCountDto(),null);              
+        }
+        catch(Exception e) {
+            throw new ApiException(e);
+        }                    
+    }
+
+    /**
+     * Create a new mapping or update a mapping .
+     * Create a new mapping or update mapping if referenceId exists. Each record with a stream will have a referenceId (file-id) and needs to be mapped to the KalturaId
+     * @param mappingDto  (optional)
+     * @throws ApiException if fails to make API call
+     */
+    @Override
+    public void mappingPost(MappingDto mapping) throws ApiException {               
+        try {
+            URI uri = new URIBuilder(serviceURI + "mapping") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+               .build();
+            Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, mapping);              
+        }
+        catch(Exception e) {
+            throw new ApiException(e);
+        }                               
+    }
+
+    /**
+     * Get mapping for a specific referenceId
+     * Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.
+     * @param referenceId  (required)
+     * @return MappingDto
+     * @throws ApiException if fails to make API call
+     */
+    @Override
+    public MappingDto getMapping(String referenceId) throws ApiException {        
+        try {
+            URI uri = new URIBuilder(serviceURI + "mapping") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+                    .addParameter("referenceId",referenceId)                       
+                    .build();
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET", new MappingDto(), null);              
+        }
+        catch(Exception e) {
+            throw new ApiException(e);
+        }                                                
+    }
+        
+    /**
+     * Get a list of minimal records having a referenceId after a given lastModified time
+     * Extract a list of records with a given batch size by origin and mTime larger than input. 
+     * The records will only have the id, mTime, referenceId and kalturaId fields. This means that no actual data can be retrieved through this endpoint. It can however be used  for operations where the data from the record isn&#39;t needed. Such as updating Kaltura IDs for records, which is done with referenceId and kalturaId only. 
+     * @param origin The origin to extract records for (required)
+     * @param maxRecords Number of records to extract. (required)
+     * @param mTime Only extract records after this mTime. (optional, default to 0l)
+     * @return List&lt;DsRecordMinimalDto&gt;
+     * @throws ApiException if fails to make API call
+     */
+    @Override
+    public List<DsRecordMinimalDto> getMinimalRecords (String origin, Integer maxRecords, Long mTime) throws ApiException {   
+        try {
+            URI uri = new URIBuilder(serviceURI + "records/minimal") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+                    .addParameter("origin",origin)
+                    .addParameter("maxRecords",""+maxRecords)
+                    .addParameter("mTime",""+mTime)                    
+                    .build();
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET", new ArrayList<DsRecordMinimalDto>(), null);              
+        }
+        catch(Exception e) {
+            throw new ApiException(e);
+        }                                                        
     }
 
     /**
@@ -233,8 +417,7 @@ public class DsStorageClient extends DsStorageApi {
             log.info("setting token:"+token);
         }
 
-        // return ContinuationInputStream.from(uri, Long::valueOf);
-        return Service2ServiceRequest.continuationInputStreamFromWithOAUthToken(uri, Long::valueOf,requestHeaders);
+        return ContinuationInputStream.from(uri, Long::valueOf);       
     }
 
     /**
@@ -257,118 +440,6 @@ public class DsStorageClient extends DsStorageApi {
         return getMinimalRecordsModifiedAfterJSON(origin, mTimeFrom, (long) maxRecords)
                 .stream(DsRecordMinimalDto.class);
     }
-
-
-    /**
-    * <p>
-    * Make service call to another webservice and set the same OAuth token on the call that was used for the initiating service call. 
-    * <p>
-    * Maybe this method should be extended to also take additional RequestHeaders, but implement this if situation occurs. 
-    *
-    * @param uri the full URI with path and parameters set.
-    * @param httpMethod The http-method to use for the service call. GET, POST, DELETE etc.
-    * @param objectClass The DTO type that the response should be parsed to.
-    * @return DtoObject (objectClass) of the same type at given as input. 
-    * @throws ServiceException If anything unexpected happens.   
-    **/    
-/*
-    public  <T> T xmakeUrlCallWithOAuthToken (URI uri , String httpMethod, T objectClass) throws ServiceException {                 
-        //The token (message) will be set if the service method that initiated this call required OAuth token. 
-        String token= (String) JAXRSUtils.getCurrentMessage().get(KBAuthorizationInterceptor.ACCESS_TOKEN_STRING); 
-        Map<String, String> requestHeaders= new HashMap<String, String>();
-        if (token != null) {                                          
-            requestHeaders.put("Authorization","Bearer "+token);
-            log.debug("OAuth2 Bearer token added to service2service call");
-        }
-        else {
-             log.debug("Making service2service call without OAuth token");  
-        }
-             
-        try {
-            HttpURLConnection con = HttpRequestsgetHttpURLConnection(uri, httpMethod, requestHeaders);
-
-            int status = con.getResponseCode();
-            if (status < 200 || status > 299) { // Could be mapped to a more precise exception type, but an exception here is most likely a coding error. 
-                String msg="Got HTTP " + status + " establishing connection to '" + uri + "'"+ con.getResponseCode();
-                log.error(msg);
-                throw new InternalServiceException(msg);
-                // TODO: Consider if the error stream should be logged. It can be arbitrarily large (TOES)
-            }
-            
-            String json = IOUtils.toString(con.getInputStream(), StandardCharsets.UTF_8);          
-
-            ObjectMapper mapper = new ObjectMapper();
-            @SuppressWarnings("unchecked")
-            T dto = (T) mapper.readValue(json, objectClass.getClass());           
-            return dto;
-        }
-        catch(Exception e) { 
-            log.error(e.getMessage(),e);
-            throw new InternalServiceException(e.getMessage()); 
-        }
-    }
-*/
-
-    @Override
-    public DsRecordDto getRecord(String id, Boolean includeLocalTree) throws ApiException{       
-        try {
-            URI uri = new URIBuilder(serviceURI + "record/"+id) //Set the full path, then add parameters. Id is part of url and not parameter                                                
-                .addParameter("includeLocalTree",""+includeLocalTree)               
-                .build();
-            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET",new DsRecordDto());              
-        }
-        catch(Exception e) {
-            throw new ApiException(e);
-        }                        
-
-    }
-    /*
-    @Override
-    public DsRecordDto getRecordOLD(String id, Boolean includeLocalTree) throws ApiException{        
-
-        URI uri;
-
-        log.debug("2");
-      try {
-          uri = new URIBuilder(serviceURI + "record/"+id)
-                    // setPath overwrites paths given in serviceURI                                
-                    .addParameter("includeLocalTree",""+includeLocalTree)
-                    .build();
-      }
-      catch(Exception e) {
-          throw new ApiException (e);
-      }
-
-        String token= (String) JAXRSUtils.getCurrentMessage().get(KBAuthorizationInterceptor.ACCESS_TOKEN_STRING);
-        Map<String, String> requestHeaders= new HashMap<String, String>();
-        log.info("Calling ds-storage with 'Authorization'-parameter header token:"+token);
-        if (token != null) {                                          
-          requestHeaders.put("Authorization","Bearer "+token);
-        log.info("setting token:"+token);
-        }
-
-        log.debug("TEG Opening streaming connection to '{}'", uri);
-        try {
-          HttpURLConnection con = getHttpURLConnection(uri, requestHeaders);
-          String json = IOUtils.toString(con.getInputStream(), StandardCharsets.UTF_8);          
-
-          ObjectMapper mapper = new ObjectMapper();
-          DsRecordDto dto = mapper.readValue(json, DsRecordDto.class);           
-          log.info("Transformed to DTO");
-          return dto;
-        }
-        catch(Throwable e) {      
-          log.error("Error transforming:",e);
-            e.printStackTrace();
-            throw new ApiException (e);
-        }
-
-        //   return ContinuationInputStream.from(uri, Long::valueOf);
-
-
-    }
-     */
-
 
     /**
      * Call the remote ds-storage {@link #getMinimalRecords} and return the JSON response unchanged as a wrapped bytestream.
@@ -416,8 +487,43 @@ public class DsStorageClient extends DsStorageApi {
      * @throws ApiException  
      * 
      */
-    public void updateReferenceIdForRecord(String recordId,String referenceId) throws ApiException {
-        super.updateReferenceIdForRecord(recordId, referenceId);
+    @Override
+    public void updateReferenceIdForRecord(String recordId,String referenceId) throws ApiException {       
+        try {
+            URI uri = new URIBuilder(serviceURI + "record/updateReferenceId") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+                    .addParameter("recordId",""+recordId)               
+                    .addParameter("referenceId",""+referenceId)
+                    .build();            
+            Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null,null);              
+        }
+        catch(Exception e) {
+            throw new ApiException(e);
+        }                        
+
+    }
+
+    /**
+     * Update a record with the Kaltura id. 
+     * Update a record with the Kaltura id. The record was uploaded to Kaltura with the referenceId as metadata. Knowing the kalturaId is important to find the record(stream) in Kaltura later for update or deletetion etc.
+     * @param referenceId  (required)
+     * @param kalturaId  (required)
+     * @throws ApiException if fails to make API call
+     */
+    @Override
+    public void updateKalturaIdForRecord (String referenceId, String kalturaId) throws ApiException {
+
+        try {
+            URI uri = new URIBuilder(serviceURI + "record/updateKalturaId") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+                    .addParameter("referenceId",referenceId)               
+                    .addParameter(" kalturaId",kalturaId)
+                    .build();            
+            Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null,null);              
+        }
+        catch(Exception e) {
+            throw new ApiException(e);
+        }                      
+        
+        
     }
 
     /**
@@ -436,25 +542,5 @@ public class DsStorageClient extends DsStorageApi {
                 setPort(serviceURI.getPort()).
                 setBasePath(serviceURI.getRawPath());
     }
-
-    /**
-    * Invoke a HTTP of a given HttpMethod and requestHeaders.
-    * 
-    * @param uri the full URI with path and parameters set.
-    * @param httpMethod The http-method to use for the service call. GET, POST, DELETE etc. 
-    * @return HttpUrlConnection that will have the status code and response can be read with an InputStream. 
-    */
-    private static HttpURLConnection xgetHttpURLConnection(URI uri, String httpMethod, Map<String, String> requestHeaders) throws IOException {
-        //Do not log requestHeader since this would expose a valid OAuth token in the log file.
-        log.debug("Opening streaming connection to '{}' with, method={}", uri, httpMethod);
-        HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
-        con.setRequestProperty("Content-Type","application/json");
-        con.setRequestMethod(httpMethod);
-        con.setInstanceFollowRedirects(true);
-        if (requestHeaders != null) {
-            requestHeaders.forEach(con::setRequestProperty);
-        }      
-        return con;
-    }
-
+   
 }

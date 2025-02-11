@@ -9,6 +9,7 @@ import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.model.v1.RecordsCountDto;
 import dk.kb.util.Pair;
 import dk.kb.util.webservice.ImplBase;
 import dk.kb.util.webservice.stream.ExportWriter;
@@ -245,7 +246,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     */
      
     @Override
-    public Integer markRecordForDelete(String id) {
+    public RecordsCountDto markRecordForDelete(String id) {
         try {
             log.debug("markRecordForDelete(id='{}') called with call details: {}", id, getCallDetails());
             return DsStorageFacade.markRecordForDelete(id);
@@ -255,7 +256,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     }
 
     @Override
-    public Integer deleteMarkedForDelete(String origin) {
+    public RecordsCountDto deleteMarkedForDelete(String origin) {
         try {
             log.debug("deleteMarkedForDelete(origin'{}') called with call details: {}",
                       origin, getCallDetails());
@@ -276,7 +277,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     }
 
     @Override
-    public Integer deleteRecordsForOrigin(String origin, Long mTimeFrom, Long mTimeTo) {
+    public RecordsCountDto deleteRecordsForOrigin(String origin, Long mTimeFrom, Long mTimeTo) {
         try {
 	    log.debug("deleteRecordsForOrigin() called with call details: {}", getCallDetails());
 	    return DsStorageFacade.deleteRecordsForOrigin(origin,mTimeFrom,mTimeTo);
@@ -326,7 +327,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         }        
     }
     @Override
-    public Integer updateKalturaIdForRecords() {
+    public RecordsCountDto updateKalturaIdForRecords() {
         log.debug("updateKalturaIdForRecords() called with call details: {}", getCallDetails());
         return DsStorageFacade.updateKalturaIdForRecords();        
     }

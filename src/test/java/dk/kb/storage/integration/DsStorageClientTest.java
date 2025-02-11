@@ -18,13 +18,17 @@ import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.invoker.v1.ApiException;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
+import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
+import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.model.v1.RecordsCountDto;
 import dk.kb.storage.util.DsStorageClient;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
 import dk.kb.util.webservice.stream.ContinuationStream;
 import dk.kb.util.webservice.stream.ContinuationUtil;
 import org.apache.commons.io.IOUtils;
+import org.checkerframework.checker.units.qual.m;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -66,6 +70,22 @@ public class DsStorageClientTest {
     }
     
     @Test
+    public void testGetOriginConfiguration() throws ApiException {      
+
+         List<OriginDto> originConfiguration = remote.getOriginConfiguration(); 
+         assertTrue(originConfiguration.size() > 0);         
+    }
+    
+    @Test
+    public void testGetOriginStatistics() throws ApiException {      
+         List<OriginCountDto> originStatistics = remote.getOriginStatistics(); 
+         assertTrue(originStatistics.size() > 0);
+         
+    }
+    
+    
+    
+    @Test
     public void testGetRecord() throws ApiException {      
         String id = "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744";
         DsRecordDto record = remote.getRecord(id,false); 
@@ -73,6 +93,59 @@ public class DsStorageClientTest {
         assertEquals(id, "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744"); 
     }
 
+    @Test
+    public void testMarkRecordForDelete() throws ApiException {              
+         String id="ds.radio:oai:io:8f8f2da9-98e3-4ba2-aa6c-XXXXXX";  //does not exist
+         RecordsCountDto  marked = remote.markRecordForDelete(id); 
+         assertEquals(0,marked.count(null));
+         
+    }
+    
+    
+    @Test
+    public void testUpdateReferenceId() throws ApiException {              
+         String recordId="ds.radio:oai:io:8f8f2da9-98e3-4ba2-aa6c-XXXXX";
+         String refId="1234";
+         remote.updateReferenceIdForRecord(recordId, refId);          
+    }
+    
+    
+    @Test
+    public void testUpdateKalturaIdForRecord() throws ApiException {                       
+         String refId="1234";
+         String kalturaId="1234";
+         remote.updateKalturaIdForRecord(refId,kalturaId);         
+    }
+    
+    @Test
+    public void testMappingPost() throws ApiException {                       
+         String refId="1234";
+         String kalturaId="1234";
+         MappingDto dto = new MappingDto();
+         dto.setKalturaId(kalturaId);
+         dto.setReferenceId(refId);
+         remote.mappingPost(dto);         
+    }
+        
+    
+    @Test
+    public void testGetMapping() throws ApiException {                       
+         String refId="d24be758-c6fe-4f58-ae6d-164125b78a8b"; //This is exist now                                   
+         MappingDto mapping = remote.getMapping(refId);
+         //System.out.println(mapping);
+    }
+    
+    @Test
+    public void testGetMinimalRecords() throws ApiException {                       
+        String origin="ds.radio";
+        int maxRecords=10;
+        long mTime=0;
+         
+         List<DsRecordMinimalDto> minimalRecords = remote.getMinimalRecords(origin, maxRecords,mTime);
+         assertEquals(10,minimalRecords.size());         
+    }
+    
+    
     @Test
     public void testRemoteRecordsRaw() throws IOException {       
         try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterJSON(

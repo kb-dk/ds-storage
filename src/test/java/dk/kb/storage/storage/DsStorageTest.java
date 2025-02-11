@@ -101,19 +101,19 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertFalse(record_updated_after_delete.getDeleted());
 
         //test updateMtime
-        int updated = storage.updateMTimeForRecord(id);
+        int updated = storage.updateMTimeForRecord(id).getCount();
         Assertions.assertEquals(1,updated);
         DsRecordDto record_after_mtime_touch = storage.loadRecord(id);
         Assertions.assertTrue(record_after_mtime_touch.getmTime() > record_updated_after_delete.getmTime());
 
 
         //delete if marked for delete.
-        int deleted = storage.deleteMarkedForDelete("origin.test");
+        int deleted = storage.deleteMarkedForDelete("origin.test").getCount();
         Assertions.assertEquals(0,deleted); //Was not marked for deletes
 
         //Mark record for delete again
         storage.markRecordForDelete(id);
-        deleted = storage.deleteMarkedForDelete("origin.test");
+        deleted = storage.deleteMarkedForDelete("origin.test").getCount();
         Assertions.assertEquals(1,deleted); //Now it is deleted
 
         DsRecordDto deletedReally = storage.loadRecord(id);
@@ -271,7 +271,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertNull(recordBefore.getKalturaId());
         
         
-        int updated = storage.updateKalturaIdForRecords();        
+        int updated = storage.updateKalturaIdForRecords().getCount();        
         assertEquals(1,updated);
         
         //load record1 and see kalturaid is now set
@@ -439,7 +439,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertEquals(1001, list1.size()); //1000 children +1 parent
         
          //Delete those before (empty set). 
-        int deleted= storage.deleteRecordsForOrigin("test.origin", 0L, before);
+        int deleted= storage.deleteRecordsForOrigin("test.origin", 0L, before).getCount();
         assertEquals(0,deleted);
 
         //still 1001
@@ -448,7 +448,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         
         //Now delete all
         long after = UniqueTimestampGenerator.next();
-        deleted= storage.deleteRecordsForOrigin("test.origin", 0L, after);
+        deleted= storage.deleteRecordsForOrigin("test.origin", 0L, after).getCount();
         assertEquals(1001,deleted);
         
         //None left
