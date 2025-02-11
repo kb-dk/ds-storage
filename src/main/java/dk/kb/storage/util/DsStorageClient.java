@@ -204,7 +204,7 @@ public class DsStorageClient extends DsStorageApi {
     @Override
     public void recordPost(DsRecordDto dsRecordDto) throws ApiException {
         try {
-            URI uri = new URIBuilder(serviceURI + "record") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+            URI uri = new URIBuilder(serviceURI + "record") //Set the full path, then add parameters.                                                               
                     .build();
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, dsRecordDto);              
         }
@@ -241,7 +241,7 @@ public class DsStorageClient extends DsStorageApi {
     @Override
     public void mappingPost(MappingDto mapping) throws ApiException {               
         try {
-            URI uri = new URIBuilder(serviceURI + "mapping") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+            URI uri = new URIBuilder(serviceURI + "mapping") //Set the full path, then add parameters.                                                               
                .build();
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, mapping);              
         }
@@ -260,7 +260,7 @@ public class DsStorageClient extends DsStorageApi {
     @Override
     public MappingDto getMapping(String referenceId) throws ApiException {        
         try {
-            URI uri = new URIBuilder(serviceURI + "mapping") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+            URI uri = new URIBuilder(serviceURI + "mapping") //Set the full path, then add parameters.                                                                
                     .addParameter("referenceId",referenceId)                       
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET", new MappingDto(), null);              
@@ -283,7 +283,7 @@ public class DsStorageClient extends DsStorageApi {
     @Override
     public List<DsRecordMinimalDto> getMinimalRecords (String origin, Integer maxRecords, Long mTime) throws ApiException {   
         try {
-            URI uri = new URIBuilder(serviceURI + "records/minimal") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+            URI uri = new URIBuilder(serviceURI + "records/minimal") //Set the full path, then add parameters.                                                               
                     .addParameter("origin",origin)
                     .addParameter("maxRecords",""+maxRecords)
                     .addParameter("mTime",""+mTime)                    
@@ -490,7 +490,7 @@ public class DsStorageClient extends DsStorageApi {
     @Override
     public void updateReferenceIdForRecord(String recordId,String referenceId) throws ApiException {       
         try {
-            URI uri = new URIBuilder(serviceURI + "record/updateReferenceId") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+            URI uri = new URIBuilder(serviceURI + "record/updateReferenceId") //Set the full path, then add parameters.                                                                
                     .addParameter("recordId",""+recordId)               
                     .addParameter("referenceId",""+referenceId)
                     .build();            
@@ -513,7 +513,7 @@ public class DsStorageClient extends DsStorageApi {
     public void updateKalturaIdForRecord (String referenceId, String kalturaId) throws ApiException {
 
         try {
-            URI uri = new URIBuilder(serviceURI + "record/updateKalturaId") //Set the full path, then add parameters. Id is part of url and not parameter                                                               
+            URI uri = new URIBuilder(serviceURI + "record/updateKalturaId") //Set the full path, then add parameters.                                                                
                     .addParameter("referenceId",referenceId)               
                     .addParameter(" kalturaId",kalturaId)
                     .build();            
