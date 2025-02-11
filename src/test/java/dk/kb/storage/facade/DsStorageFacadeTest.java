@@ -574,20 +574,21 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         String refId="referenceid_unittest_id123";
         try {
            MappingDto mapping = DsStorageFacade.getMapping("does_not_exist");
-           assertNull(mapping);          
+           fail();          
         }
         catch (Exception e) {
-            fail();    
+            //expected    
         }
      
         //Create
-        try {
+        try {            
             MappingDto mapping = new MappingDto();
             mapping.setReferenceId(refId);
             mapping.setKalturaId("kaltura_unittest_id123");
             DsStorageFacade.createOrUpdateMapping(mapping);                      
          }
          catch (Exception e) {
+             e.printStackTrace();
            fail();    
          }
         

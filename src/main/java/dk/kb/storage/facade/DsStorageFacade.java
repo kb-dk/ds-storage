@@ -113,8 +113,14 @@ public class DsStorageFacade {
         performStorageAction("createOrUpdateMapping(" + mappingDto.getReferenceId() + ")", storage -> {
 
             //test if mapping already exists
-            MappingDto oldMapping = storage.getMappingByReferenceId(mappingDto.getReferenceId());
-            if (oldMapping==null) { //create new
+            boolean found=true;            
+            try {
+                storage.getMappingByReferenceId(mappingDto.getReferenceId()); //throws exception if not found
+            }
+            catch(Exception e){
+                found=false;
+            }            
+            if (!found) { //create new
                 storage.createNewMapping(mappingDto);
                 log.info("Created new mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
             }
