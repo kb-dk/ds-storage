@@ -115,14 +115,6 @@
         <dependency>
             <groupId>dk.kb.util</groupId>
             <artifactId>kb-util</artifactId>
-            <version>1.6.3</version>
-            <exclusions>
-                <exclusion>
-                    <!-- kb-util has 2.3.3, but transitive resolving has 2.4.0 somewhere-->
-                    <groupId>jakarta.xml.bind</groupId>
-                    <artifactId>jakarta.xml.bind-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
