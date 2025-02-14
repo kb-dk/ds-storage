@@ -26,7 +26,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
     @Test
     public void testBasicCRUD() throws Exception {
-        //TODO rescribe flow below
+        //TODO describe flow below
 
         //Test record not exist
         assertFalse(storage.recordExists("origin:unknown"));
@@ -35,8 +35,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         String origin="origin.test";
         String data = "Hello";
         String parentId="origin.test:id_1_parent";
-        String refenceId="kalturaRefenceId_123";
-        String refenceIdUpdated="kalturaRefenceId_123_updated";
+        String referenceId="kalturaReferenceId_123";
+        String referenceIdUpdated="kalturaReferenceId_123_updated";
         RecordTypeDto recordType=RecordTypeDto.MANIFESTATION;
         
         DsRecordDto record = new DsRecordDto();
@@ -45,7 +45,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         record.setData(data);
         record.setParentId(parentId);
         record.setRecordType(RecordTypeDto.MANIFESTATION);
-        record.setReferenceId(refenceId);
+        record.setReferenceId(referenceId);
         storage.createNewRecord(record );
 
         //Test record not exist
@@ -61,7 +61,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertTrue(recordLoaded.getmTime() > 0);
         Assertions.assertEquals(recordLoaded.getcTime(), recordLoaded.getmTime());                  
         Assertions.assertEquals(recordType, recordLoaded.getRecordType());
-        Assertions.assertEquals(refenceId, recordLoaded.getReferenceId());
+        Assertions.assertEquals(referenceId, recordLoaded.getReferenceId());
         
         //Now update
 
@@ -71,7 +71,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
         record.setData(dataUpdate);
         record.setParentId(parentIdUpdated);            
-        record.setReferenceId(refenceIdUpdated);
+        record.setReferenceId(referenceIdUpdated);
         storage.updateRecord(record);
 
         //Check new updated record is correct.
@@ -81,8 +81,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         Assertions.assertEquals(origin,recordUpdated .getOrigin());
         Assertions.assertEquals(parentIdUpdated,record.getParentId());        
         Assertions.assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
-        Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                                            
-        Assertions.assertEquals(refenceIdUpdated, recordUpdated.getReferenceId());
+        Assertions.assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on update
+        Assertions.assertEquals(referenceIdUpdated, recordUpdated.getReferenceId());
         
         //Mark record for delete                
         storage.markRecordForDelete(id);
@@ -150,9 +150,14 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertNull(map2.getKalturaId());        
        
         //Test id not exists
+        try {
         MappingDto notExist = storage.getMappingByReferenceId("does_not_exist");
-        assertNull(notExist);    
-        
+        fail("None existing post should give exception");
+        }
+        catch(Exception e) {
+           //ignore
+        }
+                           
         //update
         mappingDto1.setKalturaId(kalturaId1Updated);
         storage.updateMapping(mappingDto1);
@@ -196,7 +201,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         record.setRecordType(RecordTypeDto.MANIFESTATION);        
         storage.createNewRecord(record );
         
-        //Update refereneId Id.
+        //Update referenceId Id.
         storage.updateReferenceIdForRecord(recordId,referenceId);
      
         //Load and test referenceId is correct
@@ -234,7 +239,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     
     /**
     * Data structure
-    * 
+    * <p>
     * RECORD table:
     * |ID |REFERENCEID |KALTURAID
     * -------------------------------
@@ -242,20 +247,20 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     * |id2|referenceid2|     (null) |        (this record needs to be enriched, but referenceid2 is not in the mapping table) 
     * |id3|null        |     (null) |        (this record can not be enriched with kalturaid, no referenceId)
     * |id4|referenceid4| kalturaid4 |        (this  already has kalturaid)
-    * 
+    * <p>
     * MAPPING table:
     * |REFERENCEID | KALTURAID|
     * ------------------------- 
     * |referenceid1|kalturaid1|              (this mappen can be used to enrich record with id1)
     * |referenceid4|kalturaid4|              (no record that has referenceid4, so not used)
-    *   
+    * <p>
     * This is the result of the SQL inner join, only one row is generated from data structure
-    * 
+    * <p>
     * JOIN-RESULT-SET
     * |ID| REFERENCEID | KALTURAID|
     * -----------------------------
     * |id1|referenceid1|kalturaid1|   
-    * 
+    * <p>
     * After updating the kalturaid the record with id1 will now have kalturaid
     * |id1|referenceid1|kalturaid1|          (this is the change in record data by calling the updatekalturaId method)
     */    
@@ -335,10 +340,6 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertEquals(0, maxAfter, "Max mTime with start afterTime should be 0");
         List<DsRecordDto> bRecords = storage.getRecordsModifiedAfter("test.origin", beforeTime, 100);
 
-//        System.out.println("First record: " + bRecords.get(0).getmTime());
-//        System.out.println("Stated mTime: " + maxBefore);
-//        System.out.println("Last  record: " + bRecords.get(bRecords.size()-1).getmTime());
-
         assertEquals(maxBefore, bRecords.get(bRecords.size()-1).getmTime(),
                      "The mTime for the last bRecord should match maxBefore");
     }
@@ -361,10 +362,6 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         assertEquals(0, maxAfter, "Max mTime with start afterTime should be 0");
         List<String> bRecords = storage.getRecordsIdsByRecordTypeModifiedAfter("test.origin", RecordTypeDto.MANIFESTATION, beforeTime, 100);
 
-//        System.out.println("First record: " + bRecords.get(0).getmTime());
-//        System.out.println("Stated mTime: " + maxBefore);
-//        System.out.println("Last  record: " + bRecords.get(bRecords.size()-1).getmTime());
-
         assertEquals(maxBefore, storage.loadRecord(bRecords.get(bRecords.size()-1)).getmTime(),
                      "The mTime for the last bRecord should match maxBefore");
     }
@@ -384,7 +381,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         ArrayList<DsRecordDto> list2 = storage.getModifiedAfterParentsOnly("test.origin", before, 100);
         assertEquals(1, list2.size());
 
-        //Noone after last
+        //None after last
         long lastModified = list2.get(0).getmTime();
 
         ArrayList<DsRecordDto> list3 = storage.getModifiedAfterParentsOnly("test.origin", lastModified, 100);
@@ -404,7 +401,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         ArrayList<DsRecordDto> list2 = storage.getModifiedAfterChildrenOnly("test.origin", before, 1000);
         assertEquals(1000, list2.size());
 
-        //Noone after last
+        //None after last
         long lastModified = list2.get(999).getmTime();
 
         ArrayList<DsRecordDto> list3 = storage.getModifiedAfterChildrenOnly("test.origin", lastModified, 1000);

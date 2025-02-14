@@ -1,6 +1,6 @@
 #
 # This config contains environment-data: Servers, usernames, passwords etc.
-# If will be automatically merged with the core config when accesses through the application config system.
+# It will be automatically merged with the core config when accesses through the application config system.
 #
 # The environment config is normally controlled by operations and is not part of the code repository.
 #

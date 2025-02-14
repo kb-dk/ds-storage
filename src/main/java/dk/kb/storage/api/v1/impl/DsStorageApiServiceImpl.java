@@ -4,7 +4,6 @@ import dk.kb.storage.api.v1.DsStorageApi;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
@@ -24,8 +23,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Providers;
 import java.util.ArrayList;
@@ -46,8 +43,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
 
     /*
      * How to access the various web contexts. See
-     * https://cxf.apache.org/docs/jax-rs-basics.html#JAX-RSBasics-
-     * Contextannotations
+     * https://cxf.apache.org/docs/jax-rs-basics.html#JAX-RSBasics-Contextannotations
      */
 
     @Context
@@ -90,8 +86,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         try {
             log.debug("getOriginConfiguration() called with call details: {}", getCallDetails());
 
-            //TODO MOVE TO FACEDE
-            List<OriginDto> originList = new ArrayList<OriginDto>();
+            //TODO MOVE TO FACADE
+            List<OriginDto> originList = new ArrayList<>();
             HashMap<String, OriginDto> allowedOrigins = ServiceConfig.getAllowedOrigins();
             for (String originName : allowedOrigins.keySet()) {
                 originList.add(allowedOrigins.get(originName));
@@ -149,7 +145,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             long finalMTime = mTime == null ? 0L : mTime;
             long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
 
-            long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin, finalMTime); //TODO Victor. Shouldnt this also use recordType when counting?
+            long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin, finalMTime); //TODO Victor. Shouldn't this also use recordType when counting?
             setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), recordsInOrigin);
 
             return output -> {
@@ -337,14 +333,14 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     /**
     * <p>
     * Get a list of records after a given mTime. The records will only have fields
-    * id,mTime,referenceid and kalturaid defined 
+    * id, mTime, referenceid and kalturaid defined
     * </p>
     *
-    * @param origin The origin to fetch records drom    
+    * @param origin The origin to fetch records from
     * @param maxRecords Number of maximum records to return
     * @param mTime only fetch records with mTime larger that this
     *
-    * @return List of records only have fields id,mTime,referenceid and kalturaid
+    * @return List of records only have fields id, mTime, referenceid and kalturaid
     */
     @Override
     public StreamingOutput getMinimalRecords(String origin, Integer maxRecords, Long mTime) {
@@ -355,7 +351,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         long finalMTime = mTime == null ? 0L : mTime;
         long finalMaxRecords = maxRecords == null ? 1000L : maxRecords;
 
-        long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin, finalMTime); //TODO Victor. Shouldnt this also use recordType when counting?
+        long recordsInOrigin = DsStorageFacade.countRecordsInOrigin(origin, finalMTime); //TODO Victor. Shouldn't this also use recordType when counting?
         setHeaders(finalMTime, finalMaxRecords, DsStorageFacade.getMaxMtimeAfter(origin, finalMTime, finalMaxRecords), recordsInOrigin);
 
         return output -> {

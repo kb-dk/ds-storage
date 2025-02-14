@@ -215,7 +215,8 @@ public class DsStorage implements AutoCloseable {
             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
 
 
-    //Optimized SQL that finds missing KalturaIds on records table that have a referenceId but no kalturaId. Can take some time(minutes) first time if million of records miss kalturaId
+    //Optimized SQL that finds missing KalturaIds on records table that have a referenceId but no kalturaId. Can take some time(minutes) first time if millions of records miss
+    // kalturaId
     //'INNER JOIN' will only return matched rows from both table  unlike 'LEFT JOIN' that will return non-matched also. 
     //SELECT A.id, A.referenceid, B.kalturaid from ds_records A INNER JOIN ds_mapping B ON A.referenceid=B.referenceid WHERE  A.kalturaid IS NULL AND b.kalturaid IS NOT NULL         
     //Performance can be improved by double index (referenceId,kalturaId) but will come a cost when creating/updating records. 
@@ -284,7 +285,7 @@ public class DsStorage implements AutoCloseable {
         try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement)) {
             stmt.setString(1, id);
 
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
                     return null;// Or throw exception?
                 }
@@ -302,7 +303,7 @@ public class DsStorage implements AutoCloseable {
         try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement)) {
             stmt.setString(1, id);
 
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
                     return null;
                 }
@@ -320,7 +321,7 @@ public class DsStorage implements AutoCloseable {
         try (PreparedStatement stmt = connection.prepareStatement(recordIdExistsStatement)) {
             stmt.setString(1, id);
 
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 rs.next(); //Count has always next
                 int count = rs.getInt("COUNT");
                 return  count == 1;             
@@ -331,10 +332,10 @@ public class DsStorage implements AutoCloseable {
 
     public ArrayList<String> getChildrenIds(String parentId) throws SQLException {
 
-        ArrayList<String> childIds = new ArrayList<String>();
+        ArrayList<String> childIds = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(childrenIdsStatement)) {
             stmt.setString(1, parentId);
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     String id = rs.getString(ID_COLUMN);
                     childIds.add(id);
@@ -352,17 +353,17 @@ public class DsStorage implements AutoCloseable {
      */
     public void clearMappingAndRecordTable() throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(clearTableRecordsStatement)) {
-            stmt.execute(); //No resultset to close
+            stmt.execute(); //No result set to close
         }        
         try (PreparedStatement stmt = connection.prepareStatement(clearTableMappingsStatement)) {
-            stmt.execute(); //No resultset to close
+            stmt.execute(); //No result set to close
         }
     }
 
     /**
-     * Will only extract with records strightly  larger than mTime!
+     * Will only extract with records strictly larger than mTime!
      * Will be sorted by mTime. Latest is last
-     * 
+     * <p>
      * Only parents posts (those that have children) will be load or only children (those that have parent)
      * 
      */
@@ -371,19 +372,10 @@ public class DsStorage implements AutoCloseable {
         if (batchSize <1 || batchSize > 100000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 100000");          
         }
-        ArrayList<DsRecordDto > records = new ArrayList<DsRecordDto >();
+        ArrayList<DsRecordDto > records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterParentsOnlyStatement)) {
 
-            stmt.setString(1, origin);
-            stmt.setLong(2, mTime);
-            stmt.setLong(3, batchSize);
-            try (ResultSet rs = stmt.executeQuery();) {
-                while (rs.next()) {
-                    DsRecordDto  record = createRecordFromRS(rs);
-                    records.add(record);
-
-                }
-            }
+            prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
         }
         catch(Exception e) {
             throw new Exception("SQL error getModifiedAfterParentsOn",e);
@@ -393,12 +385,31 @@ public class DsStorage implements AutoCloseable {
         return records; 
     }
 
-    
+    /**
+     * Prepare the SQL statement, execute the SQL query and convert the result set into DS Records that are added to the records array.
+     * @param origin to query against.
+     * @param mTime to retrieve records from.
+     * @param batchSize to retrieve.
+     * @param records array where records are added.
+     * @param stmt the already prepared statement.
+     */
+    private void prepareStatementAndGetRecords(String origin, long mTime, int batchSize, ArrayList<DsRecordDto> records, PreparedStatement stmt) throws SQLException {
+        stmt.setString(1, origin);
+        stmt.setLong(2, mTime);
+        stmt.setLong(3, batchSize);
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                DsRecordDto  record = createRecordFromRS(rs);
+                records.add(record);
+            }
+        }
+    }
+
 
     /**
      * <p>
      * Get a list of records after a given mTime. The records will only have fields
-     * id,mTime,referenceid and kalturaid defined 
+     * id, mTime, referenceid and kalturaid defined
      * </p>
      *
      *@param origin The origin to fetch records from
@@ -412,14 +423,14 @@ public class DsStorage implements AutoCloseable {
         if (batchSize <1 || batchSize > 100000) { //No doom switch
             throw new InvalidArgumentServiceException("Batchsize must be in range 1 to 100000");          
         }
-        ArrayList<DsRecordMinimalDto> records = new ArrayList<DsRecordMinimalDto>();
+        ArrayList<DsRecordMinimalDto> records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(referenceIdsStatement)) {
 
             stmt.setString(1, origin);
             stmt.setLong(2, mTime);
             stmt.setLong(3, batchSize);
                         
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     DsRecordMinimalDto  record = createRecordReferenceIdFromRS(rs);
                     records.add(record);
@@ -437,7 +448,7 @@ public class DsStorage implements AutoCloseable {
      * Extract max {@code record.mTime} in {@code origin}.
      * @param origin only records from the {@code origin} will be inspected.
      * @param recordType only records with the given type will be inspected.
-     * @return max {@code record.mTime} within the given {@code origin} and woth the given {@code recordType} or 0
+     * @return max {@code record.mTime} within the given {@code origin} and with the given {@code recordType} or 0
      *         if there were no records.
      */
     public long getMaxMtime(String origin, RecordTypeDto recordType) throws SQLException {
@@ -584,9 +595,9 @@ public class DsStorage implements AutoCloseable {
     }
 
     /**
-     * Will only extract with records strightly  larger than mTime!
+     * Will only extract with records strictly larger than mTime!
      * Will be sorted by mTime. Latest is last
-     *
+     * <p>
      * Will extract all no matter of parent or child ids
      *
      */
@@ -595,18 +606,10 @@ public class DsStorage implements AutoCloseable {
         if (batchSize <1 || batchSize > 10000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 10000");
         }
-        ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
+        ArrayList<DsRecordDto> records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement)) {
 
-            stmt.setString(1, origin);
-            stmt.setLong(2, mTime);
-            stmt.setLong(3, batchSize);
-            try (ResultSet rs = stmt.executeQuery();) {
-                while (rs.next()) {
-                    DsRecordDto record = createRecordFromRS(rs);
-                    records.add(record);
-                }
-            }
+            prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
         }
         catch(Exception e) {
             String message = "SQL Exception in getRecordsModifiedAfter";
@@ -630,14 +633,14 @@ public class DsStorage implements AutoCloseable {
         if (batchSize <1 || batchSize > 10000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 10000");   
         }
-        ArrayList<String> recordsIds = new ArrayList<String>();
+        ArrayList<String> recordsIds = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsIDByRecordTypeModifiedAfterStatement)) {
                        
             stmt.setString(1, origin);
             stmt.setString(2, recordType.getValue());
             stmt.setLong(3, mTime);
             stmt.setLong(4, batchSize);
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {                    
                     recordsIds.add(rs.getString(ID_COLUMN));
                 }
@@ -655,9 +658,9 @@ public class DsStorage implements AutoCloseable {
 
 
     /**
-     * Will only extract with records strightly larger than mTime!
+     * Will only extract with records strictly larger than mTime!
      * Will be sorted by mTime. Latest is last
-     * 
+     * <p>
      * Will only fetch children records. That is those that has a parent.
      * 
      */
@@ -666,19 +669,10 @@ public class DsStorage implements AutoCloseable {
         if (batchSize <1 || batchSize > 100000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 100000");          
         }
-        ArrayList<DsRecordDto> records = new ArrayList<DsRecordDto>();
+        ArrayList<DsRecordDto> records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterChildrenOnlyStatement)) {
 
-            stmt.setString(1, origin);
-            stmt.setLong(2, mTime);
-            stmt.setLong(3, batchSize);
-            try (ResultSet rs = stmt.executeQuery();) {
-                while (rs.next()) {
-                    DsRecordDto record = createRecordFromRS(rs);
-                    records.add(record);
-
-                }
-            }
+            prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
         }
         catch(Exception e) {
             String message = "SQL Exception in getModifiedAfterChildrenOnly";
@@ -691,10 +685,10 @@ public class DsStorage implements AutoCloseable {
 
     public ArrayList<OriginCountDto> getOriginStatictics() throws SQLException {
 
-        ArrayList<OriginCountDto> originCountList = new ArrayList<OriginCountDto>();
+        ArrayList<OriginCountDto> originCountList = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(originsStatisticsStatement)) {
             
-            try (ResultSet rs = stmt.executeQuery();) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     OriginCountDto originStats = new OriginCountDto();                    
                     String origin = rs.getString(ORIGIN_COLUMN);
@@ -828,12 +822,12 @@ public class DsStorage implements AutoCloseable {
      /**
       * Get a mappingDto by referenceId. 
       * 
-      * @param refenceId The id key for the mapping
+      * @param referenceId The id key for the mapping
       * @return referenceId  Return a mappingDto if referenceId exists. Null if the referenceId is not found in the mapping
-      * 
-      * @throws Exception
+      *
+      * @throws SQLException if anything goes wrong while getting mapping for referenceId.
       */
-    public MappingDto getMappingByReferenceId(String referenceId) throws Exception {
+    public MappingDto getMappingByReferenceId(String referenceId) throws SQLException {
 
        if (referenceId == null) {
            throw new InvalidArgumentServiceException("referenceId must not be null"); 
@@ -842,7 +836,7 @@ public class DsStorage implements AutoCloseable {
        try (PreparedStatement stmt = connection.prepareStatement(mappingByIdStatement)) {
            stmt.setString(1, referenceId);
  
-           try (ResultSet rs = stmt.executeQuery();) {
+           try (ResultSet rs = stmt.executeQuery()) {
                if (!rs.next()) {
                  throw new InvalidArgumentServiceException("No mapping found for referenceId:"+referenceId);
                }
@@ -860,7 +854,7 @@ public class DsStorage implements AutoCloseable {
     /**
      * <p>
      * Update all records that have referenceId but missing kalturaId.<br>
-     * If the mapping exist in the mapping table rerenceId <-> kalturaId, then the record will be updated with the kaltura.<br>
+     * If the mapping exist in the mapping table referenceId <-> kalturaId, then the record will be updated with the kaltura.<br>
      * If the mapping does not exist (yet), the record will not be updated with kaltura id.<br>
      * <br>
      * If many records needs to be updated this can take some time. 1M records is estimated to take 15 minutes. 
@@ -874,7 +868,7 @@ public class DsStorage implements AutoCloseable {
 
           int updated=0;
 
-          try (ResultSet rs = stmt.executeQuery();) {
+          try (ResultSet rs = stmt.executeQuery()) {
               while(rs.next()) {
            
                 String id=rs.getString(ID_COLUMN);
@@ -928,7 +922,7 @@ public class DsStorage implements AutoCloseable {
     /**
      * Delete all records for an origin that has been modified time interval. The records will be deleted and not just marked for deletion
      * 
-     * @param origin The origin for the collection. Value must be define in the configuration
+     * @param origin The origin for the collection. Value must be defined in the configuration
      * @param mTimeFrom modified time from. Format is millis +3 digits
      * @param mTimeTo modified time to. Format is millis +3 digits
      */    
@@ -977,7 +971,7 @@ public class DsStorage implements AutoCloseable {
      * 
      * Update a mapping with a new kalturaId
      * 
-     * @param mappingDto
+     * @param mappingDto containing a referenceId and a kalturaId
      * @throws Exception Will throw exception if id is not found
      */     
     public void updateMapping(MappingDto mappingDto) throws Exception {
@@ -1106,7 +1100,7 @@ public class DsStorage implements AutoCloseable {
         record.setReferenceId(referenceId);
         record.setKalturaId(kalturaId);
 
-        //Set the two dates as human readable
+        //Set the two dates as human-readable.
         record.setcTimeHuman(convertToHumanDate(cTime));
         record.setmTimeHuman(convertToHumanDate(mTime));
         
@@ -1137,7 +1131,7 @@ public class DsStorage implements AutoCloseable {
     }
     
    /*
-   * Method is syncronized because simpledateformat is not thread safe. Faster to reuse syncronized than to construct new every time.
+   * Method is synchronized because simple dateformat is not thread safe. Faster to reuse synchronized than to construct new every time.
    */
     private static synchronized String convertToHumanDate(long millis_time_1000) {
      return dateFormat.format(new Date(millis_time_1000/1000));
@@ -1174,7 +1168,7 @@ public class DsStorage implements AutoCloseable {
         }
     }
 
-    // This is called by from InialialziationContextListener by the Web-container
+    // This is called from InitializationContextListener by the Web-container
     // when server is shutdown,
     // Just to be sure the DB lock file is free.
     public static void shutdown() {

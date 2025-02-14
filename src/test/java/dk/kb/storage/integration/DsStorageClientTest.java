@@ -89,7 +89,7 @@ public class DsStorageClientTest {
     public void testGetRecord() throws ApiException {      
         String id = "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744";
         DsRecordDto record = remote.getRecord(id,false); 
-        log.info("Loaded record from storage with id:"+record.getId());
+        log.info("Loaded record from storage with id: '{}'", record.getId());
         assertEquals(id, "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744"); 
     }
 
@@ -212,7 +212,7 @@ public class DsStorageClientTest {
     }
 
     @Test
-    public void testRemotePagingCount() throws IOException, ApiException {    
+    public void testRemotePagingCount() throws IOException {
 
         try (ContinuationInputStream<Long> recordsIS = remote.getRecordsModifiedAfterJSON(
                 "ds.tv", 0L, 500L)) {
@@ -243,7 +243,7 @@ public class DsStorageClientTest {
     @Test
     public void testRemoteRecordsTreeRaw() throws IOException {
   
-        try (ContinuationInputStream recordsIS = remote.getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
+        try (ContinuationInputStream<Long> recordsIS = remote.getRecordsByRecordTypeModifiedAfterLocalTreeJSON(
                              "ds.radio", RecordTypeDto.DELIVERABLEUNIT,  0L, 3L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
             assertTrue(recordsStr.contains("\"id\":\"ds.radio:oai"),
@@ -268,7 +268,7 @@ public class DsStorageClientTest {
             assertEquals(numberOfRecords, recordList.size(), "The requested number of records should be received");
             assertNotNull(records.getContinuationToken(),
                     "The highest modification time should be present");
-            log.debug("Stated highest modification time was " + records.getContinuationToken());
+            log.debug("Stated highest modification time was: '{}'", records.getContinuationToken());
             assertEquals(recordList.get(recordList.size()-1).getmTime(),
                          records.getContinuationToken(),
                     "Received highest mTime should match stated highest mTime");
@@ -302,7 +302,7 @@ public class DsStorageClientTest {
 
     @Test
     public void testRemoteMinimalRecordsContent() throws IOException {
-        try (ContinuationInputStream recordsIS = remote.getMinimalRecordsModifiedAfterJSON(
+        try (ContinuationInputStream<Long> recordsIS = remote.getMinimalRecordsModifiedAfterJSON(
                 "ds.tv", 0L, 10L)) {
             String recordsStr = IOUtils.toString(recordsIS, StandardCharsets.UTF_8);
             assertTrue(recordsStr.contains("\"id\":\"ds.tv:oai"),

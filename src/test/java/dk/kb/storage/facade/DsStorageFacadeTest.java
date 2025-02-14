@@ -3,6 +3,7 @@ package dk.kb.storage.facade;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -18,9 +19,9 @@ import dk.kb.util.webservice.exception.InternalServiceException;
 public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     
-    //THIS UNTTEST MUST BE UPDATED WHEN VALIDATION RULES ARE MORE CLEAR!
+    //THIS UNITTEST MUST BE UPDATED WHEN VALIDATION RULES ARE MORE CLEAR!
     @Test
-    public void testInvalidId() throws Exception {
+    public void testInvalidId()  {
         //TODO describe flow below
 
         
@@ -43,7 +44,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     
     @Test
-    public void testCreateAndUpdate() throws Exception {
+    public void testCreateAndUpdate() {
         //TODO describe flow below
 
         try {
@@ -69,7 +70,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         DsStorageFacade.createOrUpdateRecord(record );
 
         DsRecordDto recordLoaded = DsStorageFacade.getRecord(id,false);
-        assertTrue(recordLoaded != null);
+        assertNotNull(recordLoaded);
 
         //Load and check values are correct
         assertEquals(id,recordLoaded.getId());
@@ -96,14 +97,14 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         assertEquals(origin,recordUpdated .getOrigin());
         assertEquals(parentIdUpdated,record.getParentId());        
         assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
-        assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on updae                	                           
+        assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on update
 
 
     }
 
     
     @Test
-    public void testKeepKalturaId() throws Exception {
+    public void testKeepKalturaId() {
         String id ="doms.radio:id1";
         String origin="doms.radio";
         String data = "Hello";       
@@ -135,9 +136,9 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     }
     
     @Test
-    public void testUnknownOrigin() throws Exception {
-        String id ="unkown.origin:id1";
-        String origin="unkown.origin";	    	
+    public void testUnknownOrigin() {
+        String id ="unknown.origin:id1";
+        String origin="unknown.origin";
         String data = "Hello";
 
         DsRecordDto record = new DsRecordDto();
@@ -175,7 +176,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     - name: origin_strategy_child    
       updateStrategy: CHILD
 
-    - name: oritin.strategy.parent
+    - name: origin.strategy.parent
       updateStrategy: PARENT
      *  
      * The 4 unittest has minor differences in assertions about that is updated
@@ -282,7 +283,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
 
     @Test
-    public void testIdStartsWithOrigin() throws Exception {
+    public void testIdStartsWithOrigin() {
         String id ="origin.unknown:id1";
         String origin="origin.strategy.none";      
         
@@ -315,7 +316,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     @Test
     public void testParentCycle() throws Exception {
-        //Datastructure is a tree with 3 nodes and depth=2. Node at deepth2  points back to top node.        
+        //Data structure is a tree with 3 nodes and depth=2. Node at depth2  points back to top node.
         
         createParentCycle("doms.aviser");
         try {
@@ -330,7 +331,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     @Test
     public void testRecordTree() throws Exception {        
-        //Datastructure is a tree with 5 nodes and depth=2. (See method for visualization)       
+        //Data structure is a tree with 5 nodes and depth=2. (See method for visualization)
         //Test 1: Load parent and test tree is correct
         //Test 2: Load of the children at depth 1 and test tree is correct
         //Test 3: Load of the children at depth 2 and test tree is correct
@@ -349,9 +350,9 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
      
         DsRecordDto record = DsStorageFacade.getRecordTree(parentId);       
         
-        //Check it is parent we have
-        assertEquals(parentId,record.getId());        
-        assertTrue(record.getParent() == null);        
+        //Check it is a parent record we have by assert that it have no parents it self.
+        assertEquals(parentId,record.getId());
+        assertNull(record.getParent());
       
         //Check children loaded as records
         assertEquals(record.getChildren().size(), 2);               
@@ -402,7 +403,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     @Test
     public void testLocalRecordTree() throws Exception {        
-        //Datastructure is a tree with 5 nodes and depth=2. (See method for visualization)       
+        //Data structure is a tree with 5 nodes and depth=2. (See method for visualization)
         //Test 1: Load c1 
         //Test 2: Load p
         //Test 3: Load c1_1
@@ -441,7 +442,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         assertEquals(2, child1_1.getParent().getChildrenIds().size()); //But id's to children must be there
     }
    
-    private void createTestHierachyParentAndTwoChildren(String origin) throws Exception {
+    private void createTestHierachyParentAndTwoChildren(String origin) {
         String parentId="parent";
 
         DsRecordDto parentRecord = new DsRecordDto();
@@ -480,7 +481,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
      * 
      * 
      */
-    private void createParentCycle(String origin) throws Exception {
+    private void createParentCycle(String origin) {
         DsRecordDto parentRecord = new DsRecordDto();
         parentRecord.setId(origin+":p1");
         parentRecord.setOrigin(origin);
@@ -523,7 +524,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
      *           c1_2     c1_1   
      * 
      */
-    private void createTestDepth2Tree(String origin) throws Exception {
+    private void createTestDepth2Tree(String origin) {
         String parentId="p";
 
         DsRecordDto p = new DsRecordDto();
@@ -569,7 +570,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
 
     }
     @Test    
-    public void testCreateAndUpdateMapping() throws Exception {
+    public void testCreateAndUpdateMapping() {
     
         String refId="referenceid_unittest_id123";
         try {
