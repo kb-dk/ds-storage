@@ -186,34 +186,38 @@ public class KBOAuth2Handler {
             case ENABLED:
                 if (endpointRoles.contains(KBAuthorization.PUBLIC)) {
                     if (invalidToken) {
-                        log.debug("Failed verification of provided access token (reason={}) but access to " +
+                        log.info("Failed verification of provided access token (reason={}) but access to " +
                                   "endpoint '{}' granted as roles included '{}'",
                                   failedReason, endpoint, KBAuthorization.PUBLIC);
                     } else {
-                        log.debug("No Authorization defined in request but access to endpoint '{}' granted as roles " +
+                        log.info("No Authorization defined in request but access to endpoint '{}' granted as roles " +
                                   "included '{}'", endpoint, KBAuthorization.PUBLIC);
                     }
                     break;
                 }
                 if (endpointRoles.contains(KBAuthorization.ANY)) {
                     if (invalidToken) {
-                        throw new Fault(new ValidationException(
-                                "Failed verification of provided access token (reason=" + failedReason +
-                                ") and endpoint " + endpoint + " requires a valid access token to be present"));
+                      String message= "Failed verification of provided access token (reason=" + failedReason +
+                              ") and endpoint " + endpoint + " requires a valid access token to be present";
+                      log.warn(message);
+                      throw new Fault(new ValidationException(message));
                     }
-                    throw new Fault(new ValidationException(
-                            "Authorization failed as there were no Authorization defined in request and " +
-                            "endpoint " + endpoint + " requires it to be present"));
+                    String message= "Authorization failed as there were no Authorization defined in request and endpoint " + endpoint + " requires it to be present";
+                    log.warn(message);
+                    throw new Fault(new ValidationException(message));
                 }
                 if (invalidToken) {
-                    throw new Fault(new ValidationException(
-                            "Failed verification of provided access token (reason=" + failedReason +
-                            ") and endpoint " + endpoint + " requires a valid access token to be present with " +
-                            "one of the roles " + endpointRoles));
+                    String message="Failed verification of provided access token (reason=+" + failedReason+ ") and endpoint " + endpoint + "" +
+                                 " requires a valid access token to be present with " +
+                                 " one of the roles " + endpointRoles;
+                    log.warn(message);
+                    throw new Fault(new ValidationException(message));
+                    
                 }
-                throw new Fault(new ValidationException(
-                        "Authorization failed as there were no Authorization defined in request and " +
-                        "endpoint " + endpoint + " requires it to be present with one of the roles " + endpointRoles));
+                String message="Authorization failed as there were no Authorization defined in request and " +
+                        "endpoint " + endpoint + " requires it to be present with one of the roles " + endpointRoles;
+                log.warn(message);
+                throw new Fault(new ValidationException(message));
             default: {
                 log.error("Unknown authorization mode: '{}'", mode);
                 throw new Fault(new InternalServiceException("Unknown authorization mode" + mode));
