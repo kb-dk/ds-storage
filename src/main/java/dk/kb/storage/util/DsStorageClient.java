@@ -408,15 +408,7 @@ public class DsStorageClient extends DsStorageApi {
             throw new InternalServiceException(message);
         }
 
-        log.debug("Opening streaming connection to '{}'", uri);
-        Map<String, String> requestHeaders = new HashMap<String, String>();
-        String token= (String) JAXRSUtils.getCurrentMessage().get(KBAuthorizationInterceptor.ACCESS_TOKEN_STRING);
-        log.info("Calling ds-storage from continuation stream with 'Authorization'-parameter header token:"+token);
-        if (token != null) {                                          
-            requestHeaders.put("Authorization","Bearer "+token);
-            log.info("setting token:"+token);
-        }
-
+        log.debug("Opening streaming connection to '{}'", uri);      
         return ContinuationInputStream.from(uri, Long::valueOf);       
     }
 

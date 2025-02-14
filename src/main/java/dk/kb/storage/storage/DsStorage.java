@@ -782,9 +782,9 @@ public class DsStorage implements AutoCloseable {
             stmt.setLong(1, nowStamp);      
             stmt.setString(2, recordId);
            int numberUpdated =  stmt.executeUpdate();           
-           RecordsCountDto modifiedDto= new RecordsCountDto();
-           modifiedDto.setCount(numberUpdated);
-           return modifiedDto;
+           RecordsCountDto countDto= new RecordsCountDto();
+           countDto.setCount(numberUpdated);
+           return countDto;
         } catch (SQLException e) {
             String message = "SQL Exception in updateMTimeForRecord with id:" + recordId + " error:" + e.getMessage();
             log.error(message);
