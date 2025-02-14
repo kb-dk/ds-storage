@@ -106,25 +106,16 @@ public class DsStorageFacade {
      * 
      */
     public static void createOrUpdateMapping(MappingDto mappingDto)  {
-        performStorageAction("createOrUpdateMapping(" + mappingDto.getReferenceId() + ")", storage -> {
-
-            //test if mapping already exists
-            boolean found=true;            
+        performStorageAction("createOrUpdateMapping(" + mappingDto.getReferenceId() + ")", storage -> {                      
             try {
                 storage.getMappingByReferenceId(mappingDto.getReferenceId()); //throws exception if not found
+                storage.updateMapping(mappingDto);
+                log.info("Updated mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
             }
             catch(Exception e){
-                found=false;
-            }            
-            if (!found) { //create new
                 storage.createNewMapping(mappingDto);
                 log.info("Created new mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
-            }
-            else { //update
-                storage.updateMapping(mappingDto);
-                log.info("Created new mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
-            }
-
+           }                        
             return null; // Something must be returned
         });
     }
