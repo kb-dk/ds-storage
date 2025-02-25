@@ -92,7 +92,7 @@ public class DsStorageClient extends DsStorageApi {
         try {
             URI uri = new URIBuilder(serviceURI + "origin/config")                                                                
                     .build();
-            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET",new ArrayList<OriginDto>(),null);              
+            return Service2ServiceRequest.httpCallWithOAuthTokenAsDtoList(uri,"GET",new OriginDto(),null);              
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -112,7 +112,7 @@ public class DsStorageClient extends DsStorageApi {
         try {
             URI uri = new URIBuilder(serviceURI + "/origin/stats")                                                                
                     .build();
-            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET",new ArrayList<OriginCountDto>(),null);              
+            return Service2ServiceRequest.httpCallWithOAuthTokenAsDtoList(uri,"GET",new OriginCountDto(),null);              
         }
         catch(Exception e) {
             e.printStackTrace();
