@@ -20,6 +20,7 @@ import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.model.v1.RecordsCountDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.util.IdNormaliser;
@@ -105,19 +106,16 @@ public class DsStorageFacade {
      * 
      */
     public static void createOrUpdateMapping(MappingDto mappingDto)  {
-        performStorageAction("createOrUpdateMapping(" + mappingDto.getReferenceId() + ")", storage -> {
-
-            //test if mapping already exists
-            MappingDto oldMapping = storage.getMappingByReferenceId(mappingDto.getReferenceId());
-            if (oldMapping==null) { //create new
+        performStorageAction("createOrUpdateMapping(" + mappingDto.getReferenceId() + ")", storage -> {                      
+            try {
+                storage.getMappingByReferenceId(mappingDto.getReferenceId()); //throws exception if not found
+                storage.updateMapping(mappingDto);
+                log.info("Updated mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
+            }
+            catch(Exception e){
                 storage.createNewMapping(mappingDto);
                 log.info("Created new mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
-            }
-            else { //update
-                storage.updateMapping(mappingDto);
-                log.info("Created new mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
-            }
-
+           }                        
             return null; // Something must be returned
         });
     }
@@ -207,7 +205,7 @@ public class DsStorageFacade {
      *    
      * @return Number of records that was enriched with kalturaId 
      */
-    public static int updateKalturaIdForRecords() {
+    public static RecordsCountDto updateKalturaIdForRecords() {
        return performStorageAction("updateKalturaIdForRecords", DsStorage::updateKalturaIdForRecords);
     }  
     
@@ -436,36 +434,37 @@ public class DsStorageFacade {
      * @param mTimeFrom modified time from. Format is millis +3 digits
      * @param mTimeTo modified time to. Format is millis +3 digits
      */
-    public static Integer deleteRecordsForOrigin(String origin, long mTimeFrom, long mTimeTo) {
+    public static RecordsCountDto deleteRecordsForOrigin(String origin, long mTimeFrom, long mTimeTo) {
         return performStorageAction("deleteRecordsForOrigin(" + origin + ")", storage -> {
             validateOriginExists(origin);
-            int deleted = storage.deleteRecordsForOrigin(origin,mTimeFrom,mTimeTo);                       
-            log.info("Deleted {} records from origin={}",deleted,origin);                     
-            return deleted;
+            RecordsCountDto count = storage.deleteRecordsForOrigin(origin,mTimeFrom,mTimeTo);                       
+            log.info("Deleted {} records from origin={}",count.getCount(),origin);                                            
+            return count;
         });
     }
     
 
-    public static Integer markRecordForDelete(String recordId) {
+    public static RecordsCountDto markRecordForDelete(String recordId) {
         //TODO touch children etc.
         return performStorageAction("markRecordForDelete(" + recordId + ")", storage -> {
             String idNorm = IdNormaliser.normaliseId(recordId);            
-            int updated = storage.markRecordForDelete(idNorm);
+            RecordsCountDto countDto = storage.markRecordForDelete(idNorm);
             updateMTimeForParentChild(storage,recordId);
-            log.info("Record marked for delete: '{}'", recordId);
-            return updated;
+            log.info("Record marked for delete: '{}'", recordId);                       
+            return countDto;
         });
     }
 
 
-    public static int deleteMarkedForDelete(String origin) {
+    public static RecordsCountDto deleteMarkedForDelete(String origin) {
         return performStorageAction("deleteMarkedForDelete(" + origin + ")", storage -> {
             validateOriginExists(origin);
 
-            int numberDeleted =  storage.deleteMarkedForDelete(origin);
-            log.info("Deleted all marked for delete records for origin: '{}'. Number deleted: '{}'", origin, numberDeleted);
+            RecordsCountDto count =  storage.deleteMarkedForDelete(origin);
+            log.info("Deleted all marked for delete records for origin: '{}'. Number deleted: '{}'", origin, count.getCount());
+
             //We are not touching parent/children relation when deleting for real.
-            return numberDeleted;
+            return count;
         });
     }
 
@@ -553,9 +552,10 @@ public class DsStorageFacade {
         //update all children one at a time
         ArrayList<String> childrenIds = storage.getChildrenIds(parentId);
         for (String childId : childrenIds) {
-           int updated = storage.updateMTimeForRecord(childId);
-           if (updated == 0) {
-               log.warn("Children with id does not exist: '{}'", childId);
+
+            RecordsCountDto count = storage.updateMTimeForRecord(childId);
+           if (count.getCount() == 0) {
+               log.warn("Children with id does not exist:"+childId);           
            }
         }
     }
