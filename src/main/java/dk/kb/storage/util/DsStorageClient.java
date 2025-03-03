@@ -424,7 +424,7 @@ public class DsStorageClient {
                     .build();            
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null,null);              
         }
-        catch(Exception e) {
+        catch(URISyntaxException e) {
             log.error("Invalid url:"+e.getMessage());
             throw new InternalServiceException(CLIENT_URL_EXCEPTION);
         }                        
@@ -448,7 +448,7 @@ public class DsStorageClient {
                     .build();            
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null,null);              
         }
-        catch(Exception e) {
+        catch(URISyntaxException e) {
             log.error("Invalid url:"+e.getMessage());
             throw new InternalServiceException(CLIENT_URL_EXCEPTION);
         }                                      
