@@ -15,7 +15,6 @@
 package dk.kb.storage.integration;
 
 import dk.kb.storage.config.ServiceConfig;
-import dk.kb.storage.invoker.v1.ApiException;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
@@ -69,7 +68,7 @@ public class DsStorageClientTest {
     }
     
     @Test
-    public void testGetOriginConfiguration() throws ApiException {      
+    public void testGetOriginConfiguration() {      
 
          List<OriginDto> originConfiguration = remote.getOriginConfiguration();          
          OriginDto originDto = originConfiguration.get(0);
@@ -79,7 +78,7 @@ public class DsStorageClientTest {
     }
     
     @Test
-    public void testGetOriginStatistics() throws ApiException {      
+    public void testGetOriginStatistics()  {      
          List<OriginCountDto> originStatistics = remote.getOriginStatistics();                 
          OriginCountDto dto = originStatistics.get(0);         
          assertTrue(originStatistics.size() > 0);
@@ -89,7 +88,7 @@ public class DsStorageClientTest {
     
     
     @Test
-    public void testGetRecord() throws ApiException {      
+    public void testGetRecord() {      
         String id = "kb.image.luftfo.luftfoto:oai:kb.dk:images:luftfo:2011:maj:luftfoto:object187744";
       try {
         DsRecordDto record = remote.getRecord(id,false);
@@ -103,7 +102,7 @@ public class DsStorageClientTest {
     }
 
     @Test
-    public void testMarkRecordForDelete() throws ApiException {              
+    public void testMarkRecordForDelete() {              
          String id="ds.radio:oai:io:8f8f2da9-98e3-4ba2-aa6c-XXXXXX";  //does not exist
          RecordsCountDto  marked = remote.markRecordForDelete(id); 
          assertEquals(0,marked.getCount());
@@ -112,7 +111,7 @@ public class DsStorageClientTest {
     
     
     @Test
-    public void testUpdateReferenceId() throws ApiException {              
+    public void testUpdateReferenceId() {              
          String recordId="ds.radio:oai:io:8f8f2da9-98e3-4ba2-aa6c-XXXXX";
          String refId="1234";
          remote.updateReferenceIdForRecord(recordId, refId);          
@@ -120,14 +119,14 @@ public class DsStorageClientTest {
     
     
     @Test
-    public void testUpdateKalturaIdForRecord() throws ApiException {                       
+    public void testUpdateKalturaIdForRecord() {                       
          String refId="1234";
          String kalturaId="1234";
          remote.updateKalturaIdForRecord(refId,kalturaId);         
     }
     
     @Test
-    public void testMappingPost() throws ApiException {                       
+    public void testMappingPost()  {                       
          String refId="1234";
          String kalturaId="1234";
          MappingDto dto = new MappingDto();
@@ -138,14 +137,14 @@ public class DsStorageClientTest {
         
     
     @Test
-    public void testGetMapping() throws ApiException {                       
+    public void testGetMapping()  {                       
          String refId="d24be758-c6fe-4f58-ae6d-164125b78a8b"; //This is exist now                                   
          MappingDto mapping = remote.getMapping(refId);
          //System.out.println(mapping);
     }
     
     @Test
-    public void testGetMinimalRecords() throws ApiException {                       
+    public void testGetMinimalRecords() {                       
         String origin="ds.radio";
         int maxRecords=10;
         long mTime=0;
@@ -230,7 +229,7 @@ public class DsStorageClientTest {
     }
 
     @Test
-    public void testRemotePageLast() throws ApiException, IOException {        
+    public void testRemotePageLast() throws IOException {        
         Long lastMTime = null;
         
         List<OriginCountDto> stats = remote.getOriginStatistics();
