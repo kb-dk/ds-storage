@@ -14,10 +14,6 @@
  */
 package dk.kb.storage.util;
 
-import dk.kb.storage.client.v1.DsStorageApi;
-import dk.kb.storage.invoker.v1.ApiClient;
-import dk.kb.storage.invoker.v1.ApiException;
-import dk.kb.storage.invoker.v1.Configuration;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
@@ -25,15 +21,13 @@ import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
-import dk.kb.storage.webservice.KBAuthorizationInterceptor;
 import dk.kb.util.webservice.Service2ServiceRequest;
 import dk.kb.util.webservice.exception.InternalServiceException;
+import dk.kb.util.webservice.exception.ServiceException;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
 import dk.kb.util.webservice.stream.ContinuationStream;
 
 
-import org.apache.cxf.jaxrs.utils.JAXRSUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
+import org.apache.hc.core5.net.URIBuilder;
 
 /**
  * Client for the service. Intended for use by other projects that calls this service.
@@ -57,8 +51,9 @@ import java.util.Map;
  * The client is Thread safe and handles parallel requests independently.
  * It is recommended to persist the client and to re-use it between calls.
  */
-public class DsStorageClient extends DsStorageApi {
+public class DsStorageClient {
     private static final Logger log = LoggerFactory.getLogger(DsStorageClient.class);
+    private final static String CLIENT_URL_EXCEPTION="The client url was not constructed correct";
     private final String serviceURI;
 
     public static final String STORAGE_SERVER_URL_KEY = ".storage.url";
@@ -76,7 +71,6 @@ public class DsStorageClient extends DsStorageApi {
      */
     @SuppressWarnings("JavadocLinkAsPlainText")
     public DsStorageClient(String serviceURI) {
-        super(createClient(serviceURI));
         this.serviceURI = serviceURI;
         log.info("Created OpenAPI client for '{}'", serviceURI);
     }
@@ -85,19 +79,19 @@ public class DsStorageClient extends DsStorageApi {
      * Retrieve a list of configured origins with their respective update strategy
      * This endpoint delivers a list of all configured origins. An origin defines which collection data comes from. This could for instance be the Radio &amp; TV collection at The Royal Danish Library, which has the origin defined as &#39;ds.radiotv&#39;. The update strategy defines how data from the specific origin is updated, when a record is added, modified or deleted. 
      * @return List&lt;OriginDto&gt;
-     * @throws ApiException if fails to make API call
+     * @throws ServiceException if fails to make API call
      */
-    @Override
-    public List<OriginDto> getOriginConfiguration () throws ApiException{       
+    public List<OriginDto> getOriginConfiguration () throws ServiceException{       
         try {
-            URI uri = new URIBuilder(serviceURI + "origin/config")                                                                
+            URI uri = new URIBuilder(serviceURI)                    
+                    .appendPath("origin/config")                                                                
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthTokenAsDtoList(uri,"GET",new OriginDto(),null);              
         }
-        catch(Exception e) {
-            e.printStackTrace();
-            throw new ApiException(e);
-        }                        
+        catch (URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
+         }          
 
     }
 
@@ -105,73 +99,23 @@ public class DsStorageClient extends DsStorageApi {
      * Show amount of records in each origin
      * 
      * @return List&lt;OriginCountDto&gt;
-     * @throws ApiException if fails to make API call
+     * @throws ServiceException if fails to make API call
      */
-    @Override
-    public List<OriginCountDto> getOriginStatistics() throws ApiException {
+    public List<OriginCountDto> getOriginStatistics() throws ServiceException {
         try {
-            URI uri = new URIBuilder(serviceURI + "/origin/stats")                                                                
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPath("origin/stats")                                                                
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthTokenAsDtoList(uri,"GET",new OriginCountDto(),null);              
         }
-        catch(Exception e) {
-            e.printStackTrace();
-            throw new ApiException(e);
-        }                                
+        catch (URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
+         }                        
     }
 
+  
 
-    /**
-     * <p>
-     * This method can not be called on ds-storage client. Must be called directly on ds-storage
-     * <p>
-     * 
-     * Delete all records for an origin that has deleted flag set.
-     * Notice that applications retrieving records from the deleted origin never will know that the records were deleted unless the application retrieves the records after they have been marked with the delete flag. 
-     * @param origin The origin to delete records from. (required)
-     * @return Integer
-     * @throws ApiException if fails to make API call
-     */
-    @Override
-    public RecordsCountDto deleteMarkedForDelete(String origin) throws ApiException {        
-        throw new ApiException(403, "Method deleteMarkedForDelete not allowed to be called on StorageClient");
-    }
-
-
-    /** 
-     * <p>
-     * This method can not be called on ds-storage client. Must be called directly on ds-storage
-     * <p>
-     * 
-     * Delete records from the storage for the origin within the timeframe.
-     * Delete records from the storage for the origin within the timeframe. Records will be deleted and not just marked as deleted. mTimeFrom and mTimeTo will be included in the deletion range. 
-     * @param origin The origin to delete records from. (required)
-     * @param mTimeFrom Format is milliseconds since Epoch with 3 added digits. Value is included in the deletion (required)
-     * @param mTimeTo Format is milliseconds since Epoch with 3 added digits. Value is included in the deletion (required)
-     * @return Integer
-     * @throws ApiException if fails to make API call
-     */
-    @Override
-    public RecordsCountDto deleteRecordsForOrigin(String origin, Long mTimeFrom, Long mTimeTo) throws ApiException {
-        throw new ApiException(403, "Method deleteRecordsForOrigin not allowed to be called on StorageClient");          
-    }
-
-    
-    /**
-     * <p>
-     * This method can not be called on ds-storage client. Must be called directly on ds-storage
-     * <p>
-     * 
-     * 
-     * Update all records having a referenceIf with the matching Kaltura, if the mapping can be found in the mapping table
-     * Update all records having a referenceId with the matching kalturaId, if the mapping can be found in the mapping table.  If many records needs to be updated this can take some time. Estimated 15 minutes for 1M records. It is possible to update in batches if the mapping table is also updated in batches.                 
-     * @return RecordsCountDto
-     * @throws ApiException if fails to make API call
-     */
-    @Override
-    public RecordsCountDto updateKalturaIdForRecords() throws ApiException {
-        throw new ApiException(403, "Method updateKalturaIdForRecords not allowed to be called on StorageClient");          
-    }
     
     /**
      * Read a specific record by ID.
@@ -179,19 +123,20 @@ public class DsStorageClient extends DsStorageApi {
      * @param id Record ID (required)
      * @param includeLocalTree Also load parent and direct children as objects (optional, default to false)
      * @return DsRecordDto
-     * @throws ApiException if fails to make API call
+     * @throws ServiceException if fails to make API call
      */
-    @Override
-    public DsRecordDto getRecord(String id, Boolean includeLocalTree) throws ApiException{       
+    public DsRecordDto getRecord(String id, Boolean includeLocalTree) throws ServiceException{       
         try {
-            URI uri = new URIBuilder(serviceURI + "record/"+id) //Set the full path, then add parameters. Id is part of url and not parameter                                                
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPath( "record/"+id)                                                
                     .addParameter("includeLocalTree",""+includeLocalTree)               
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET",new DsRecordDto(),null);              
         }
-        catch(Exception e) {
-            throw new ApiException(e);
-        }                        
+        catch (URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
+         }           
     }
 
 
@@ -199,18 +144,19 @@ public class DsStorageClient extends DsStorageApi {
      * Create a new record or update an existing record.
      * A record can have a single optional parent and may have multiple children
      * @param dsRecordDto  (optional)
-     * @throws ApiException if fails to make API call
+     * @throws ServiceException if fails to make API call
      */
-    @Override
-    public void recordPost(DsRecordDto dsRecordDto) throws ApiException {
+    public void recordPost(DsRecordDto dsRecordDto) throws ServiceException {
         try {
-            URI uri = new URIBuilder(serviceURI + "record") //Set the full path, then add parameters.                                                               
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPath("record")                                                               
                     .build();
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, dsRecordDto);              
         }
-        catch(Exception e) {
-            throw new ApiException(e);
-        }                        
+        catch (URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
+         }         
     }
 
     /**
@@ -218,17 +164,18 @@ public class DsStorageClient extends DsStorageApi {
      * This will not delete the record in the database but only mark it as deleted. 
      * @param id Record ID (required)
      * @return Integer
-     * @throws ApiException if fails to make API call
+     * @throws ServiceException if fails to make API call
      */
-    @Override
-    public RecordsCountDto markRecordForDelete (String id) throws ApiException {
+    public RecordsCountDto markRecordForDelete (String id) throws ServiceException {
         try {                          
-            URI uri = new URIBuilder(serviceURI + "record/"+id)                                                                
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPath("record/"+id) //id part of path                                                                                  
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthToken(uri,"DELETE",new RecordsCountDto(),null);              
         }
-        catch(Exception e) {
-            throw new ApiException(e);
+        catch (URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
         }                    
     }
 
@@ -236,17 +183,18 @@ public class DsStorageClient extends DsStorageApi {
      * Create a new mapping or update a mapping .
      * Create a new mapping or update mapping if referenceId exists. Each record with a stream will have a referenceId (file-id) and needs to be mapped to the KalturaId
      * @param mappingDto  (optional)
-     * @throws ApiException if fails to make API call
+     * @throws ServiceException if fails to make API call
      */
-    @Override
-    public void mappingPost(MappingDto mapping) throws ApiException {               
+    public void mappingPost(MappingDto mapping) throws ServiceException {               
         try {
-            URI uri = new URIBuilder(serviceURI + "mapping") //Set the full path, then add parameters.                                                               
-               .build();
+            URI uri = new URIBuilder(serviceURI)
+                     .appendPath("mapping")                                                               
+                     .build();
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, mapping);              
         }
-        catch(Exception e) {
-            throw new ApiException(e);
+        catch (URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
         }                               
     }
 
@@ -255,19 +203,20 @@ public class DsStorageClient extends DsStorageApi {
      * Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.
      * @param referenceId  (required)
      * @return MappingDto
-     * @throws ApiException if fails to make API call
+     * @throws ServiceException if fails to make API call
      */
-    @Override
-    public MappingDto getMapping(String referenceId) throws ApiException {        
+    public MappingDto getMapping(String referenceId) throws ServiceException {        
         try {
-            URI uri = new URIBuilder(serviceURI + "mapping") //Set the full path, then add parameters.                                                                
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPath("mapping")                                                                
                     .addParameter("referenceId",referenceId)                       
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET", new MappingDto(), null);              
         }
-        catch(Exception e) {
-            throw new ApiException(e);
-        }                                                
+        catch (URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
+         }                               
     }
         
     /**
@@ -278,21 +227,22 @@ public class DsStorageClient extends DsStorageApi {
      * @param maxRecords Number of records to extract. (required)
      * @param mTime Only extract records after this mTime. (optional, default to 0l)
      * @return List&lt;DsRecordMinimalDto&gt;
-     * @throws ApiException if fails to make API call
+     * @throws ServiceException if fails to make API call
      */
-    @Override
-    public List<DsRecordMinimalDto> getMinimalRecords (String origin, Integer maxRecords, Long mTime) throws ApiException {   
+    public List<DsRecordMinimalDto> getMinimalRecords (String origin, Integer maxRecords, Long mTime) throws ServiceException {   
         try {
-            URI uri = new URIBuilder(serviceURI + "records/minimal") //Set the full path, then add parameters.                                                               
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPath("records/minimal")                                                               
                     .addParameter("origin",origin)
                     .addParameter("maxRecords",""+maxRecords)
                     .addParameter("mTime",""+mTime)                    
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET", new ArrayList<DsRecordMinimalDto>(), null);              
         }
-        catch(Exception e) {
-            throw new ApiException(e);
-        }                                                        
+        catch (URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
+         }                                            
     }
 
     /**
@@ -354,19 +304,16 @@ public class DsStorageClient extends DsStorageApi {
             throws IOException {
         URI uri;
         try {
-            uri = new URIBuilder(serviceURI + "records")
-                    // setPath overwrites paths given in serviceURI
-                    // .setPath("records")
+            uri = new URIBuilder(serviceURI)
+                    .appendPath("records")             
                     .addParameter("origin", origin)
                     .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
                     .addParameter("maxRecords", Long.toString(maxRecords == null ? 10 : maxRecords))
                     .build();
-        } catch (URISyntaxException e) {
-            String message = String.format(Locale.ROOT,
-                    "getRecordsModifiedAfterJSON(origin='%s', mTime=%d, maxRecords=%d): Unable to construct URI",
-                    origin, mTime, maxRecords);
-            log.warn(message, e);
-            throw new InternalServiceException(message);
+        }
+        catch (URISyntaxException e) {
+                log.error("Invalid url:"+e.getMessage());
+                throw new InternalServiceException(CLIENT_URL_EXCEPTION);                           
         }
 
         log.debug("Opening streaming connection to '{}'", uri);
@@ -391,21 +338,17 @@ public class DsStorageClient extends DsStorageApi {
         URI uri;
         try {
 
-            uri = new URIBuilder(serviceURI + "records")
-                    // setPath overwrites paths given in serviceURI
-                    //.setPath("records")
+            uri = new URIBuilder(serviceURI)
+                    .appendPath("records")
                     .addParameter("origin", origin)
                     .addParameter("recordType", recordType.toString())
                     .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
                     .addParameter("maxRecords", Long.toString(maxRecords == null ? 10 : maxRecords))
                     .build();
-        } catch (URISyntaxException e) {
-            String message = String.format(Locale.ROOT,
-                    "getRecordsModifiedAfterLocalTreeJSON(origin='%s', recordType='%s', mTime=%d, maxRecords=%d): " +
-                            "Unable to construct URI",
-                            origin, recordType, mTime, maxRecords);
-            log.warn(message, e);
-            throw new InternalServiceException(message);
+        }
+        catch (URISyntaxException e) {
+                log.error("Invalid url:"+e.getMessage());
+                throw new InternalServiceException(CLIENT_URL_EXCEPTION);                      
         }
 
         log.debug("Opening streaming connection to '{}'", uri);      
@@ -448,19 +391,15 @@ public class DsStorageClient extends DsStorageApi {
             throws IOException {
         URI uri;
         try {
-            uri = new URIBuilder(serviceURI + "records/minimal")
-                    // setPath overwrites paths given in serviceURI
-                    // .setPath("records")
+            uri = new URIBuilder(serviceURI)
+                    .appendPath("records/minimal")                                        
                     .addParameter("origin", origin)
                     .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
                     .addParameter("maxRecords", Long.toString(maxRecords == null ? 10 : maxRecords))
                     .build();
         } catch (URISyntaxException e) {
-            String message = String.format(Locale.ROOT,
-                    "getMinimalRecordsModifiedAfterJSON(origin='%s', mTime=%d, maxRecords=%d): Unable to construct URI",
-                    origin, mTime, maxRecords);
-            log.warn(message, e);
-            throw new InternalServiceException(message);
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);
         }
 
         log.debug("Opening streaming connection to '{}'", uri);
@@ -476,20 +415,21 @@ public class DsStorageClient extends DsStorageApi {
      *  @param recordId of the record to update referenceId for
      *  @param referenceId The referenceId to set for the record
      * 
-     * @throws ApiException  
+     * @throws ServiceException  
      * 
      */
-    @Override
-    public void updateReferenceIdForRecord(String recordId,String referenceId) throws ApiException {       
+    public void updateReferenceIdForRecord(String recordId,String referenceId) throws ServiceException{       
         try {
-            URI uri = new URIBuilder(serviceURI + "record/updateReferenceId") //Set the full path, then add parameters.                                                                
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPath("record/updateReferenceId")                                                               
                     .addParameter("recordId",""+recordId)               
                     .addParameter("referenceId",""+referenceId)
                     .build();            
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null,null);              
         }
         catch(Exception e) {
-            throw new ApiException(e);
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);
         }                        
 
     }
@@ -499,40 +439,23 @@ public class DsStorageClient extends DsStorageApi {
      * Update a record with the Kaltura id. The record was uploaded to Kaltura with the referenceId as metadata. Knowing the kalturaId is important to find the record(stream) in Kaltura later for update or deletetion etc.
      * @param referenceId  (required)
      * @param kalturaId  (required)
-     * @throws ApiException if fails to make API call
+     * @throws ServiceException if fails to make API call
      */
-    @Override
-    public void updateKalturaIdForRecord (String referenceId, String kalturaId) throws ApiException {
+    public void updateKalturaIdForRecord (String referenceId, String kalturaId) throws ServiceException {
 
         try {
-            URI uri = new URIBuilder(serviceURI + "record/updateKalturaId") //Set the full path, then add parameters.                                                                
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPath("record/updateKalturaId")                                                                
                     .addParameter("referenceId",referenceId)               
-                    .addParameter(" kalturaId",kalturaId)
+                    .addParameter("kalturaId",kalturaId)
                     .build();            
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null,null);              
         }
         catch(Exception e) {
-            throw new ApiException(e);
-        }                      
-        
-        
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);
+        }                                      
     }
 
-    /**
-     * Deconstruct the given URI and use the components to create an ApiClient.
-     * @param serviceURIString a URI to a service.
-     * @return an ApiClient constructed from the serviceURIString.
-     */
-    private static ApiClient createClient(String serviceURIString) {
-        log.debug("Creating OpenAPI client with URI '{}'", serviceURIString);
-
-        URI serviceURI = URI.create(serviceURIString);
-        // No mechanism for just providing the full URI. We have to deconstruct it
-        return Configuration.getDefaultApiClient().
-                setScheme(serviceURI.getScheme()).
-                setHost(serviceURI.getHost()).
-                setPort(serviceURI.getPort()).
-                setBasePath(serviceURI.getRawPath());
-    }
-   
+  
 }
