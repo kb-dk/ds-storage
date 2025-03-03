@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bumped SwaggerUI dependency to v5.18.2
 - Bumped kb-util to v1.6.9 for service2service oauth support.
 - Added injection of Oauth token on all service methods when using DsStorageClient.
-- Removed auto generated DsLicenseClient class that was a blocker for better exception handling. All DsLicenseClient methods now only throws ServiceException mapped to HTTP status in same way calling the API directly.
+- Removed auto generated DsStorageClient class that was a blocker for better exception handling. All DsStorageClient methods now only throws ServiceException mapped to HTTP status in same way calling the API directly.
 
 ### Added
 - Property for database connection pool size. Under 'db' property new property: 'connectionPoolSize'. Reasonable values are from 10 to 100. 
