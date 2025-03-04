@@ -125,7 +125,7 @@ public class DsStorageClient {
     public DsRecordDto getRecord(String id, Boolean includeLocalTree) throws ServiceException{       
         try {
             URI uri = new URIBuilder(serviceURI)
-                    .appendPathSegments("record",""+id) //id is part of path                                             
+                    .appendPathSegments("record",id) //id is part of path                                             
                     .addParameter("includeLocalTree",""+includeLocalTree)               
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET",new DsRecordDto(),null);              
@@ -166,7 +166,7 @@ public class DsStorageClient {
     public RecordsCountDto markRecordForDelete (String id) throws ServiceException {
         try {                          
             URI uri = new URIBuilder(serviceURI)
-                    .appendPathSegments("record",""+id) //id is part of path                                                                                  
+                    .appendPathSegments("record",id) //id is part of path                                                                                  
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthToken(uri,"DELETE",new RecordsCountDto(),null);              
         }
