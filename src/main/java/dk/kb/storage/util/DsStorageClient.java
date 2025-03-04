@@ -454,6 +454,26 @@ public class DsStorageClient {
             throw new InternalServiceException(CLIENT_URL_EXCEPTION);
         }                                      
     }
+    
+    /**
+     * Update all records having a referenceIf with the matching Kaltura, if the mapping can be found in the mapping table
+     * Update all records having a referenceId with the matching kalturaId, if the mapping can be found in the mapping table.  If many records needs to be updated this can take some time. Estimated 15 minutes for 1M records. It is possible to update in batches if the mapping table is also updated in batches.                 
+     * @return Integer
+     * @throws ApiException if fails to make API call
+     */
+    public RecordsCountDto updateKalturaIdForRecords() throws ServiceException {
+        try {
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPathSegments("record","updateKalturaId")                                                                                 
+                    .build();            
+           return Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", new RecordsCountDto(),null);              
+        }
+        catch(URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);
+        }                             
+    }
+       
 
   
 }
