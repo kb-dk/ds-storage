@@ -81,7 +81,7 @@ public class DsStorageClient {
     public List<OriginDto> getOriginConfiguration () throws ServiceException{       
         try {
             URI uri = new URIBuilder(serviceURI)                    
-                    .appendPath("origin/config")                                                                
+                    .appendPathSegments("origin","config")                                                                
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthTokenAsDtoList(uri,"GET",new OriginDto(),null);              
         }
@@ -101,7 +101,7 @@ public class DsStorageClient {
     public List<OriginCountDto> getOriginStatistics() throws ServiceException {
         try {
             URI uri = new URIBuilder(serviceURI)
-                    .appendPath("origin/stats")                                                                
+                    .appendPathSegments("origin","stats")                                                                                   
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthTokenAsDtoList(uri,"GET",new OriginCountDto(),null);              
         }
@@ -125,7 +125,7 @@ public class DsStorageClient {
     public DsRecordDto getRecord(String id, Boolean includeLocalTree) throws ServiceException{       
         try {
             URI uri = new URIBuilder(serviceURI)
-                    .appendPath( "record/"+id)                                                
+                    .appendPathSegments("record",""+id) //id is part of path                                             
                     .addParameter("includeLocalTree",""+includeLocalTree)               
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET",new DsRecordDto(),null);              
@@ -166,7 +166,7 @@ public class DsStorageClient {
     public RecordsCountDto markRecordForDelete (String id) throws ServiceException {
         try {                          
             URI uri = new URIBuilder(serviceURI)
-                    .appendPath("record/"+id) //id part of path                                                                                  
+                    .appendPathSegments("record",""+id) //id is part of path                                                                                  
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthToken(uri,"DELETE",new RecordsCountDto(),null);              
         }
@@ -388,8 +388,8 @@ public class DsStorageClient {
             throws IOException {
         URI uri;
         try {
-            uri = new URIBuilder(serviceURI)
-                    .appendPath("records/minimal")                                        
+            uri = new URIBuilder(serviceURI)                    
+                    .appendPathSegments("records","minimal")                                        
                     .addParameter("origin", origin)
                     .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
                     .addParameter("maxRecords", Long.toString(maxRecords == null ? 10 : maxRecords))
@@ -418,7 +418,8 @@ public class DsStorageClient {
     public void updateReferenceIdForRecord(String recordId,String referenceId) throws ServiceException{       
         try {
             URI uri = new URIBuilder(serviceURI)
-                    .appendPath("record/updateReferenceId")                                                               
+                    
+                    .appendPathSegments("record","updateReferenceId")                                                               
                     .addParameter("recordId",""+recordId)               
                     .addParameter("referenceId",""+referenceId)
                     .build();            
@@ -442,7 +443,7 @@ public class DsStorageClient {
 
         try {
             URI uri = new URIBuilder(serviceURI)
-                    .appendPath("record/updateKalturaId")                                                                
+                    .appendPathSegments("record","updateKalturaId")                                                                                 
                     .addParameter("referenceId",referenceId)               
                     .addParameter("kalturaId",kalturaId)
                     .build();            
