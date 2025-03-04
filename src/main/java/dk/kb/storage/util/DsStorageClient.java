@@ -146,7 +146,7 @@ public class DsStorageClient {
     public void recordPost(DsRecordDto dsRecordDto) throws ServiceException {
         try {
             URI uri = new URIBuilder(serviceURI)
-                    .appendPath("record")                                                               
+                    .appendPathSegments("records")                                                               
                     .build();
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, dsRecordDto);              
         }
@@ -185,7 +185,7 @@ public class DsStorageClient {
     public void mappingPost(MappingDto mapping) throws ServiceException {               
         try {
             URI uri = new URIBuilder(serviceURI)
-                     .appendPath("mapping")                                                               
+                     .appendPathSegments("mapping")                                                               
                      .build();
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, mapping);              
         }
@@ -205,7 +205,7 @@ public class DsStorageClient {
     public MappingDto getMapping(String referenceId) throws ServiceException {        
         try {
             URI uri = new URIBuilder(serviceURI)
-                    .appendPath("mapping")                                                                
+                    .appendPathSegments("mapping")                                                                
                     .addParameter("referenceId",referenceId)                       
                     .build();
             return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET", new MappingDto(), null);              
@@ -229,7 +229,7 @@ public class DsStorageClient {
     public List<DsRecordMinimalDto> getMinimalRecords (String origin, Integer maxRecords, Long mTime) throws ServiceException {   
         try {
             URI uri = new URIBuilder(serviceURI)
-                    .appendPath("records/minimal")                                                               
+                    .appendPathSegments("records","minimal")                                                               
                     .addParameter("origin",origin)
                     .addParameter("maxRecords",""+maxRecords)
                     .addParameter("mTime",""+mTime)                    
@@ -302,7 +302,7 @@ public class DsStorageClient {
         URI uri;
         try {
             uri = new URIBuilder(serviceURI)
-                    .appendPath("records")             
+                    .appendPathSegments("records")                                
                     .addParameter("origin", origin)
                     .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
                     .addParameter("maxRecords", Long.toString(maxRecords == null ? 10 : maxRecords))
@@ -336,7 +336,7 @@ public class DsStorageClient {
         try {
 
             uri = new URIBuilder(serviceURI)
-                    .appendPath("records")
+                    .appendPathSegments("records")
                     .addParameter("origin", origin)
                     .addParameter("recordType", recordType.toString())
                     .addParameter("mTime", Long.toString(mTime == null ? 0L : mTime))
