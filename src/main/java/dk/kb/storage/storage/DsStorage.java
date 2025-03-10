@@ -768,7 +768,11 @@ public class DsStorage implements AutoCloseable {
 
     }
 
-    
+    /**
+     * Update the modified time for input record.
+     * @param recordId of record to update
+     * @return an object containing information on how many records have been updated. (Always one in this case?)
+     */
     public RecordsCountDto updateMTimeForRecord(String recordId) throws Exception {
         // Sanity check
         if (recordId == null) {
@@ -1182,6 +1186,4 @@ public class DsStorage implements AutoCloseable {
             log.error("shutdown failed", e);
         }
     }
-
-
 }

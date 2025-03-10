@@ -136,6 +136,19 @@ public class DsStorageClient {
          }           
     }
 
+    public void touchRecord(String recordId){
+        try {
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPathSegments("record", "touch", recordId)
+                    .build();
+            Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET", null,null);
+        }
+        catch (URISyntaxException e) {
+            log.error("Invalid url: '{}'", e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);
+        }
+    }
+
 
     /**
      * Create a new record or update an existing record.

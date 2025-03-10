@@ -394,7 +394,17 @@ public class DsStorageFacade {
          
         });
     }
-    
+
+    /**
+     * Touch a record and update its mTime
+     * @param recordId of record to touch.
+     */
+    public static void touchRecord(String recordId) {
+        performStorageAction("updateMTimeForRecord(" + recordId +")", storage -> {
+            String idNorm = IdNormaliser.normaliseId(recordId);
+            return storage.updateMTimeForRecord(idNorm);
+        });
+    }
   
     /**
      * Will recursive go up in the tree to find the top parent.

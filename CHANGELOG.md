@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added endpoint /record/touch/{id} which allows touching of single records
+
 ### Fixed
 
 ## [2.3.3](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.3.3) 2025-03-05

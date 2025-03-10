@@ -297,9 +297,23 @@ paths:
         '204':
           description: No Content - The request has been executed correct and the server did not deliver any content.
 
-  
-  
-  
+  /record/touch/{id}:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Touch a record, changing its mTime to the current time.'
+      operationId: touchRecord
+      parameters:
+        - name: id
+          in: path
+          description: 'Record ID'
+          required: true
+          schema:
+            type: string
+            example: "ds.tv:oai:du:3006e2f8-3f73-477a-a504-4d7cb1ae1e1c"
+      responses:
+        '204':
+          description: The request has been executed correct and the server did not deliver any content in return
   
   /records:
     get:
