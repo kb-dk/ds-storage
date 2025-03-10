@@ -102,6 +102,13 @@ public class DsStorageClientTest {
     }
 
     @Test
+    public void testTouchRecord() {
+        String id = "ds.tv:oai:io:a89956ea-4e17-4756-92da-c196b59dbcc5";
+        remote.touchRecord(id);
+
+    }
+
+    @Test
     public void testMarkRecordForDelete() {              
          String id="ds.radio:oai:io:8f8f2da9-98e3-4ba2-aa6c-XXXXXX";  //does not exist
          RecordsCountDto  marked = remote.markRecordForDelete(id); 

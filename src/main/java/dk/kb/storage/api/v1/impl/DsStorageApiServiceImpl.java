@@ -216,6 +216,16 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     }
 
     @Override
+    public void touchRecord(String recordId) {
+        try {
+            log.debug("touchRecord(id='{}') called with call details: {}", recordId, getCallDetails());
+            DsStorageFacade.touchRecord(recordId);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+    @Override
     public DsRecordDto getRecord(String id, Boolean includeLocalTree) {
         try {
             log.debug("getRecord(id='{}') called with call details: {}", id, getCallDetails());
