@@ -398,12 +398,18 @@ public class DsStorageFacade {
     /**
      * Touch a record and update its mTime
      * @param recordId of record to touch.
+     * @throws NotFoundServiceException when a record cannot be found in storage.
      */
     public static void touchRecord(String recordId) {
-        performStorageAction("updateMTimeForRecord(" + recordId +")", storage -> {
+        RecordsCountDto countDto = performStorageAction("updateMTimeForRecord(" + recordId +")", storage -> {
             String idNorm = IdNormaliser.normaliseId(recordId);
             return storage.updateMTimeForRecord(idNorm);
         });
+
+        if (countDto.getCount() == null | countDto.getCount() < 1){
+            log.error("The record with id: '{}' was not touched as it doesn't exist in DS-storage", recordId);
+            throw new NotFoundServiceException("The record with id: '{}' doesn't exist in DS-storage");
+        }
     }
   
     /**
