@@ -312,8 +312,12 @@ paths:
             type: string
             example: "ds.tv:oai:du:3006e2f8-3f73-477a-a504-4d7cb1ae1e1c"
       responses:
-        '204':
+        '200':
           description: The request has been executed correct and the server did not deliver any content in return
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordsCount'
   
   /records:
     get:
