@@ -23,23 +23,31 @@ import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
 import dk.kb.storage.util.DsStorageClient;
+import dk.kb.util.oauth2.KeycloakUtil;
+import dk.kb.util.webservice.OAuthConstants;
 import dk.kb.util.webservice.stream.ContinuationInputStream;
 import dk.kb.util.webservice.stream.ContinuationStream;
 import dk.kb.util.webservice.stream.ContinuationUtil;
 import org.apache.commons.io.IOUtils;
+import org.apache.cxf.jaxrs.utils.JAXRSUtils;
+import org.apache.cxf.message.MessageImpl;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mockStatic;
 
 /**
  * Integration test on class level, will not be run by automatic build flow.
@@ -52,20 +60,42 @@ public class DsStorageClientTest {
 
     private static DsStorageClient remote = null;
     private static String dsStorageDevel=null;  
-
+    
+ 
     @BeforeAll
-    static void setup() {
+    public static void setUp() throws Exception{
         try {
-            ServiceConfig.initialize("conf/ds-storage-behaviour.yaml","ds-storage-integration-test.yaml"); 
-            dsStorageDevel= ServiceConfig.getConfig().getString("integration.devel.storage"); 
-            remote = new DsStorageClient(dsStorageDevel);
+        ServiceConfig.initialize("conf/ds-storage-behaviour.yaml","ds-storage-integration-test.yaml"); 
+        dsStorageDevel= ServiceConfig.getConfig().getString("integration.devel.storage"); 
+        remote = new DsStorageClient(dsStorageDevel);                
+        
         } catch (IOException e) { 
             e.printStackTrace();
             log.error("Integration yaml 'ds-storage-integration-test.yaml' file most be present. Call 'kb init'"); 
             fail();
-
         }
+        
+        try {            
+            String keyCloakRealmUrl= ServiceConfig.getConfig().getString("integration.devel.keycloak.realmUrl");            
+            String clientId=ServiceConfig.getConfig().getString("integration.devel.keycloak.clientId");
+            String clientSecret=ServiceConfig.getConfig().getString("integration.devel.keycloak.clientSecret");                
+            String token=KeycloakUtil.getKeycloakAccessToken(keyCloakRealmUrl, clientId, clientSecret);           
+            log.info("Retrieved keycloak access token:"+token);            
+            
+            //Mock that we have a JaxRS session with an Oauth token as seen from within a service call.
+            MessageImpl message = new MessageImpl();                            
+            message.put(OAuthConstants.ACCESS_TOKEN_STRING,token);            
+            MockedStatic<JAXRSUtils> mocked = mockStatic(JAXRSUtils.class);           
+            mocked.when(JAXRSUtils::getCurrentMessage).thenReturn(message);
+                                                                         
+        }
+        catch(Exception e) {
+            log.warn("Could not retrieve keycloak access token. Service will be called without Bearer access token");            
+            e.printStackTrace();
+        }                        
     }
+
+         
     
     @Test
     public void testGetOriginConfiguration() {      
@@ -242,11 +272,6 @@ public class DsStorageClientTest {
         Long lastMTime = null;
         
         List<OriginCountDto> stats = remote.getOriginStatistics();
-        System.out.println(stats.size());
-        
-        System.out.println(stats.getClass());
-        
-        
         
         for (OriginCountDto originCount: stats) {
             if ("ds.radio".equals(originCount.getOrigin())) {
