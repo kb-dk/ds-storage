@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Added endpoint /record/touch/{id} which allows touching of single records
+- Integration unittest with OAuth access token. Require kb-util v.1.6.10 
 
 ### Fixed
 
