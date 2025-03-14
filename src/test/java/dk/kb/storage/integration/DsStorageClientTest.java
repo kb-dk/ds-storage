@@ -63,7 +63,7 @@ public class DsStorageClientTest {
     
  
     @BeforeAll
-    public static void setUp() throws Exception{
+    static void setUp() throws Exception{
         try {
             ServiceConfig.initialize("conf/ds-storage-behaviour.yaml","ds-storage-integration-test.yaml"); 
             dsStorageDevel= ServiceConfig.getConfig().getString("integration.devel.storage");
