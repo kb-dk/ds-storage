@@ -65,10 +65,9 @@ public class DsStorageClientTest {
     @BeforeAll
     public static void setUp() throws Exception{
         try {
-        ServiceConfig.initialize("conf/ds-storage-behaviour.yaml","ds-storage-integration-test.yaml"); 
-        dsStorageDevel= ServiceConfig.getConfig().getString("integration.devel.storage"); 
-        remote = new DsStorageClient(dsStorageDevel);                
-        
+            ServiceConfig.initialize("conf/ds-storage-behaviour.yaml","ds-storage-integration-test.yaml"); 
+            dsStorageDevel= ServiceConfig.getConfig().getString("integration.devel.storage"); 
+            remote = new DsStorageClient(dsStorageDevel);                        
         } catch (IOException e) { 
             e.printStackTrace();
             log.error("Integration yaml 'ds-storage-integration-test.yaml' file most be present. Call 'kb init'"); 
@@ -99,7 +98,6 @@ public class DsStorageClientTest {
     
     @Test
     public void testGetOriginConfiguration() {      
-
          List<OriginDto> originConfiguration = remote.getOriginConfiguration();          
          OriginDto originDto = originConfiguration.get(0);
          assertTrue(originConfiguration.size() > 0);
@@ -127,8 +125,7 @@ public class DsStorageClientTest {
       catch(Exception e) {
          //ignore.
           log.debug("Record not found in integration test.");
-      }
-         
+      }         
     }
 
     @Test
@@ -137,7 +134,6 @@ public class DsStorageClientTest {
         RecordsCountDto countDto = remote.touchRecord(id);
 
         assertEquals(1, countDto.getCount());
-
     }
 
     @Test
@@ -147,8 +143,7 @@ public class DsStorageClientTest {
          assertEquals(0,marked.getCount());
          
     }
-    
-    
+        
     @Test
     public void testUpdateReferenceId() {              
          String recordId="ds.radio:oai:io:8f8f2da9-98e3-4ba2-aa6c-XXXXX";
@@ -347,7 +342,6 @@ public class DsStorageClientTest {
             assertNotNull(records.getContinuationToken(),"The highest modification time should be present");
 
         }
-
     }
 
     @Test
