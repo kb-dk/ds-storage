@@ -66,8 +66,8 @@ public class DsStorageClientTest {
     public static void setUp() throws Exception{
         try {
             ServiceConfig.initialize("conf/ds-storage-behaviour.yaml","ds-storage-integration-test.yaml"); 
-            dsStorageDevel= ServiceConfig.getConfig().getString("integration.devel.storage"); 
-            remote = new DsStorageClient(dsStorageDevel);                        
+            dsStorageDevel= ServiceConfig.getConfig().getString("integration.devel.storage");
+            remote = new DsStorageClient(dsStorageDevel);
         } catch (IOException e) { 
             e.printStackTrace();
             log.error("Integration yaml 'ds-storage-integration-test.yaml' file most be present. Call 'kb init'"); 
