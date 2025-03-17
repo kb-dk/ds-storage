@@ -303,6 +303,9 @@ paths:
         - '${project.name}'
       summary: 'Touch a record, changing its mTime to the current time.'
       operationId: touchRecord
+      security:
+        - KBOAuth:
+            - any
       parameters:
         - name: id
           in: path
