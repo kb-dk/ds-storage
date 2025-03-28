@@ -159,7 +159,7 @@ public class DsStorageClient {
     public void recordPost(DsRecordDto dsRecordDto) throws ServiceException {
         try {
             URI uri = new URIBuilder(serviceURI)
-                    .appendPathSegments("records")                                                               
+                    .appendPathSegments("record")
                     .build();
             Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, dsRecordDto);              
         }
