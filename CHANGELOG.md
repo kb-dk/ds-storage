@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integration unittest with OAuth access token. Require kb-util v.1.6.10 
 
 ### Fixed
+- Fixed post record client method. Now it points at correct endpoint
 
 ## [2.3.3](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.3.3) 2025-03-05
 ## [Unreleased]
