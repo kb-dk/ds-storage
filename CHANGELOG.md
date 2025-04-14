@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed post record client method. Now it points at correct endpoint
 
+### Changed
+- touchRecord endpoint is now using a POST request instead of a GET request
+
 ## [2.3.3](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.3.3) 2025-03-05
 ## [Unreleased]
 - Bumped SwaggerUI dependency to v5.18.2

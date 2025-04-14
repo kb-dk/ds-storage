@@ -141,7 +141,7 @@ public class DsStorageClient {
             URI uri = new URIBuilder(serviceURI)
                     .appendPathSegments("record", "touch", recordId)
                     .build();
-            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET", new RecordsCountDto(),null);
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", new RecordsCountDto(),null);
         }
         catch (URISyntaxException e) {
             log.error("Invalid url: '{}'", e.getMessage());

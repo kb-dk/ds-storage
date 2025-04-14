@@ -298,7 +298,7 @@ paths:
           description: No Content - The request has been executed correct and the server did not deliver any content.
 
   /record/touch/{id}:
-    get:
+    post:
       tags:
         - '${project.name}'
       summary: 'Touch a record, changing its mTime to the current time.'
