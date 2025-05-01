@@ -13,6 +13,7 @@ import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.model.v1.RecordsCountDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 
 
@@ -767,8 +768,12 @@ public class DsStorage implements AutoCloseable {
 
     }
 
-    
-    public int updateMTimeForRecord(String recordId) throws Exception {
+    /**
+     * Update the modified time for input record.
+     * @param recordId of record to update
+     * @return an object containing information on how many records have been updated. (Always one in this case?)
+     */
+    public RecordsCountDto updateMTimeForRecord(String recordId) throws Exception {
         // Sanity check
         if (recordId == null) {
             throw new Exception("Id must not be null"); // TODO exception enum types, messages?
@@ -781,7 +786,9 @@ public class DsStorage implements AutoCloseable {
             stmt.setLong(1, nowStamp);      
             stmt.setString(2, recordId);
            int numberUpdated =  stmt.executeUpdate();           
-           return numberUpdated;
+           RecordsCountDto countDto= new RecordsCountDto();
+           countDto.setCount(numberUpdated);
+           return countDto;
         } catch (SQLException e) {
             String message = "SQL Exception in updateMTimeForRecord with id:" + recordId + " error:" + e.getMessage();
             log.error(message);
@@ -835,7 +842,7 @@ public class DsStorage implements AutoCloseable {
  
            try (ResultSet rs = stmt.executeQuery()) {
                if (!rs.next()) {
-                 return null; //ID not found
+                 throw new InvalidArgumentServiceException("No mapping found for referenceId:"+referenceId);
                }
              return createMappingFromRS(rs);               
            }           
@@ -859,9 +866,8 @@ public class DsStorage implements AutoCloseable {
      *    
      * @return Number of records that was enriched with kalturaId 
      */
-   public int updateKalturaIdForRecords() throws Exception {
+   public RecordsCountDto updateKalturaIdForRecords() throws Exception {
       
-
       try (PreparedStatement stmt = connection.prepareStatement(joinMissingKalturaIdStatement)) {
 
           int updated=0;
@@ -879,19 +885,20 @@ public class DsStorage implements AutoCloseable {
                 updated++;
               }
                            
-          }           
-          return updated;
+          }
+          RecordsCountDto recordsCountDto= new RecordsCountDto();
+          recordsCountDto.setCount(updated);          
+          return recordsCountDto;
 
       } catch (SQLException e) {
           String message = "SQL Exception in updateKalturaIdForRecords error:" + e.getMessage();
           log.error(message);
           throw new SQLException(message, e);
       }
-  } 
+   } 
     
-    
-    
-    public int markRecordForDelete(String recordId) throws Exception {
+        
+    public RecordsCountDto markRecordForDelete(String recordId) throws Exception {
 
         // Sanity check
         if (recordId == null) {
@@ -905,7 +912,9 @@ public class DsStorage implements AutoCloseable {
             stmt.setLong(1, nowStamp);                      
             stmt.setString(2, recordId);
            int numberUpdated =  stmt.executeUpdate();           
-           return numberUpdated;
+           RecordsCountDto countDto= new  RecordsCountDto();
+           countDto.setCount(numberUpdated);
+           return countDto;
         } catch (SQLException e) {
             String message = "SQL Exception in markRecordForDelete  with id:" + recordId + " error:" + e.getMessage();
             log.error(message);
@@ -921,12 +930,16 @@ public class DsStorage implements AutoCloseable {
      * @param mTimeFrom modified time from. Format is millis +3 digits
      * @param mTimeTo modified time to. Format is millis +3 digits
      */    
-    public int deleteRecordsForOrigin(String origin, long mTimeFrom,long mTimeTo) throws Exception {        
+    public RecordsCountDto deleteRecordsForOrigin(String origin, long mTimeFrom,long mTimeTo) throws Exception {        
         try (PreparedStatement stmt = connection.prepareStatement(deleteRecordsForOriginStateMent)) {      
             stmt.setString(1, origin);                      
             stmt.setLong(2, mTimeFrom);
             stmt.setLong(3, mTimeTo);            
-            return stmt.executeUpdate();                       
+            int deleted= stmt.executeUpdate();                       
+            RecordsCountDto countDto= new RecordsCountDto();
+            countDto.setCount(deleted);
+            return countDto;
+        
         } catch (SQLException e) {
             String message = "SQL Exception in deleteRecordsForOrigin for origin:" + origin + " error:" + e.getMessage();
             log.error(message,e);
@@ -935,7 +948,7 @@ public class DsStorage implements AutoCloseable {
     }
     
     
-    public int deleteMarkedForDelete(String origin) throws Exception {
+    public RecordsCountDto deleteMarkedForDelete(String origin) throws Exception {
 
         // Sanity check
         if (origin == null) {
@@ -945,7 +958,9 @@ public class DsStorage implements AutoCloseable {
         try (PreparedStatement stmt = connection.prepareStatement(deleteMarkedForDeleteStatement)) {        
             stmt.setString(1, origin);
             int numberDeleted = stmt.executeUpdate();
-            return numberDeleted;                    
+            RecordsCountDto countDto= new RecordsCountDto();
+            countDto.setCount(numberDeleted);
+            return countDto;
             
         } catch (SQLException e) {
             String message = "SQL Exception in deleteMarkedForDelete for origin:" + origin + " error:" + e.getMessage();
@@ -1171,6 +1186,4 @@ public class DsStorage implements AutoCloseable {
             log.error("shutdown failed", e);
         }
     }
-
-
 }

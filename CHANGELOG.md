@@ -5,13 +5,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added endpoint /record/touch/{id} which allows touching of single records
+- Integration unittest with OAuth access token. Require kb-util v.1.6.10 
+
+### Fixed
+- Fixed post record client method. Now it points at correct endpoint
+
+### Changed
+- touchRecord endpoint is now using a POST request instead of a GET request
+
+## [2.3.3](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.3.3) 2025-03-05
+## [Unreleased]
 - Bumped SwaggerUI dependency to v5.18.2
+- Bumped kb-util to v1.6.9 for service2service oauth support.
+- Added injection of Oauth token on all service methods when using DsStorageClient.
+- Removed auto generated DsStorageClient class that was a blocker for better exception handling. All DsStorageClient methods now only throws ServiceException mapped to HTTP status in same way calling the API directly.
 
 ### Added
 - Property for database connection pool size. Under 'db' property new property: 'connectionPoolSize'. Reasonable values are from 10 to 100. 
 
+
 ### Fixed
 - Fixed inclusion of the same dependencies from multiple sources.
+
 
 ## [2.3.2](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-2.3.2) 2025-01-07
 ### Changed
