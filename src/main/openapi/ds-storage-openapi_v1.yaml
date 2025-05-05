@@ -814,6 +814,28 @@ components:
         - MANIFESTATION
       example: DELIVERABLEUNIT
 
+    StreamErrorType:
+      type: string
+      nullable: false
+      description: |
+        
+        **Errors detected for stream/file the record represent. Errors must start with ERROR_ so they are not confused with the external ID.**
+                
+        | Enum                 |  Description                                                                                  | 
+        | -------------------- | --------------------------------------------------------------------------------------------- |  
+        | ERROR_API            |  External system gave error when uploading stream. No futher information is known             |         
+        | ERROR_FILE_MISSING   |  Stream file does not exist, path is calculated from metadata                                 |
+        | ERROR_FILE_TOO_SHORT |  Byte length for file too small to be valid                                                   |
+        
+        
+      enum:
+        - ERROR_API 
+        - ERROR_FILE_MISSING
+        - ERROR_FILE_TOO_SHORT
+      example: ERROR_FILE_MISSING
+
+
+
     # Basic status response component.
     # TODO: Extend this to provide application specific status, such as a list of running jobs or free disk space
     Status:
