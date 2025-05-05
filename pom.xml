@@ -4,12 +4,12 @@
     <parent>
         <groupId>dk.kb.dsparent</groupId>
         <artifactId>ds-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
 
     <groupId>dk.kb.storage</groupId>
     <artifactId>ds-storage</artifactId>
-    <version>${ds.version}</version>
+    <version>${project.parent.version}</version>
     <packaging>war</packaging>
     <description>
     # Ds-storage(Digitale Samlinger) by the Royal Danish Library. 
@@ -69,19 +69,6 @@
     
      </description>
 
-    <repositories>
-        <repository>
-            <id>sbforge-nexus</id>
-            <url>https://sbforge.org/nexus/content/groups/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <scm>
         <url>https://github.com/kb-dk/ds-storage</url>
         <connection>scm:git:git@github.com:kb-dk/ds-storage.git</connection>
@@ -98,9 +85,6 @@
     </licenses>
 
     <properties>
-        <!-- Specify java version here, to support forbiddenapis plugin -->
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
         <!-- Enable forbiddenapis plugin, do disable set to none -->
         <api.check.phase>process-test-classes</api.check.phase>
         <!--Specify the licenses here, so they can be picked up by openAPI-->
@@ -213,14 +197,12 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-dbcp2</artifactId>
-            <version>2.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.2.8.jre7</version>
         </dependency>
 
 
@@ -228,8 +210,6 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.1.210</version>
-            <scope>test</scope>
         </dependency>
 
 
