@@ -2,14 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>dk.statsbiblioteket.sbprojects</groupId>
-        <artifactId>sbprojects-parent</artifactId>
-        <version>80</version>
+        <groupId>dk.kb.dsparent</groupId>
+        <artifactId>ds-parent</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
 
     <groupId>dk.kb.storage</groupId>
     <artifactId>ds-storage</artifactId>
-    <version>2.3.4-SNAPSHOT</version>
+    <version>${project.parent.version}</version>
     <packaging>war</packaging>
     <description>
     # Ds-storage(Digitale Samlinger) by the Royal Danish Library. 
@@ -69,19 +69,6 @@
     
      </description>
 
-    <repositories>
-        <repository>
-            <id>sbforge-nexus</id>
-            <url>https://sbforge.org/nexus/content/groups/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <scm>
         <url>https://github.com/kb-dk/ds-storage</url>
         <connection>scm:git:git@github.com:kb-dk/ds-storage.git</connection>
@@ -98,9 +85,6 @@
     </licenses>
 
     <properties>
-        <!-- Specify java version here, to support forbiddenapis plugin -->
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
         <!-- Enable forbiddenapis plugin, do disable set to none -->
         <api.check.phase>process-test-classes</api.check.phase>
         <!--Specify the licenses here, so they can be picked up by openAPI-->
@@ -115,20 +99,10 @@
         <dependency>
             <groupId>dk.kb.util</groupId>
             <artifactId>kb-util</artifactId>
-            <version>1.6.10-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <!-- kb-util has 2.3.3, but transitive resolving has 2.4.0 somewhere-->
-                    <groupId>jakarta.xml.bind</groupId>
-                    <artifactId>jakarta.xml.bind-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>4.0.2</version>
-            <scope>provided</scope>
         </dependency>
 
 
@@ -136,19 +110,15 @@
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
-            <version>2.1.6</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
-            <!-- Latest version is 4.0.3. Not tested -->
-            <version>3.6.4</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>javax.xml.ws</groupId>
             <artifactId>jaxws-api</artifactId>
-            <version>2.3.1</version>
             <exclusions>
                 <!-- Project has jakarta.xml.bind-api v. 2.3.3 from cxf-rt-transports-http-->
                 <exclusion>
@@ -165,56 +135,42 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
-            <version>1.8</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-xml-provider</artifactId>
-            <version>2.10.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
             <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <version>2.16.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-client</artifactId>
-            <!-- Latest version is 4.0.3. Not tested -->
-            <version>3.6.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-service-description</artifactId>
-            <!-- Latest version is 4.0.3. Not tested -->
-            <version>3.6.2</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.openapitools/jackson-databind-nullable
-             Used for OpenAPI client generation -->
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
-            <version>0.2.2</version>
         </dependency>
         <dependency>
             <!--For the openapi endpoint /openapi.json-->
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
-            <!-- Latest version is 4.0.3. Not tested -->
-            <version>3.6.2</version>
         </dependency>
         <dependency>
             <!--For the swagger UI endpoint /api-docs?url=openapi.json-->
             <groupId>org.webjars</groupId>
             <artifactId>swagger-ui</artifactId>
-            <version>5.18.2</version>
         </dependency>
         <!-- To get client generation to work -->
         <!-- https://mvnrepository.com/artifact/org.openapitools/openapi-generator -->
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>openapi-generator</artifactId>
-            <version>7.11.0</version>
              <exclusions>
                 <exclusion>
                     <!-- The slf4j-simple logs to stderr and stdout, ignoring logback.xml -->
@@ -224,37 +180,15 @@
             </exclusions>
         </dependency>
 
-        <!-- OAuth  support -->
-        <!-- https://mvnrepository.com/artifact/org.keycloak/keycloak-core -->
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-core</artifactId>
-            <version>24.0.1</version>
-            <exclusions>
-                <exclusion>
-                    <!-- mockserver-junit-jupiter has 1.1, but transitive resolving has 1.2.2 somewhere-->
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- openapitools dependency -->
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-jaxrs</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>jsr311-api</artifactId>
-                    <groupId>javax.ws.rs</groupId>
-                </exclusion>
-                <exclusion>
-                    <!-- swagger-jaxrs has 1.1.0.Final, but transitive resolving has 2.0.2 somewhere-->
-                    <groupId>javax.validation</groupId>
-                    <artifactId>validation-api</artifactId>
-                </exclusion>
-            </exclusions>
-            <version>1.5.24</version>
         </dependency>
 
        <!-- Database dependencies-->
@@ -263,14 +197,12 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-dbcp2</artifactId>
-            <version>2.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.2.8.jre7</version>
         </dependency>
 
 
@@ -278,8 +210,6 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.1.210</version>
-            <scope>test</scope>
         </dependency>
 
 
@@ -287,43 +217,34 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.11</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
-            <version>2.0.9</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
-            <version>2.0.9</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <version>2.0.9</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.14</version>
         </dependency>
 
         <!-- Unit test -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.1</version>
-            <scope>test</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.7.0</version>
-            <scope>test</scope>
         </dependency>
 
 <!-- https://mvnrepository.com/artifact/org.powermock/powermock-api-mockito -->
@@ -334,25 +255,11 @@
         <dependency>
             <groupId>org.mock-server</groupId>
             <artifactId>mockserver-junit-jupiter</artifactId>
-            <version>5.15.0</version>
-            <exclusions>
-                <!-- Project has it through jetty-servlet-api v.4.0.6 somewhere. -->
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>javax.servlet-api</artifactId>
-                </exclusion>
-                <!-- Project has istack-commons-runtime-3.0.12 from KB util dependency -->
-                <exclusion>
-                    <groupId>com.sun.xml.bind</groupId>
-                    <artifactId>jaxb-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-     
+
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.4.2</version>
          </dependency>
 
     </dependencies>
