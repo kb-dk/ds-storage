@@ -1033,7 +1033,10 @@ public class DsStorage implements AutoCloseable {
             stmt.setString(1, kalturaId);
             stmt.setLong(2, nowStamp);
             stmt.setString(3, referenceId);  
-            stmt.executeUpdate();
+            int updated = stmt.executeUpdate();
+            if (updated != 1) {
+               log.warn("Updating kalturaid did not update 1 record as expected for referenceId:"+referenceId +" #updated="+updated );
+            }
         } catch (SQLException e) {
             String message = "SQL Exception in updateKalturaId for referenceId:" + referenceId + " error:" + e.getMessage();
             log.error(message);
