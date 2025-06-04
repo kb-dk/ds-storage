@@ -1,6 +1,9 @@
 # Ds-storage(Digitale Samlinger) by the Royal Danish Library. 
-    
-      
+
+## ⚠️ Warning: Copyright Notice
+Vær opmærksom på, at det ikke er lovligt at downloade og/eller på anden vis videreanvende indholdet i Det Kgl. Biblioteks DR-arkiv.
+
+
 ## A metadata storage.
 Ds-storage is a storage for metadata to describe objects in collections.  
 The metadata format is UTF-8 encoded but format can be anything from text,XML,JSON etc. depending on the metadata format for that collection.
