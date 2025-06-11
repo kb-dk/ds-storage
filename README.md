@@ -1,7 +1,7 @@
 # Ds-storage(Digitale Samlinger) by the Royal Danish Library. 
 
 ## ⚠️ Warning: Copyright Notice
-Vær opmærksom på, at det ikke er lovligt at downloade og/eller på anden vis videreanvende indholdet i Det Kgl. Biblioteks DR-arkiv.
+Please note that it is not permitted to download and/or otherwise reuse content from the DR-archive at The Danish Royal Library.
 
 
 ## A metadata storage.
