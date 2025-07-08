@@ -56,10 +56,6 @@ public class DsStorage implements AutoCloseable {
     private static final String MAPPING_REFERENCE_ID_COLUMN = "referenceid";
     private static final String MAPPING_KALTURA_ID_COLUMN = "kalturaid";
 
-    private static String clearTableRecordsStatement = "DELETE FROM " + RECORDS_TABLE;
-    private static String clearTableMappingsStatement = "DELETE FROM " + MAPPING_TABLE;
-    
-
     private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
             " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " +ORGID_COLUMN + ","+ RECORDTYPE_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  " , " + RECORDS_REFERENCE_ID_COLUMN +" , "+RECORDS_KALTURA_ID_COLUMN+")"+
             " VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -236,7 +232,7 @@ public class DsStorage implements AutoCloseable {
     // statistics shown on monitor.jsp page
     public static Date INITDATE = null;
 
-    private Connection connection;
+    protected Connection connection;
 
     public static void initialize(String driverName, String driverUrl, String userName, String password) {
         
@@ -346,19 +342,6 @@ public class DsStorage implements AutoCloseable {
     }
 
 
-    /*
-     * Only called from unittests, not exposed on facade class
-     * Will remove all entries in the record of mapping table
-     * 
-     */
-    public void clearMappingAndRecordTable() throws SQLException {
-        try (PreparedStatement stmt = connection.prepareStatement(clearTableRecordsStatement)) {
-            stmt.execute(); //No result set to close
-        }        
-        try (PreparedStatement stmt = connection.prepareStatement(clearTableMappingsStatement)) {
-            stmt.execute(); //No result set to close
-        }
-    }
 
     /**
      * Will only extract with records strictly larger than mTime!
