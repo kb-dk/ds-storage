@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Changed
+- Moved storage method that is only used by unit tests to a storage subclass used by unittest. The methods are very destructive such as clearing all tables.
 
 ## [3.0.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-3.0.0) 2025-06-12
 ### Added
