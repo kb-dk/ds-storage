@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+
+### Fixed
+
+### Changed
+- Moved storage method that is only used by unit tests to a storage subclass used by unittest. The methods are very destructive such as clearing all tables.
+
+## [3.0.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-3.0.0) 2025-06-12
 ### Added
 - Added endpoint /record/touch/{id} which allows touching of single records
 - Integration unittest with OAuth access token. Require kb-util v.1.6.10 
