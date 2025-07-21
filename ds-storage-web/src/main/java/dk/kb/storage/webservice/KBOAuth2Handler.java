@@ -14,6 +14,7 @@
  */
 package dk.kb.storage.webservice;
 
+import dk.kb.ds.shared.oauth.KBAuthorization;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import dk.kb.storage.config.ServiceConfig;

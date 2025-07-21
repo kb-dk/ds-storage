@@ -9,9 +9,9 @@ target/
 
 README_OLD.md
 .openapi-generator/
-conf/ds-storage-environment.yaml
-conf/ds-storage-local.yaml
+ds-storage-web/conf/ds-storage-environment.yaml
+ds-storage-web/conf/ds-storage-local.yaml
 setup_project.sh
-/.openapi-generator-ignore
-/src/test/resources/kb-internal-test.yaml
-/src/test/resources/internal-test-setup.yaml
+/ds-storage-api/.openapi-generator-ignore
+/ds-storage-web/src/test/resources/kb-internal-test.yaml
+/ds-storage-web/src/test/resources/internal-test-setup.yaml

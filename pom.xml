@@ -7,67 +7,73 @@
         <version>3.0.1-SNAPSHOT</version>
     </parent>
 
+    <name>ds-storage-parent</name>
     <groupId>dk.kb.storage</groupId>
-    <artifactId>ds-storage</artifactId>
+    <artifactId>ds-storage-parent</artifactId>
     <version>3.0.1-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>pom</packaging>
     <description>
-    # Ds-storage(Digitale Samlinger) by the Royal Danish Library. 
-    
-      
-    ## A metadata storage.
-    Ds-storage is a storage for metadata to describe objects in collections.  
-    The metadata format is UTF-8 encoded but format can be anything from text,XML,JSON etc. depending on the metadata format for that collection.
-    The basic idea behind ds-storage is a single access point to metadata describing objects belonging to many different collections. Having a simple API to 
-    store and retrieve the records. Instead of integrating to wide range of different APIs located on different servers, the ds-storage offers
-    a unified API for all of them and is optimized for retrieving a specific record very fast.
-    
-    ## Records
-    Objects in ds-storage are called records. A record has a metadata field that is UTF-8 encoded. The value of the metadata will typical be same as
-    in the originating collection if harvested with OAI-PMH etc. 
-        
-    ## cTime and mTime format
-    The format of cTime and mTime is milliseconds since Epoch (1970) with 3 added digits and is guaranteed to be unique values. The additional 
-    3 digits is used to ensure uniqueness. If multiple records are created/updated within same millis the last 3 digits will be consecutive.
-        
-    ## Creating and updating records    
-    A record must has a origin that is prefined in the ds-storage configuration. This is the name of the collection in ds-storage.
-    The recordId must also have the origin as prefix so it is easy from a recordid to see where it belongs.
-    When a record is created it will be given a creation time (cTime) that will never be changed and a modification time (mTime). If a
-    record is later update only the mTime will be updated. 
-    
-    ## Naming convention for origin and id
-    The origin must only contain lowercase letters and dot (.) as separator.     
-    The id must start with the origin followed by colon (:). The part after origin must only contain of upper of lower case letters, digits and
-    the following characters:  : . _ -
-        
-    Regexp for origin: ([a-z0-9.]+)
-    
-    
-    Regexp for id: ([a-z0-9.]+):([a-zA-Z0-9:._-]+)
-    
-    ## ID normalisation                     
-    If a record contains a invalid character after the origin part, it will be normalised and the invalid characters will be replaced.
-    The original (invalid) id will be stored in the 'orgid' field and flagged for invalid id. Having the original id will make it possible
-    to track it back to the collection it came from. The record can still be retrieved and updated using the invalid id, but also by the normalised id.                      
-                                          
-    ## Record hierarchy                 
-    The datamodel is a tree structure with a single parent but no limit on number of children. The tree can be several levels deep (tree depth).
-    Due to the tree structre, there can not exist a cycle in the graph.    
-    Every origin is configured with a transitive  update strategy that makes sense for the origin. When a record is created or update it can update the mTime of parent and all children
-    if defined for the origin. The possible updatestrategies are: NONE, ALL, PARENT, CHILDREN.  (see #updatestrategy schema)
-        
-    ## Record type
-    Records must have one of the 3 enum types define in RecordTypeDto. The recordtype is an easy way to determine depth in the hierachy and can be collection specific.
-    COLLECTION This is top parent (root) with information about the collection. 
-    DELIVERABLEUNIT Parent for a manifestation.
-    MANIFESTATION A record that has metadata that relates to single digital preservation unit (image, video, audio etc.).          
-        
-    ## API   
-    Records can be extracted by recordId or as a list by specified origin and last modification time (mTime). The uniqueness of mTime
-    will ensure batching through the records using mTime will not return same record twice.  
-    
-     </description>
+        # Ds-storage(Digitale Samlinger) by the Royal Danish Library.
+
+
+        ## A metadata storage.
+        Ds-storage is a storage for metadata to describe objects in collections.
+        The metadata format is UTF-8 encoded but format can be anything from text,XML,JSON etc. depending on the metadata format for that collection.
+        The basic idea behind ds-storage is a single access point to metadata describing objects belonging to many different collections. Having a simple API to
+        store and retrieve the records. Instead of integrating to wide range of different APIs located on different servers, the ds-storage offers
+        a unified API for all of them and is optimized for retrieving a specific record very fast.
+
+        ## Records
+        Objects in ds-storage are called records. A record has a metadata field that is UTF-8 encoded. The value of the metadata will typical be same as
+        in the originating collection if harvested with OAI-PMH etc.
+
+        ## cTime and mTime format
+        The format of cTime and mTime is milliseconds since Epoch (1970) with 3 added digits and is guaranteed to be unique values. The additional
+        3 digits is used to ensure uniqueness. If multiple records are created/updated within same millis the last 3 digits will be consecutive.
+
+        ## Creating and updating records
+        A record must has a origin that is prefined in the ds-storage configuration. This is the name of the collection in ds-storage.
+        The recordId must also have the origin as prefix so it is easy from a recordid to see where it belongs.
+        When a record is created it will be given a creation time (cTime) that will never be changed and a modification time (mTime). If a
+        record is later update only the mTime will be updated.
+
+        ## Naming convention for origin and id
+        The origin must only contain lowercase letters and dot (.) as separator.
+        The id must start with the origin followed by colon (:). The part after origin must only contain of upper of lower case letters, digits and
+        the following characters:  : . _ -
+
+        Regexp for origin: ([a-z0-9.]+)
+
+
+        Regexp for id: ([a-z0-9.]+):([a-zA-Z0-9:._-]+)
+
+        ## ID normalisation
+        If a record contains a invalid character after the origin part, it will be normalised and the invalid characters will be replaced.
+        The original (invalid) id will be stored in the 'orgid' field and flagged for invalid id. Having the original id will make it possible
+        to track it back to the collection it came from. The record can still be retrieved and updated using the invalid id, but also by the normalised id.
+
+        ## Record hierarchy
+        The datamodel is a tree structure with a single parent but no limit on number of children. The tree can be several levels deep (tree depth).
+        Due to the tree structre, there can not exist a cycle in the graph.
+        Every origin is configured with a transitive  update strategy that makes sense for the origin. When a record is created or update it can update the mTime of parent and all children
+        if defined for the origin. The possible updatestrategies are: NONE, ALL, PARENT, CHILDREN.  (see #updatestrategy schema)
+
+        ## Record type
+        Records must have one of the 3 enum types define in RecordTypeDto. The recordtype is an easy way to determine depth in the hierachy and can be collection specific.
+        COLLECTION This is top parent (root) with information about the collection.
+        DELIVERABLEUNIT Parent for a manifestation.
+        MANIFESTATION A record that has metadata that relates to single digital preservation unit (image, video, audio etc.).
+
+        ## API
+        Records can be extracted by recordId or as a list by specified origin and last modification time (mTime). The uniqueness of mTime
+        will ensure batching through the records using mTime will not return same record twice.
+
+    </description>
+
+    <modules>
+        <module>ds-storage-api</module>
+        <module>ds-storage-web</module>
+    </modules>
 
     <scm>
         <url>https://github.com/kb-dk/ds-storage</url>
@@ -105,11 +111,11 @@
             <groupId>dk.kb.util</groupId>
             <artifactId>kb-util</artifactId>
         </dependency>
+
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
-
 
         <!-- Apache CXF and servlet stuff -->
         <dependency>
@@ -176,7 +182,7 @@
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>openapi-generator</artifactId>
-             <exclusions>
+            <exclusions>
                 <exclusion>
                     <!-- The slf4j-simple logs to stderr and stdout, ignoring logback.xml -->
                     <artifactId>slf4j-simple</artifactId>
@@ -196,7 +202,7 @@
             <artifactId>swagger-jaxrs</artifactId>
         </dependency>
 
-       <!-- Database dependencies-->
+        <!-- Database dependencies-->
 
         <!-- database -->
         <dependency>
@@ -211,7 +217,7 @@
         </dependency>
 
 
-       <!--For the standard unit test-->
+        <!--For the standard unit test-->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -252,7 +258,7 @@
             <artifactId>mockito-junit-jupiter</artifactId>
         </dependency>
 
-<!-- https://mvnrepository.com/artifact/org.powermock/powermock-api-mockito -->
+        <!-- https://mvnrepository.com/artifact/org.powermock/powermock-api-mockito -->
 
 
 
@@ -265,30 +271,10 @@
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-         </dependency>
-
+        </dependency>
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/openapi</directory>
-                <filtering>true</filtering>
-            </resource>
-            <!-- Needed as specifying <resources> overrides all previous definitions -->
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-            </resource>
-            <!-- 2: Copy only build.properties with filtering -->
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>ds-storage.build.properties</include>
-                </includes>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -323,193 +309,6 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.openapitools</groupId>
-                <artifactId>openapi-generator-maven-plugin</artifactId>
-                <version>4.3.1</version>
-                <!-- Running this gives
-                     [WARNING] The value (generator's option) must be either boolean or string. Default to `false`.
-                     which seems to be an unresolved issue: https://github.com/OpenAPITools/openapi-generator/issues/9008 -->
-                <configuration>
-                    <generatorName>jaxrs-cxf-extended</generatorName>
-                    <inputSpec>${project.build.outputDirectory}/openapi.yaml</inputSpec><!-- Will always be overridden -->
-                    <modelNameSuffix>Dto</modelNameSuffix>
-                    <generateSupportingFiles>false</generateSupportingFiles>
-                    <generateApiTests>false</generateApiTests>
-                    <generateModelDocumentation>true</generateModelDocumentation>
-                    <generateApis>true</generateApis>
-                    <output>${project.basedir}</output>
-                    <templateDirectory>src/main/templates/</templateDirectory>
-
-                    <configOptions>
-                        <!--https://openapi-generator.tech/docs/generators/jaxrs-cxf-extended/-->
-                        <!-- https://openapi-generator.tech/docs/generators/java/ -->
-                        <sourceFolder>target/generated-sources</sourceFolder>
-                        <useSwaggerFeature>true</useSwaggerFeature>
-                        <useSwaggerUI>true</useSwaggerUI>
-                        <apiPackage>${project.package}.api</apiPackage>
-                        <modelPackage>${project.package}.model</modelPackage>
-                        <dateLibrary>threetenbp</dateLibrary>
-                        <!--<dateLibrary>Java11</dateLibrary>-->
-                        <implFolder>src/main/java</implFolder>
-                        <invokerPackage>${project.package}</invokerPackage>
-                    </configOptions>
-                    <packageName>${project.package}</packageName>
-                </configuration>
-                <executions>
-
-                    <!-- Version 1 -->
-                    <!-- When a new version is needed, make a copy of two v1-related executions below, then change
-                         v1 to v2 in the copy.
-                         Go to plugin.configuration.webResources.resource.includes in this pom.xml and extend the list
-                         with v2 versions of the JSON & YAML files.
-
-                         Also remember to:
-                         * Create dk.kb.storage.webservice.Application_v2
-                         * Create src/main/openapi/openapi_v2.yaml
-                         * Update src/main/webapp/WEB-INF/web.xml
-                         * Update src/main/webapp/api/index.html
-                    -->
-
-                    <execution>
-                        <!-- Generate API and Model-files from the OpenAPI specification (positioned under the target/generated-sources/ folder).
-                             These files are overwritten on all builds, so they should never be edited manually. -->
-                        <id>v1: generate api classes</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpec>${project.build.outputDirectory}/ds-storage-openapi_v1.yaml</inputSpec>
-                            <ignoreFileOverride>
-                                ${project.basedir}/.openapi-codegen-ignore-api
-                            </ignoreFileOverride>
-
-                            <configOptions>
-                                <apiPackage>${project.package}.api.v1</apiPackage>
-                                <modelPackage>${project.package}.model.v1</modelPackage>
-                                <!-- Setting this to true overwrites existing implementations.
-                                     Only set it temporarily when creating a new project -->
-                                <generateOperationBody>false</generateOperationBody>
-                                <sourceFolder>target/generated-sources</sourceFolder>
-                            </configOptions>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <!-- The purpose it to generate skeleton implementation classes, if such classes are not already existing.
-                         Since we always want to overwrite existing api & model-files when the OpenAPI specification is changed,
-                         but never want to overwrite existing implementation-files, we need to do the generation in 2 steps. -->
-                        <id>v1: generate skeleton impl</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpec>${project.build.outputDirectory}/ds-storage-openapi_v1.yaml</inputSpec>
-                            <ignoreFileOverride>
-                                ${project.basedir}/.openapi-codegen-ignore-impl
-                            </ignoreFileOverride>
-
-                            <configOptions>
-                                <apiPackage>${project.package}.api.v1</apiPackage>
-                                <modelPackage>${project.package}.model.v1</modelPackage>
-                                <generateOperationBody>false</generateOperationBody><!-- To avoid stack overflow for DsRecord -->
-                            </configOptions>
-                            <skipOverwrite>true</skipOverwrite>
-                        </configuration>
-                    </execution>
-
-                </executions>
-            </plugin>
-
-            <!-- The generated classes for the OpenAPI client are problematic. Disable checking of those for now -->
-            <plugin>
-                <groupId>de.thetaphi</groupId>
-                <artifactId>forbiddenapis</artifactId>
-                <!-- No version or configuration here as it inherits from parent pom -->
-                <configuration>
-                    <excludes>
-                        <exclude>**/DsStorageApi.class</exclude>
-                        <exclude>**/ServiceApi.class</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                    </archive>
-
-                    <!-- Generate a JAR with client classes and openapi-YAML for easy use by other services -->
-                    <attachClasses>true</attachClasses>
-
-                    <!--Enable maven filtering for the web.xml-->
-                    <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
-                    <webResources>
-                        <webResource> <!-- Store application name, version and build time -->
-                            <directory>${basedir}/src/main/resources/</directory>
-                            <includes>
-                                <include>ds-storage.build.properties</include>
-                            </includes>
-                            <filtering>true</filtering>
-                        </webResource>
-                        <resource>
-                            <!--Include the openapi spec files so we can serve them-->
-                            <directory>${project.build.outputDirectory}</directory>
-                            <targetPath>.</targetPath>
-                            <includes>
-                                <include>ds-storage-openapi_v1.json</include>
-                                <include>ds-storage-openapi_v1.yaml</include>
-                            </includes>
-                        </resource>
-                    </webResources>
-                </configuration>
-            </plugin>
-
-
-
-
-            <!-- Used only for mvn jetty:run jetty:run-war -->
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>10.0.12</version>
-                <configuration>
-                    <deployMode>FORK</deployMode>
-                    <jvmArgs>-Xmx1g -Djetty.port=9072</jvmArgs>
-                    <jettyXmls>${project.basedir}/target/jetty-res/jetty-env.xml</jettyXmls>
-                    <useTestScope>true</useTestScope>
-                    <!-- https://www.eclipse.org/jetty/documentation/jetty-10/programming-guide/index.html#jetty-run-goal -->
-                    <!-- https://stackoverflow.com/questions/12493798/jetty-maven-plugin-using-scan -->
-                    <scan>-1</scan>
-                    <webApp>
-                        <contextPath>/${project.artifactId}/</contextPath>
-                        <descriptor>${project.basedir}/target/${project.build.finalName}/WEB-INF/web.xml</descriptor>
-                        <jettyEnvXml>${project.basedir}/target/jetty-res/jetty-env.xml</jettyEnvXml>
-                    </webApp>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.6.0</version>
-                <configuration>
-                    <tarLongFileMode>posix</tarLongFileMode>
-                    <descriptors>
-                        <descriptor>src/main/assembly/assembly.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <phase>package</phase>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- Plugin used to extract information on the current git setup.
     See: https://github.com/git-commit-id/git-commit-id-maven-plugin -->
             <plugin>
