@@ -32,7 +32,7 @@ public abstract class DsStorageUnitTestUtil {
     protected static final String USERNAME = "";
     protected static final String PASSWORD = "";
 
-    protected static DsStorage storage = null;
+    protected static DsStorageForUnitTest storage = null;
 
     private static final Logger log = LoggerFactory.getLogger(DsStorageUnitTestUtil.class);
 
@@ -43,7 +43,7 @@ public abstract class DsStorageUnitTestUtil {
         ServiceConfig.initialize("conf/ds-storage*.yaml"); 	    
         H2DbUtil.createEmptyH2DBFromDDL(URL,DRIVER,USERNAME,PASSWORD);
         DsStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
-        storage = new DsStorage();
+        storage = new DsStorageForUnitTest();
 
 
     }
