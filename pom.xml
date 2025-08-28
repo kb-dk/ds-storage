@@ -4,7 +4,7 @@
     <parent>
         <groupId>dk.kb.dsparent</groupId>
         <artifactId>ds-parent</artifactId>
-        <version>3.0.0</version>
+        <version>3.0.1-SNAPSHOT</version>
     </parent>
 
     <groupId>dk.kb.storage</groupId>
@@ -96,6 +96,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>dk.kb.dsshared</groupId>
+            <artifactId>ds-shared</artifactId>
+            <version>3.0.0-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>dk.kb.util</groupId>
             <artifactId>kb-util</artifactId>
