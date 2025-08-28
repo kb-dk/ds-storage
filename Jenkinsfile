@@ -24,7 +24,7 @@ pipeline {
         stage('Push to Nexus if Master') {
             when {
                 // Check if Build was successful
-                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME == 'master' }
+                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME == 'DRA-2011_Jenkins_build' }
             }
             steps {
 
