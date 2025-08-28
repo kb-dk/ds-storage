@@ -1,6 +1,10 @@
 pipeline {
     agent { label 'DS agent' }
 
+    environment {
+        MVN_SETTINGS = '/etc/m2/settings.xml' //This should be changed in Jenkins config for the DS agent
+    }
+
     parameters {
             booleanParam(name: 'Build', defaultValue: true, description: 'Perform mvn package')
     }
@@ -14,7 +18,18 @@ pipeline {
                     checkout scm
                 }
                 // Execute Maven build
-                sh 'mvn clean package'
+                sh "mvn -s ${env.MVN_SETTINGS} clean package"
+            }
+        }
+        stage('Push to Nexus if Master') {
+            when {
+                // Check if Build was successful
+                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME == 'master' }
+            }
+            steps {
+
+                echo "Branch name ${env.BRANCH_NAME}"
+                sh "mvn -s ${env.MVN_SETTINGS} clean deploy -DskipTests=true"
             }
         }
     }
