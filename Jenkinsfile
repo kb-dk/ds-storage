@@ -6,7 +6,7 @@ pipeline {
     }
 
     triggers {
-        // This triggers the pipeline when a PR is opened or updated or so I hope
+        // This triggers the pipeline when a PR is opened or updated or  so I hope
         githubPush()
     }
 
