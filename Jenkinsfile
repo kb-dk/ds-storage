@@ -15,6 +15,16 @@ pipeline {
     }
 
     stages {
+
+        stage('Change version if PR') {
+                    when { expression { env.BRANCH_NAME ==~ "PR-[0-9]+" } }
+                    steps {
+                            sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=env.BRANCH_NAME-SNAPSHOT"
+                            echo "Changing MVN version to ${env.BRANCH_NAME-SNAPSHOT}"
+                        }
+                    }
+                }
+
         stage('Build') {
             when { expression { params.Build == true } }
             steps {
@@ -29,7 +39,7 @@ pipeline {
         stage('Push to Nexus if releasebranch or Master') {
             when {
                 // Check if Build was successful
-                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME ==~ "master|release_v[0-9]+|DRA-2011_.*" }
+                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME ==~ "master|release_v[0-9]+"}
             }
             steps {
                 echo "Branch name ${env.BRANCH_NAME}"
