@@ -23,7 +23,7 @@ pipeline {
                     checkout scm
                 }
                 // Execute Maven build
-                sh "mvn -s ${env.MVN_SETTINGS} clean package"
+                sh "mvn -s ${env.MVN_SETTINGS} clean package "
             }
         }
         stage('Push to Nexus if Master') {
