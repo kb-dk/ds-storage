@@ -26,15 +26,14 @@ pipeline {
                 sh "mvn -s ${env.MVN_SETTINGS} clean package "
             }
         }
-        stage('Push to Nexus if Master') {
+        stage('Push to Nexus if releasebranch or Master') {
             when {
                 // Check if Build was successful
-                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME == 'DRA-2011_Jenkins_build' }
+                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME ==~ "master|release_v[0-9]+|DRA-2011_.*" }
             }
             steps {
-
                 echo "Branch name ${env.BRANCH_NAME}"
-                sh "mvn -s ${env.MVN_SETTINGS} clean deploy -DskipTests=true"
+                //sh "mvn -s ${env.MVN_SETTINGS} clean deploy -DskipTests=true"
             }
         }
     }
