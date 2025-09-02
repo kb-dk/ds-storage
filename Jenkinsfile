@@ -17,13 +17,12 @@ pipeline {
     stages {
 
         stage('Change version if PR') {
-                    when { expression { env.BRANCH_NAME ==~ "PR-[0-9]+" } }
-                    steps {
-                            sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=env.BRANCH_NAME-SNAPSHOT"
-                            echo "Changing MVN version to ${env.BRANCH_NAME-SNAPSHOT}"
-                        }
-                    }
-                }
+            when { expression { env.BRANCH_NAME ==~ "PR-[0-9]+" } }
+            steps {
+                    sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=env.BRANCH_NAME-SNAPSHOT"
+                    echo "Changing MVN version to ${env.BRANCH_NAME-SNAPSHOT}"
+            }
+        }
 
         stage('Build') {
             when { expression { params.Build == true } }
