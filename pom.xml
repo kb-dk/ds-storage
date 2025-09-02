@@ -15,7 +15,7 @@
     # Ds-storage(Digitale Samlinger) by the Royal Danish S .
     
       
-    ## A metadata storage.
+    ## A metadata storage .
     Ds-storage is a storage for metadata to describe objects in collections.  
     The metadata format is UTF-8 encoded but format can be anything from text,XML,JSON etc. depending on the metadata format for that collection.
     The basic idea behind ds-storage is a single access point to metadata describing objects belonging to many different collections. Having a simple API to 
