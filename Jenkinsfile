@@ -32,11 +32,13 @@ pipeline {
                 expression { env.BRANCH_NAME ==~ "PR-[0-9]+" || env.PR_ID != "" }
             }
             steps {
-                    sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=${env.BRANCH_NAME}-SNAPSHOT"
-                    if ( env.PR_ID != ''){
-                        "mvn -s ${env.MVN_SETTINGS} versions:use-dep-version -Dincludes=dk.kb.storage:* -DdepVersion=${env.PR_ID} -DforceVersion=true"
+                    script {
+                        sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=${env.BRANCH_NAME}-SNAPSHOT"
+                        if ( env.PR_ID != ''){
+                            "mvn -s ${env.MVN_SETTINGS} versions:use-dep-version -Dincludes=dk.kb.storage:* -DdepVersion=${env.PR_ID} -DforceVersion=true"
+                        }
+                        echo "Changing MVN version to ${env.BRANCH_NAME}-SNAPSHOT"
                     }
-                    echo "Changing MVN version to ${env.BRANCH_NAME}-SNAPSHOT"
             }
         }
 
