@@ -12,9 +12,8 @@ pipeline {
 
     parameters {
             booleanParam(name: 'Build', defaultValue: true, description: 'Perform mvn package')
-            string(name: 'PR_ID', defaultValue: '', description: 'Empty if not part of PR and otherwise the name of the first outer most job og the PR') }
-            string(name: 'Triggered_by', defaultValue: '', description: 'Empty if top-most job') }
-
+            string(name: 'PR_ID', defaultValue: '', description: 'Empty if not part of PR and otherwise the name of the first outer most job og the PR')
+            string(name: 'Triggered_by', defaultValue: '', description: 'Empty if top-most job')
     }
 
     stages {
