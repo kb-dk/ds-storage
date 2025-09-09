@@ -28,7 +28,7 @@ pipeline {
 
 
         stage('Change version if PR') {
-            when { anyOf { env.BRANCH_NAME ==~ "PR-[0-9]+" ; env.PR_ID != "" } }
+            when { anyOf { env.BRANCH_NAME ==~ "PR-[0-9]+" || env.PR_ID != "" } }
             steps {
                     sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=${env.BRANCH_NAME}-SNAPSHOT"
                     if ( env.PR_ID != ''){
