@@ -46,7 +46,7 @@ pipeline {
 
                         if ( env.PR_ID ==~ 'PR-[0-9]+'){ // Not relevant for ds-storage / ds-kaltura
                             sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=${env.PR_ID}-ds-storage-SNAPSHOT"
-                            sh "mvn -s ${env.MVN_SETTINGS} versions:use-dep-version -Dincludes=dk.kb.storage:* -DdepVersion=${env.PR_ID}-${env.TRIGGERED_BY} -DforceVersion=true"
+                            sh "mvn -s ${env.MVN_SETTINGS} versions:use-dep-version -Dincludes=dk.kb.storage:* -DdepVersion=${env.PR_ID}-${env.TRIGGERED_BY}-SNAPSHOT -DforceVersion=true"
                             //Remove hardcoded storage
                         }
                         echo "Changing MVN version to ${env.BRANCH_NAME}-ds-storage-SNAPSHOT"
