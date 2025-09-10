@@ -26,6 +26,13 @@ pipeline {
             }
         }
 
+        stage('Echo Environment Variables') {
+            steps {
+                echo "Build: ${env.Build}"
+                echo "PR_ID: ${env.PR_ID}"
+                echo "TRIGGERED_BY: ${env.TRIGGERED_BY}"
+            }
+        }
 
         stage('Change version if PR') {
             when {
