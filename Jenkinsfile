@@ -29,12 +29,12 @@ pipeline {
 
         stage('Change version if PR') {
             when {
-                expression { env.BRANCH_NAME ==~ 'PR-[0-9]+' || env.PR_ID ==~ 'PR-[0-9]+|DRA-2011.*' }
+                expression { env.BRANCH_NAME ==~ 'PR-[0-9]+|DRA-2011.*' || env.PR_ID ==~ 'PR-[0-9]+' }
             }
             steps {
                     script {
                         sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=${env.BRANCH_NAME}-SNAPSHOT"
-                        if ( env.PR_ID != ''){
+                        if ( env.PR_ID ==~ 'PR-[0-9]+'){
                             "mvn -s ${env.MVN_SETTINGS} versions:use-dep-version -Dincludes=dk.kb.storage:* -DdepVersion=${env.PR_ID} -DforceVersion=true"
                         }
                         echo "Changing MVN version to ${env.BRANCH_NAME}-SNAPSHOT"
@@ -65,7 +65,7 @@ pipeline {
         }
         stage('Trigger License Build') {
             when {
-                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME ==~ "PR-[0-9]+" }
+                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME ==~ "PR-[0-9]+|DRA-2011.*" }
             }
             steps {
                 script {
