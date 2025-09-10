@@ -29,7 +29,7 @@ pipeline {
 
         stage('Change version if PR') {
             when {
-                expression { env.BRANCH_NAME ==~ 'PR-[0-9]+' || env.PR_ID != 'PR-[0-9]+' }
+                expression { env.BRANCH_NAME ==~ 'PR-[0-9]+' || env.PR_ID ==~ 'PR-[0-9]+' }
             }
             steps {
                     script {
