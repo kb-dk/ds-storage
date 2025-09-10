@@ -21,7 +21,8 @@ Developed and maintained by the Royal Danish Library.
 * Maven 3                                  
 * Java 11
 * Tomcat 9
-* PostGreSql recommended (or any JDBC compliant database implementation). 
+* PostGreSql recommended (or any JDBC compliant database implementation)
+* . 
 * For local unittest as development it uses a file base H2 java database that does not require any software installation.
 
 ## Build & run
