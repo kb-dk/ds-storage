@@ -76,11 +76,11 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Base Branch name DS-GitHub/ds-license/${env.CHANGE_TARGET}"
-                    //def result = build job: 'DS-GitHub/ds-license/env.CHANGE_TARGET',
-                    //                  parameters: [],
-                    //                  wait: true // Wait for the pipeline to finish
-                    //echo "Child Pipeline Result: ${result}"
+                    echo "Triggering: DS-GitHub/ds-license/${env.CHANGE_TARGET}"
+                    def result = build job: 'DS-GitHub/ds-license/env.CHANGE_TARGET',
+                                      parameters: [],
+                                      wait: true // Wait for the pipeline to finish
+                    echo "Child Pipeline Result: ${result}"
                 }
             }
         }
