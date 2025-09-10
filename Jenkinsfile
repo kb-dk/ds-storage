@@ -40,9 +40,14 @@ pipeline {
             }
             steps {
                     script {
-                        sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=${env.BRANCH_NAME}-ds-storage-SNAPSHOT"
+                        if ( env.BRANCH_NAME ==~ 'PR-[0-9]+' ){
+                            sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=${env.BRANCH_NAME}-ds-storage-SNAPSHOT"
+                        }
+
                         if ( env.PR_ID ==~ 'PR-[0-9]+'){ // Not relevant for ds-storage / ds-kaltura
-                            "mvn -s ${env.MVN_SETTINGS} versions:use-dep-version -Dincludes=dk.kb.storage:* -DdepVersion=${env.PR_ID}-${env.TRIGGERED_BY} -DforceVersion=true"
+                            sh "mvn -s ${env.MVN_SETTINGS} versions:set -DnewVersion=${env.PR_ID}-ds-storage-SNAPSHOT"
+                            sh "mvn -s ${env.MVN_SETTINGS} versions:use-dep-version -Dincludes=dk.kb.storage:* -DdepVersion=${env.PR_ID}-${env.TRIGGERED_BY} -DforceVersion=true"
+                            //Remove hardcoded storage
                         }
                         echo "Changing MVN version to ${env.BRANCH_NAME}-ds-storage-SNAPSHOT"
                     }
@@ -50,7 +55,7 @@ pipeline {
         }
 
         stage('Build') {
-            when { expression { params.Build == true && env.BRANCH_NAME ==~ "master|release_v[0-9]+|PR-[0-9]+"} }
+            when { expression { params.Build == true && (env.BRANCH_NAME ==~ "master|release_v[0-9]+|PR-[0-9]+" || env.PR_ID ==~ "PR-[0-9]+")} }
             steps {
                 script {
 
