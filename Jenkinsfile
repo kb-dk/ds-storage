@@ -29,7 +29,7 @@ pipeline {
 
         stage('Change version if PR') {
             when {
-                expression { env.BRANCH_NAME ==~ 'PR-[0-9]+' || env.PR_ID ==~ 'PR-[0-9]+' }
+                expression { env.BRANCH_NAME ==~ 'PR-[0-9]+' || env.PR_ID ==~ 'PR-[0-9]+|DRA-2011.*' }
             }
             steps {
                     script {
@@ -43,7 +43,7 @@ pipeline {
         }
 
         stage('Build') {
-            when { expression { params.Build == true && env.BRANCH_NAME ==~ "master|release_v[0-9]+|PR-[0-9]+"} }
+            when { expression { params.Build == true && env.BRANCH_NAME ==~ "master|release_v[0-9]+|PR-[0-9]+|DRA-2011.*"} }
             steps {
                 script {
 
@@ -56,7 +56,7 @@ pipeline {
         stage('Push to Nexus') {
             when {
                 // Check if Build was successful
-                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME ==~ "master|release_v[0-9]+|PR-[0-9]+"}
+                expression { params.Build == true && currentBuild.result == null && env.BRANCH_NAME ==~ "master|release_v[0-9]+|PR-[0-9]+|DRA-2011.*"}
             }
             steps {
                 echo "Branch name ${env.BRANCH_NAME}"
