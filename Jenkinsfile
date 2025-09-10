@@ -12,8 +12,8 @@ pipeline {
 
     parameters {
             booleanParam(name: 'Build', defaultValue: true, description: 'Perform mvn package')
-            string(name: 'PR_ID', defaultValue: '', description: 'Empty if not part of PR and otherwise the name of the first outer most job og the PR')
-            string(name: 'Triggered_by', defaultValue: '', description: 'Empty if top-most job')
+            string(name: 'PR_ID', defaultValue: 'NOT_A_PR', description: 'Empty if not part of PR and otherwise the name of the first outer most job og the PR')
+            string(name: 'TRIGGERED_BY', defaultValue: '', description: 'Empty if top-most job')
     }
 
     stages {
@@ -29,7 +29,7 @@ pipeline {
 
         stage('Change version if PR') {
             when {
-                expression { env.BRANCH_NAME ==~ "PR-[0-9]+" || env.PR_ID != "" }
+                expression { env.BRANCH_NAME ==~ 'PR-[0-9]+' || env.PR_ID != 'PR-[0-9]+' }
             }
             steps {
                     script {
