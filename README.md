@@ -16,7 +16,7 @@ See the Open API documentation for more details. (ds-storage-openapi_v1.yaml)
             
 Developed and maintained by the Royal Danish Library.
 
-## Requirement
+## Requirements
 
 * Maven 3                                  
 * Java 11
