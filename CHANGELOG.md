@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-### Fixed
+### Fixed 
 
 ### Changed
 - Moved storage method that is only used by unit tests to a storage subclass used by unittest. The methods are very destructive such as clearing all tables.
