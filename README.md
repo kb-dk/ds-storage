@@ -8,7 +8,7 @@ Please note that it is not permitted to download and/or otherwise reuse content 
 Ds-storage is a storage for metadata to describe objects in collections.  
 The metadata format is UTF-8 encoded but format can be anything from text,XML,JSON etc. depending on the metadata format for that collection.
 The basic idea behind ds-storage is a single access point to metadata describing objects belonging to many different collections. Having a simple API to 
-store and retrieve the records. Instead of integrating to wide range of different APIs located on different servers, the ds-storage offers
+store and retrieve the records. Ins tead of integrating to wide range of different APIs located on different servers, the ds-storage offers
 a unified API for all of them and is optimized for retrieving a specific record very fast. 
     
 See the Open API documentation for more details. (ds-storage-openapi_v1.yaml)
@@ -21,7 +21,8 @@ Developed and maintained by the Royal Danish Library.
 * Maven 3                                  
 * Java 11
 * Tomcat 9
-* PostGreSql recommended (or any JDBC compliant database implementation). 
+* PostGreSql recommended (or any JDBC compliant database implementation)
+* . 
 * For local unittest as development it uses a file base H2 java database that does not require any software installation.
 
 ## Build & run
