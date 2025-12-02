@@ -494,6 +494,26 @@ paths:
         '204':
           description: No Content - The request has been executed correct and the server did not deliver any content.
 
+  /transcription:
+    post:
+      tags:
+        - '${project.name}'    
+      summary: 'Create a new transcription or update an existing. Primary key is fileId'
+      security: 
+        - KBOAuth:
+          - any   
+      description: 'Create or update an existring transcription. Primary key is fileId'
+      requestBody:
+        content:
+          application/json:    # Media type
+            schema:            # Request body contents
+              $ref: '#/components/schemas/Transcription'  # Reference to an object
+            examples:
+              DSRecord:
+                $ref: "#/components/examples/Transcription"
+      responses:
+        '204':
+          description: No Content - The request has been executed correct and the server did not deliver any content.
 
 
 
@@ -677,6 +697,32 @@ components:
           type: integer
           format: int32
           description: 'Number of records updated'
+
+
+    Transcription:
+      type: object
+      required:
+        - fileId
+        - fileName
+        - transcription
+        - transcriptionLines
+      properties:
+        fileId:
+          type: string
+          description: 'Fileid that should match preservica '
+        fileName:
+          type: string
+          description: 'Filename on the filesystem. Sometimes files have extension, sometimes now.'     
+        mTime:
+          type: integer
+          format: int64
+          description: 'Modification time for last create or update of the record. Format is milliseconds since Epoch with 3 added digits . When a record is updated, mTime for parent and child records can also be updated due to updatestrategy defined for that origin.'
+        transcription:
+          type: string
+          description: 'The full transcription text'
+        transcriptionLines:
+          type: string
+          description: 'Each line from the transcription text.Must start with seconds.mm to and from interval. Line break between each sentence. Example: 27.06 - 32.04  This is a text'
 
     Mapping:
       type: object
@@ -904,6 +950,13 @@ components:
           </Metadata>
           </<xip:DeliverableUnit>>
 
+    Transcription:
+      value:
+        fileId: "a3332323-3323233-333333"
+        fileName: "a3332323-3323233-333333.mp3"
+        transcription: "This is linie1. This is linie2"
+        transcriptionLines: "00:00 - 10:00 This is line1.\n10:00 - 20:00 This is line2"
+      
     GetDSRecordWithChildren:
       value:
         id: "ds.radio:oai:du:c124a602-7fe6-470e-a484-c771db44aee1"

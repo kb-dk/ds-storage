@@ -21,6 +21,7 @@ import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
+import dk.kb.storage.model.v1.TranscriptionDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.util.IdNormaliser;
@@ -121,6 +122,35 @@ public class DsStorageFacade {
     }
 
 
+    /**
+     * <p>
+     * Create or update a new transcription. The primary key is fileId that comes from
+     * the external system. The transcription text is the full text and transcription_lines
+     * are lines with start-end followed by the sentence and with a new line in the end.     
+     * </p>
+     * 
+     * @param TranscriptionDto The entry to be created or updated
+     * 
+     */
+    public static void createOrUpdatTranscription(TranscriptionDto transcription)   {
+        performStorageAction("createOrUpdatTranscription(" + transcription.getFileId() + ")", storage -> {                      
+           String fileId=transcription.getFileId();
+            try {
+                int count = storage.countTranscriptionByFileId(fileId);
+                if (count>0) {
+                    storage.deleteTranscriptionByFileId(fileId);
+                }              
+                storage.createNewTranscription(transcription);        
+                log.info("Create/Updated transcription with fileId:"+fileId);
+            }
+            catch(Exception e){                
+                log.warn("Error create or update transcription with fileId:",fileId);
+            }                        
+            return null; // Something must be returned
+        });
+    }
+
+    
     
     public static void createOrUpdateRecord(DsRecordDto record)  {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
