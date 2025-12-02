@@ -140,8 +140,9 @@ public class DsStorageFacade {
                 if (count>0) {
                     storage.deleteTranscriptionByFileId(fileId);
                 }              
-                storage.createNewTranscription(transcription);        
-                log.info("Create/Updated transcription with fileId:"+fileId);
+                storage.createNewTranscription(transcription);      
+                int touched=storage.updateMTimeForRecordByFileId(fileId);
+                log.info("Create/Updated transcription with fileId='{}' number of records touched='{}'",fileId,touched);
             }
             catch(Exception e){                
                 log.warn("Error create or update transcription with fileId:",fileId);

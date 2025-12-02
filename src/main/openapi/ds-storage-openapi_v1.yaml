@@ -498,11 +498,11 @@ paths:
     post:
       tags:
         - '${project.name}'    
-      summary: 'Create a new transcription or update an existing. Primary key is fileId'
+      summary: 'Create a new transcription or update an existing. Primary key is fileId.'
       security: 
         - KBOAuth:
           - any   
-      description: 'Create or update an existring transcription. Primary key is fileId'
+      description: 'Create or update an existring transcription. Primary key is fileId.  Will touch the record if there is one with this fileId'
       requestBody:
         content:
           application/json:    # Media type
