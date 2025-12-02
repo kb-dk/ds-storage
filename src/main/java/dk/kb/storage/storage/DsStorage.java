@@ -122,7 +122,7 @@ public class DsStorage implements AutoCloseable {
             "WHERE "+
             ID_COLUMN + "= ?";
     
-    private static String updateMTimeForRecordByFileIdStatement = "UPDATE " + RECORDS_TABLE + " SET  "+    
+    private static String updateMTimeForRecordByFileIdStatement = "UPDATE " + TRANSCRIPTIONS_TABLE + " SET  "+    
             MTIME_COLUMN + " = ? "+
             "WHERE "+
             FILE_ID_COLUMN + "= ?";
@@ -843,7 +843,7 @@ public class DsStorage implements AutoCloseable {
     public int  updateMTimeForRecordByFileId(String fileId) throws Exception {
         // Sanity check
         if (fileId == null) {
-            throw new Exception("File must not be null"); 
+            throw new Exception("FileId must not be null"); 
         }
         long nowStamp = UniqueTimestampGenerator.next();
 
@@ -853,7 +853,7 @@ public class DsStorage implements AutoCloseable {
            int numberUpdated =  stmt.executeUpdate();           
            return numberUpdated;
         } catch (SQLException e) {
-            String message = "SQL Exception in updateMTimeForRecordByFileId with fileid:" + fileId;
+            String message = "SQ1 Exception in updateMTimeForRecordByFileId with fileid:" + fileId;          
             log.error(message);
             throw new SQLException(message, e);
         }

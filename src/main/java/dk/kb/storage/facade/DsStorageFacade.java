@@ -134,19 +134,14 @@ public class DsStorageFacade {
      */
     public static void createOrUpdatTranscription(TranscriptionDto transcription)   {
         performStorageAction("createOrUpdatTranscription(" + transcription.getFileId() + ")", storage -> {                      
-           String fileId=transcription.getFileId();
-            try {
-                int count = storage.countTranscriptionByFileId(fileId);
-                if (count>0) {
-                    storage.deleteTranscriptionByFileId(fileId);
-                }              
-                storage.createNewTranscription(transcription);      
-                int touched=storage.updateMTimeForRecordByFileId(fileId);
-                log.info("Create/Updated transcription with fileId='{}' number of records touched='{}'",fileId,touched);
-            }
-            catch(Exception e){                
-                log.warn("Error create or update transcription with fileId:",fileId);
-            }                        
+           String fileId=transcription.getFileId();     
+           int count = storage.countTranscriptionByFileId(fileId);
+           if (count>0) {
+             storage.deleteTranscriptionByFileId(fileId);
+            }              
+            storage.createNewTranscription(transcription);      
+            int touched=storage.updateMTimeForRecordByFileId(fileId);
+            log.info("Create/Updated transcription with fileId='{}' number of records touched='{}'",fileId,touched);                                         
             return null; // Something must be returned
         });
     }
