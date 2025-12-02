@@ -506,6 +506,6 @@ public class DsStorageClient {
             log.error("Invalid url:"+e.getMessage());
             throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
         }                      
-
+    }
   
 }
