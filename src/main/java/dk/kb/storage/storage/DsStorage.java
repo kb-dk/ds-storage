@@ -1038,9 +1038,10 @@ public class DsStorage implements AutoCloseable {
           log.warn("More than 1 record found with referenceId:"+referenceId);
         }
         
-        long nowStamp = UniqueTimestampGenerator.next();      
+              
         for (String id:recordIds) {        
-          try (PreparedStatement stmt = connection.prepareStatement(updateKalturaIdStatement)) {
+            long nowStamp = UniqueTimestampGenerator.next();
+            try (PreparedStatement stmt = connection.prepareStatement(updateKalturaIdStatement)) {        
               stmt.setString(1, kalturaId);
               stmt.setLong(2, nowStamp);
               stmt.setString(3, id);  
