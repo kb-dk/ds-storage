@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Fixed
+- Fix multiple records have same stream defined.This should not happen but it does due to data errors.
 
 ## [3.0.1](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-3.0.1) 2025-09-01
 ### Changed
