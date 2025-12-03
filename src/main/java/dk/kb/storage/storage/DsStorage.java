@@ -89,8 +89,10 @@ public class DsStorage implements AutoCloseable {
             RECORDS_KALTURA_ID_COLUMN + " = ? ,"+
             MTIME_COLUMN + " = ?  "+
             "WHERE "+
-            RECORDS_REFERENCE_ID_COLUMN + "= ?";
+            ID_COLUMN+ "= ?";
     
+
+    private static String getRecordsByKalturaId = "SELECT "+ID_COLUMN+ " FROM " +RECORDS_TABLE  + " WHERE "+ RECORDS_REFERENCE_ID_COLUMN+" = ?";    
 
     private static String updateReferenceIdStatement = "UPDATE " + RECORDS_TABLE + " SET  "+ 
             RECORDS_REFERENCE_ID_COLUMN + " = ? ,"+
@@ -340,9 +342,29 @@ public class DsStorage implements AutoCloseable {
         }
         return childIds;
     }
-
-
-
+    
+    
+    /**
+     * Normally we only want 1 record returned. But some records use same stream(file reference) by mistake in data. 
+     * 
+     * @param referenceid the file referenceid
+     * @return list record ids
+     * @throws SQLException
+     */
+    public ArrayList<String> getIdsByReferenceId(String referenceid) throws SQLException {
+        ArrayList<String> childIds = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(getRecordsByKalturaId)) {
+            stmt.setString(1, referenceid);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String id = rs.getString(ID_COLUMN);
+                    childIds.add(id);
+                }
+            }
+        }
+        return childIds;
+    }
+    
     /**
      * Will only extract with records strictly larger than mTime!
      * Will be sorted by mTime. Latest is last
@@ -863,7 +885,7 @@ public class DsStorage implements AutoCloseable {
                 String kalturaId=rs.getString(MAPPING_KALTURA_ID_COLUMN);
                 
                 //Update the record with the kalturaId.
-                updateKalturaIdForRecord(referenceId, kalturaId);
+                updateKalturaIdForRecords(referenceId, kalturaId);
                 log.info("Updated kalturaid for record. id={}, referenceid={}, kalturaid={}", id,referenceId,kalturaId);                
                 updated++;
               }
@@ -1009,23 +1031,27 @@ public class DsStorage implements AutoCloseable {
     }
 
 
-    public void updateKalturaIdForRecord(String referenceId, String kalturaId) throws Exception {
+    public void updateKalturaIdForRecords(String referenceId, String kalturaId) throws Exception {
       
+        ArrayList<String> recordIds = getIdsByReferenceId(referenceId);
+        if (recordIds.size() > 1) {
+          log.warn("More than 1 record found with referenceId:"+referenceId);
+        }
+        
         long nowStamp = UniqueTimestampGenerator.next();      
+        for (String id:recordIds) {        
         try (PreparedStatement stmt = connection.prepareStatement(updateKalturaIdStatement)) {
             stmt.setString(1, kalturaId);
             stmt.setLong(2, nowStamp);
-            stmt.setString(3, referenceId);  
-            int updated = stmt.executeUpdate();
-            if (updated != 1) {
-               log.warn("Updating kalturaid did not update 1 record as expected for referenceId:"+referenceId +" #updated="+updated );
-            }
+            stmt.setString(3, id);  
+            int updated = stmt.executeUpdate();            
         } catch (SQLException e) {
             String message = "SQL Exception in updateKalturaId for referenceId:" + referenceId + " error:" + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }
-
+       }
+        
     }
     
     public void updateReferenceIdForRecord(String recordId, String referenceId) throws Exception {
