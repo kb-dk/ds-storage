@@ -92,7 +92,7 @@ public class DsStorage implements AutoCloseable {
             ID_COLUMN+ "= ?";
     
 
-    private static String getRecordsByKalturaId = "SELECT "+ID_COLUMN+ " FROM " +RECORDS_TABLE  + " WHERE "+ RECORDS_REFERENCE_ID_COLUMN+" = ?";    
+    private static String getRecordsByReferenceId = "SELECT "+ID_COLUMN+ " FROM " +RECORDS_TABLE  + " WHERE "+ RECORDS_REFERENCE_ID_COLUMN+" = ?";    
 
     private static String updateReferenceIdStatement = "UPDATE " + RECORDS_TABLE + " SET  "+ 
             RECORDS_REFERENCE_ID_COLUMN + " = ? ,"+
@@ -352,17 +352,17 @@ public class DsStorage implements AutoCloseable {
      * @throws SQLException
      */
     public ArrayList<String> getIdsByReferenceId(String referenceid) throws SQLException {
-        ArrayList<String> childIds = new ArrayList<>();
-        try (PreparedStatement stmt = connection.prepareStatement(getRecordsByKalturaId)) {
+        ArrayList<String> ids = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(getRecordsByReferenceId)) {
             stmt.setString(1, referenceid);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     String id = rs.getString(ID_COLUMN);
-                    childIds.add(id);
+                    ids.add(id);
                 }
             }
         }
-        return childIds;
+        return ids;
     }
     
     /**
