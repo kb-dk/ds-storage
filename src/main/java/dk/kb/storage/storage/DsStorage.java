@@ -1040,18 +1040,17 @@ public class DsStorage implements AutoCloseable {
         
         long nowStamp = UniqueTimestampGenerator.next();      
         for (String id:recordIds) {        
-        try (PreparedStatement stmt = connection.prepareStatement(updateKalturaIdStatement)) {
-            stmt.setString(1, kalturaId);
-            stmt.setLong(2, nowStamp);
-            stmt.setString(3, id);  
-            int updated = stmt.executeUpdate();            
-        } catch (SQLException e) {
-            String message = "SQL Exception in updateKalturaId for referenceId:" + referenceId + " error:" + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }
-       }
-        
+          try (PreparedStatement stmt = connection.prepareStatement(updateKalturaIdStatement)) {
+              stmt.setString(1, kalturaId);
+              stmt.setLong(2, nowStamp);
+              stmt.setString(3, id);  
+              int updated = stmt.executeUpdate();            
+          } catch (SQLException e) {
+              String message = "SQL Exception in updateKalturaId for referenceId:" + referenceId + " error:" + e.getMessage();
+              log.error(message);
+              throw new SQLException(message, e);
+           }
+       }        
     }
     
     public void updateReferenceIdForRecord(String recordId, String referenceId) throws Exception {
