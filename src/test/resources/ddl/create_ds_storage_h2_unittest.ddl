@@ -19,7 +19,6 @@ kalturaid VARCHAR(255)
 );
 
 
-
 CREATE UNIQUE INDEX IF NOT EXISTS i ON ds_records(id);
 CREATE UNIQUE INDEX IF NOT EXISTS m ON ds_records(mtime);
 CREATE INDEX IF NOT EXISTS b ON ds_records(origin);
@@ -32,3 +31,15 @@ CREATE INDEX IF NOT EXISTS kref ON ds_records (referenceid);
 CREATE INDEX IF NOT EXISTS kalid ON ds_records (kalturaid);
 
 CREATE UNIQUE INDEX IF NOT EXISTS mapping_i ON ds_mapping(referenceid);
+
+
+CREATE TABLE IF NOT EXISTS ds_transcriptions ( 
+fileid VARCHAR(255) PRIMARY KEY,
+filename VARCHAR(255),
+mtime BIGINT,
+transcription TEXT,
+transcription_lines TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS fileid_trans ON ds_transcriptions(fileid);
+CREATE UNIQUE INDEX IF NOT EXISTS m_trans ON ds_transcriptions(mtime);
+

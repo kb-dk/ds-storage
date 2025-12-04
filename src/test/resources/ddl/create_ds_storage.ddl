@@ -31,3 +31,16 @@ CREATE INDEX kref ON ds_records (referenceid);
 CREATE INDEX kalid ON ds_records (kalturaid);
 
 CREATE UNIQUE INDEX mapping_i ON ds_mapping(referenceid);
+
+
+
+CREATE TABLE ds_transcriptions ( 
+fileid VARCHAR(255) PRIMARY KEY,
+filename VARCHAR(255),
+mtime BIGINT,
+transcription TEXT,
+transcription_lines TEXT
+);
+CREATE UNIQUE INDEX fileid_trans ON ds_transcriptions(fileid);
+CREATE UNIQUE INDEX m_trans ON ds_transcriptions(mtime);
+

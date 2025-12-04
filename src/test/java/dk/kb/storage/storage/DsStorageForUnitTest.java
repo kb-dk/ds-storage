@@ -20,7 +20,7 @@ public class DsStorageForUnitTest extends DsStorage  {
 
     private static String clearTableRecordsStatement = "DELETE FROM DS_RECORDS";
     private static String clearTableMappingsStatement = "DELETE FROM DS_MAPPING";
-    
+    private static String clearTableTranscriptionsStatement = "DELETE FROM DS_TRANSCRIPTIONS";
 
     
     public  DsStorageForUnitTest() throws SQLException {
@@ -37,6 +37,9 @@ public class DsStorageForUnitTest extends DsStorage  {
             stmt.execute(); //No result set to close
         }        
         try (PreparedStatement stmt = connection.prepareStatement(clearTableMappingsStatement)) {
+            stmt.execute(); //No result set to close
+        }
+        try (PreparedStatement stmt = connection.prepareStatement(clearTableTranscriptionsStatement)) {
             stmt.execute(); //No result set to close
         }
         
