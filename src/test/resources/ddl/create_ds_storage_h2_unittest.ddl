@@ -33,13 +33,13 @@ CREATE INDEX IF NOT EXISTS kalid ON ds_records (kalturaid);
 CREATE UNIQUE INDEX IF NOT EXISTS mapping_i ON ds_mapping(referenceid);
 
 
-CREATE TABLE IF NOT EXISTS ds_transcriptions ( 
+CREATE TABLE IF NOT EXISTS transcriptions ( 
 fileid VARCHAR(255) PRIMARY KEY,
 filename VARCHAR(255),
 mtime BIGINT,
 transcription TEXT,
 transcription_lines TEXT
 );
-CREATE UNIQUE INDEX IF NOT EXISTS fileid_trans ON ds_transcriptions(fileid);
-CREATE UNIQUE INDEX IF NOT EXISTS m_trans ON ds_transcriptions(mtime);
+CREATE UNIQUE INDEX IF NOT EXISTS fileid_trans ON transcriptions(fileid);
+CREATE UNIQUE INDEX IF NOT EXISTS m_trans ON transcriptions(mtime);
 

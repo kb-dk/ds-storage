@@ -502,7 +502,8 @@ paths:
       security: 
         - KBOAuth:
           - any   
-      description: 'Create or update an existring transcription. Primary key is fileId.  Will touch the record if there is one with this fileId'
+      operationId: createTranscription          
+      description: 'Create or update an existing transcription. Primary key is fileId.  Will touch the record if there is one with this fileId'
       requestBody:
         content:
           application/json:    # Media type

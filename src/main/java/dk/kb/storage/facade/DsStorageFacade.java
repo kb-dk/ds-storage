@@ -127,12 +127,11 @@ public class DsStorageFacade {
      * Create or update a new transcription. The primary key is fileId that comes from
      * the external system. The transcription text is the full text and transcription_lines
      * are lines with start-end followed by the sentence and with a new line in the end.     
-     * </p>
-     * 
+     *  
      * @param TranscriptionDto The entry to be created or updated
      * 
      */
-    public static void createOrUpdatTranscription(TranscriptionDto transcription)   {
+    public static void createOrUpdateTranscription(TranscriptionDto transcription)   {
         performStorageAction("createOrUpdatTranscription(" + transcription.getFileId() + ")", storage -> {                      
            String fileId=transcription.getFileId();     
            int count = storage.countTranscriptionByFileId(fileId);
