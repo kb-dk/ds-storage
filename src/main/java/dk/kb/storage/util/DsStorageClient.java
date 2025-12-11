@@ -21,6 +21,7 @@ import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
+import dk.kb.storage.model.v1.TranscriptionDto;
 import dk.kb.util.webservice.Service2ServiceRequest;
 import dk.kb.util.webservice.exception.InternalServiceException;
 import dk.kb.util.webservice.exception.ServiceException;
@@ -486,7 +487,25 @@ public class DsStorageClient {
             throw new InternalServiceException(CLIENT_URL_EXCEPTION);
         }                             
     }
-       
-
+      
+    
+    /**
+     * Create a new mapping or update a mapping .
+     * Create a new mapping or update mapping if referenceId exists. Each record with a stream will have a referenceId (file-id) and needs to be mapped to the KalturaId
+     * @param mappingDto  (optional)
+     * @throws ServiceException if fails to make API call
+     */
+    public void createOrUpdateTranscription(TranscriptionDto trans) throws ServiceException {               
+        try {
+            URI uri = new URIBuilder(serviceURI)
+                     .appendPathSegments("transcription")                                                               
+                     .build();
+            Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, trans);              
+        }
+        catch (URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
+        }                      
+    }
   
 }
