@@ -139,6 +139,7 @@ public class DsStorageFacade {
              storage.deleteTranscriptionByFileId(fileId);
             }              
             storage.createNewTranscription(transcription);      
+            //Touch the record in the ds_records table so will be selected in next indexing job and transcriptions will be indexed as well.
             int touched=storage.updateMTimeForRecordByFileId(fileId);
             log.info("Create/Updated transcription with fileId='{}' number of records touched='{}'",fileId,touched);                                         
             return null; // Something must be returned

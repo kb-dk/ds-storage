@@ -122,7 +122,7 @@ public class DsStorage implements AutoCloseable {
             "WHERE "+
             ID_COLUMN + "= ?";
     
-    private static String updateMTimeForRecordByFileIdStatement = "UPDATE " + TRANSCRIPTIONS_TABLE + " SET  " +    
+    private static String updateMTimeForRecordByFileIdStatement = "UPDATE " + RECORDS_TABLE + " SET  " +    
             MTIME_COLUMN + " = ? "+
             "WHERE "+
             FILE_ID_COLUMN + "= ?";
