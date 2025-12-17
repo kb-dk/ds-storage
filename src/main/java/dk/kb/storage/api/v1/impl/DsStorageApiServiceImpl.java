@@ -376,7 +376,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
 
     @Override
     public void createOrUpdateTranscription(@Valid TranscriptionDto transcriptionDto) {
-       DsStorageFacade.createOrUpdatTranscription(transcriptionDto);        
+       DsStorageFacade.createOrUpdateTranscription(transcriptionDto);        
     }
     
 

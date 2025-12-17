@@ -34,13 +34,13 @@ CREATE UNIQUE INDEX mapping_i ON ds_mapping(referenceid);
 
 
 
-CREATE TABLE ds_transcriptions ( 
+CREATE TABLE transcriptions ( 
 fileid VARCHAR(255) PRIMARY KEY,
 filename VARCHAR(255),
 mtime BIGINT,
 transcription TEXT,
 transcription_lines TEXT
 );
-CREATE UNIQUE INDEX fileid_trans ON ds_transcriptions(fileid);
-CREATE UNIQUE INDEX m_trans ON ds_transcriptions(mtime);
+CREATE UNIQUE INDEX fileid_trans ON transcriptions(fileid);
+CREATE UNIQUE INDEX m_trans ON transcriptions(mtime);
 

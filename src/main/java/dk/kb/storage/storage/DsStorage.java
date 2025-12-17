@@ -40,7 +40,7 @@ public class DsStorage implements AutoCloseable {
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ",Locale.getDefault());
     
     
-    private static final String TRANSCRIPTIONS_TABLE = "ds_transcriptions";
+    private static final String TRANSCRIPTIONS_TABLE = "transcriptions";
     private static final String RECORDS_TABLE = "ds_records";
     private static final String MAPPING_TABLE = "ds_mapping";
     private static final String ORGID_COLUMN = "orgid";
@@ -60,7 +60,7 @@ public class DsStorage implements AutoCloseable {
        
     private static final String FILE_ID_COLUMN = "fileid";
     private static final String FILE_NAME_COLUMN = "filename";
-    private static final String TRANSCRIPTION_TEXT_COLUMN= "transcription";
+    private static final String TRANSCRIPTION_TEXT_COLUMN = "transcription";
     private static final String TRANSCRIPTION_LINES_COLUMN = "transcription_lines";
     
     private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
@@ -117,12 +117,12 @@ public class DsStorage implements AutoCloseable {
             MTIME_COLUMN +" >=  ? AND "+            
             MTIME_COLUMN +" <=  ?";
     
-    private static String updateMTimeForRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+    
+    private static String updateMTimeForRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  " +    
             MTIME_COLUMN + " = ? "+
             "WHERE "+
             ID_COLUMN + "= ?";
     
-    private static String updateMTimeForRecordByFileIdStatement = "UPDATE " + TRANSCRIPTIONS_TABLE + " SET  "+    
+    private static String updateMTimeForRecordByFileIdStatement = "UPDATE " + RECORDS_TABLE + " SET  " +    
             MTIME_COLUMN + " = ? "+
             "WHERE "+
             FILE_ID_COLUMN + "= ?";
@@ -841,7 +841,7 @@ public class DsStorage implements AutoCloseable {
      * @param fileId of record(s) to update.
      * @return how many records have been updated. 0 or 1 are expected values. But can be higher to data errors
      */
-    public int  updateMTimeForRecordByFileId(String fileId) throws Exception {
+    public int updateMTimeForRecordByFileId(String fileId) throws Exception {
         // Sanity check
         if (fileId == null) {
             throw new Exception("FileId must not be null"); 
@@ -854,7 +854,7 @@ public class DsStorage implements AutoCloseable {
            int numberUpdated =  stmt.executeUpdate();           
            return numberUpdated;
         } catch (SQLException e) {
-            String message = "SQ1 Exception in updateMTimeForRecordByFileId with fileid:" + fileId;          
+            String message = "SQL Exception in updateMTimeForRecordByFileId with fileid:" + fileId;          
             log.error(message);
             throw new SQLException(message, e);
         }

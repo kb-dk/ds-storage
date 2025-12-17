@@ -20,7 +20,7 @@ public class DsStorageForUnitTest extends DsStorage  {
 
     private static String clearTableRecordsStatement = "DELETE FROM DS_RECORDS";
     private static String clearTableMappingsStatement = "DELETE FROM DS_MAPPING";
-    private static String clearTableTranscriptionsStatement = "DELETE FROM DS_TRANSCRIPTIONS";
+    private static String clearTableTranscriptionsStatement = "DELETE FROM TRANSCRIPTIONS";
 
     
     public  DsStorageForUnitTest() throws SQLException {
