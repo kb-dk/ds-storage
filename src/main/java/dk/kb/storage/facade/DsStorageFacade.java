@@ -135,6 +135,10 @@ public class DsStorageFacade {
     public static void createOrUpdatTranscription(TranscriptionDto transcription)   {
         performStorageAction("createOrUpdatTranscription(" + transcription.getFileId() + ")", storage -> {                      
            String fileId=transcription.getFileId();     
+           // Sanity check
+           if (fileId == null) {
+               throw new Exception("Fileid must not be null");
+           }
            int count = storage.countTranscriptionByFileId(fileId);
            if (count>0) {
              storage.deleteTranscriptionByFileId(fileId);

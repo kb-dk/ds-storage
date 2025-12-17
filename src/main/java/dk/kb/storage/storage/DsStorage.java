@@ -782,12 +782,13 @@ public class DsStorage implements AutoCloseable {
 
     }
 
+    /**
+     * @param transcription  fileId must not be full
+     * 
+     */
     public void createNewTranscription(TranscriptionDto transcription) throws Exception {
 
-        // Sanity check
-        if (transcription.getFileId() == null) {
-            throw new Exception("Fileid must not be null");
-        }
+
         long nowStamp = UniqueTimestampGenerator.next();
 
         try (PreparedStatement stmt = connection.prepareStatement(createTranscriptionStatement)) {
@@ -1038,15 +1039,17 @@ public class DsStorage implements AutoCloseable {
      * Delete a transcription by fileid
      * 
      * @param fileId the fileId. If fileId is not found nothing will be deleted, but it will be logged.
+     * @return Number of deleted records. Value 1 should be expected but can be higher if several records by mistake have same stream
      * @throws Exception Only if unexpected SQL exception happens.
      */     
-    public void deleteTranscriptionByFileId(String fileId) throws Exception {    
+    public int deleteTranscriptionByFileId(String fileId) throws Exception {    
         try (PreparedStatement stmt = connection.prepareStatement(deleteTranscriptionByFileIdStatement)) {        
             stmt.setString(1, fileId);
             int numberDeleted = stmt.executeUpdate();            
             if (numberDeleted != 1) {
                 log.warn("Delete transcription by fileId did not delete 1 as expected. Deleted='{}', FileId='{}'",numberDeleted,fileId);
-            }            
+            } 
+            return numberDeleted;
         } catch (SQLException e) {
             String message = "SQL Exception in deleteTranscriptionByFileId for fileId:" + fileId + " error:" + e.getMessage();
             log.error(message);
@@ -1217,7 +1220,7 @@ public class DsStorage implements AutoCloseable {
      * @param fileId the fileId to load
      * @return TranscriptionDto. If fileId is not found will return null
      */
-    public TranscriptionDto loadTranscription(String fileId) throws SQLException {
+    public TranscriptionDto  getTranscriptionByFileId(String fileId) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(transcriptionByFileIdStatement )) {
             stmt.setString(1, fileId);
 

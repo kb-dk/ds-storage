@@ -630,14 +630,12 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
           assertEquals(1,count);
           
           //load        
-          TranscriptionDto transLoaded = storage.loadTranscription(fileId);
+          TranscriptionDto transLoaded = storage.getTranscriptionByFileId(fileId);
           assertEquals(fileId,transLoaded.getFileId());
           assertEquals(fileName,transLoaded.getFileName());
           assertTrue(transLoaded.getmTime() >0);
           assertEquals(transcription,transLoaded.getTranscription());
           assertEquals(transcriptionLines,transLoaded.getTranscriptionLines());                                
-
-          //update not used
           
           //delete. Should not fail
           storage.deleteTranscriptionByFileId(fileId);
@@ -645,8 +643,8 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
           count=storage.countTranscriptionByFileId(fileId);
           assertEquals(0,count);
           
-          //Test record is deleted and not cloaded
-          TranscriptionDto trans2 = storage.loadTranscription(fileId);
+          //Test record is deleted and not loaded
+          TranscriptionDto trans2 = storage. getTranscriptionByFileId(fileId);
           assertNull(trans2);
           
         }

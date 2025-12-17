@@ -501,7 +501,8 @@ paths:
       summary: 'Create a new transcription or update an existing. Primary key is fileId.'
       security: 
         - KBOAuth:
-          - any   
+          - any 
+      operationId: createOrUpdateTranscription  
       description: 'Create or update an existring transcription. Primary key is fileId.  Will touch the record if there is one with this fileId'
       requestBody:
         content:
@@ -709,10 +710,10 @@ components:
       properties:
         fileId:
           type: string
-          description: 'Fileid that should match preservica '
+          description: 'Filedd that should match preservica.'
         fileName:
           type: string
-          description: 'Filename on the filesystem. Sometimes files have extension, sometimes now.'     
+          description: 'Filename on the filesystem. Sometimes files have extension, sometimes not.'     
         mTime:
           type: integer
           format: int64
