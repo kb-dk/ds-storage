@@ -127,7 +127,7 @@ public class DsStorage implements AutoCloseable {
     private static String updateMTimeForRecordByFileIdStatement = "UPDATE " + RECORDS_TABLE + " SET  " +    
             MTIME_COLUMN + " = ? "+
             "WHERE "+
-            FILE_ID_COLUMN + "= ?";
+            RECORDS_REFERENCE_ID_COLUMN  + "= ?";
         
     
     private static String childrenIdsStatement = "SELECT " + ID_COLUMN +" FROM " + RECORDS_TABLE +
@@ -869,8 +869,8 @@ public class DsStorage implements AutoCloseable {
             throw new Exception("FileId must not be null"); 
         }
         long nowStamp = UniqueTimestampGenerator.next();
-
-        try (PreparedStatement stmt = connection.prepareStatement(updateMTimeForRecordByFileIdStatement )) {  
+        
+        try (PreparedStatement stmt = connection.prepareStatement(updateMTimeForRecordByFileIdStatement)) {  
             stmt.setLong(1, nowStamp);      
             stmt.setString(2, fileId);
            int numberUpdated =  stmt.executeUpdate();           
