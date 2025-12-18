@@ -21,6 +21,7 @@ import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
+import dk.kb.storage.model.v1.TranscriptionDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.util.IdNormaliser;
@@ -121,6 +122,35 @@ public class DsStorageFacade {
     }
 
 
+    /**
+     * <p>
+     * Create or update a new transcription. The primary key is fileId that comes from
+     * the external system. The transcription text is the full text and transcription_lines
+     * are lines with start-end followed by the sentence and with a new line in the end.     
+     *  
+     * @param TranscriptionDto The entry to be created or updated
+     * 
+     */
+    public static void createOrUpdateTranscription(TranscriptionDto transcription)   {
+        performStorageAction("createOrUpdatTranscription(" + transcription.getFileId() + ")", storage -> {                      
+           String fileId=transcription.getFileId();     
+           // Sanity check
+           if (fileId == null) {
+               throw new Exception("Fileid must not be null");
+           }
+           int count = storage.countTranscriptionByFileId(fileId);
+           if (count>0) {
+             storage.deleteTranscriptionByFileId(fileId);
+            }              
+            storage.createNewTranscription(transcription);      
+            //Touch the record in the ds_records table so will be selected in next indexing job and transcriptions will be indexed as well.
+            int touched=storage.updateMTimeForRecordByFileId(fileId);
+            log.info("Create/Updated transcription with fileId='{}' number of records touched='{}'",fileId,touched);                                         
+            return null; // Something must be returned
+        });
+    }
+
+    
     
     public static void createOrUpdateRecord(DsRecordDto record)  {
         performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
@@ -167,13 +197,14 @@ public class DsStorageFacade {
     
     /**
      * Update kaltura id for a record. The kaltura id is given to the record when uploaded to Kaltura. The Kaltura id must then later be updated with this method.
-     * 
+     * Due to data error there can be several records having same stream.
+     *  
      * @param referenceId The referenceId given to the record when uploaded to Kaltura
      * @param kalturaId The Kaltura id in the kaltura system. The id is given to a record after upload.
      */
     public static void updateKalturaIdForRecord(String referenceId, String kalturaId){
          performStorageAction("updateKalturaIdForRecord(" + referenceId + ")", storage -> {
-         storage.updateKalturaIdForRecord(referenceId, kalturaId);         
+         storage.updateKalturaIdForRecords(referenceId, kalturaId);         
         return null;    // Something must be returned
         });
     }

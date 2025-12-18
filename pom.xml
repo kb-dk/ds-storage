@@ -4,13 +4,13 @@
     <parent>
         <groupId>dk.kb.dsparent</groupId>
         <artifactId>ds-parent</artifactId>
-        <version>3.0.1-SNAPSHOT</version>
+        <version>3.0.2-SNAPSHOT</version>
     </parent>
 
     <name>ds-storage-parent</name>
     <groupId>dk.kb.storage</groupId>
     <artifactId>ds-storage-parent</artifactId>
-    <version>3.0.1-SNAPSHOT</version>
+    <version>3.0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>
         # Ds-storage(Digitale Samlinger) by the Royal Danish Library.

@@ -5,6 +5,7 @@ import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.model.v1.TranscriptionDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -180,7 +181,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         storage.createNewRecord(record );
         
         //Update kaltura Id.
-        storage.updateKalturaIdForRecord(kalturaReferenceId, kalturaId);
+        storage.updateKalturaIdForRecords(kalturaReferenceId, kalturaId);
      
         //Load and test kalturaId correct
         DsRecordDto recordUpdated = storage.loadRecord(recordId);
@@ -607,6 +608,51 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
         map.setKalturaId("kalturaid1");            
         storage.createNewMapping(map);       
     }
-           
+    
+    @Test
+    public void testBasicCRUDForTranscription() throws Exception {
+        try {
+          //Create
+          String fileId="a3332323-3323233-333333";
+          String fileName="a3332323-3323233-333333.mp3";
+          String transcription="This is linie1. This is linie2";
+          String transcriptionLines="00:00 - 10:00This is linie1.\n10:00 - 20:00  This is linie2";
+        
+          TranscriptionDto trans = new TranscriptionDto();
+          trans.setFileId(fileId);
+          trans.setFileName(fileName);
+          trans.setTranscription(transcription);
+          trans.setTranscriptionLines(transcriptionLines);                                      
+          storage.createNewTranscription(trans);
+        
+          //Count
+          int count=storage.countTranscriptionByFileId(fileId);
+          assertEquals(1,count);
+          
+          //load        
+          TranscriptionDto transLoaded = storage.getTranscriptionByFileId(fileId);
+          assertEquals(fileId,transLoaded.getFileId());
+          assertEquals(fileName,transLoaded.getFileName());
+          assertTrue(transLoaded.getmTime() >0);
+          assertEquals(transcription,transLoaded.getTranscription());
+          assertEquals(transcriptionLines,transLoaded.getTranscriptionLines());                                
+          
+          //delete. Should not fail
+          storage.deleteTranscriptionByFileId(fileId);
+          
+          count=storage.countTranscriptionByFileId(fileId);
+          assertEquals(0,count);
+          
+          //Test record is deleted and not loaded
+          TranscriptionDto trans2 = storage. getTranscriptionByFileId(fileId);
+          assertNull(trans2);
+          
+        }
+        catch(Exception e) {
+          e.printStackTrace();
+          fail();  
+            
+        }
+    }
     
 }
