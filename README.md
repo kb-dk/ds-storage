@@ -77,7 +77,7 @@ This can be used from an external project by adding the following to the [pom.xm
 <dependency>
     <groupId>dk.kb.storage</groupId>
     <artifactId>ds-storage</artifactId>
-    <version>3.0.1-SNAPSHOT</version>
+    <version>3.0.4-SNAPSHOT</version>
     <type>jar</type>
 </dependency>
 ```
