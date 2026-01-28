@@ -49,7 +49,7 @@ pipeline {
         stage('Update parent') {
             steps {
                 withMaven(options: [artifactsPublisher(fingerprintFilesDisabled: true, archiveFilesDisabled: true)], traceability: true, mavenLocalRepo: "${WORKSPACE}/repository") {
-                    sh """sed -i "/<parent>/,/<version>/ s/<version>.*<\/version>/<version>${params.VERSION}<\/version>/" pom.xml"""
+                    sh """sed -i "/<parent>/,/<version>/ s/<version>.*<\\/version>/<version>${params.VERSION}<\\/version>/" pom.xml"""
                     echo "Changing parent to: ${params.VERSION}"
                 }
             }
