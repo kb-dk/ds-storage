@@ -5,16 +5,12 @@ All notable changes to ds-storage will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.0.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-4.0.0) - 2026-01-29
 
 ### Added
 - New table in database (ds_transcriptions). DDL to create the table must be run for new release.
 - New service method transcription(POST) to add or update a transcription. Also added to DsStorageClient
 - New service method to load a transcription. Key is the external fileId (filename)
-
-### Changed
-
-### Fixed
 
 ## [3.0.3](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-3.0.3) - 2025-12-03
 ### Fixed
