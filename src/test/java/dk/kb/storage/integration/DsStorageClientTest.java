@@ -131,7 +131,7 @@ public class DsStorageClientTest {
     @Test
     public void testTouchRecord() {
         String id = "ds.tv:oai:io:a89956ea-4e17-4756-92da-c196b59dbcc5";
-        RecordsCountDto countDto = remote.touchRecord(id);
+        RecordsCountDto countDto = remote.touchRecord(id, 0);
 
         assertEquals(1, countDto.getCount());
     }

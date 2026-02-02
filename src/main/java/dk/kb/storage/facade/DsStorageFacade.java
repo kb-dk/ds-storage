@@ -431,7 +431,7 @@ public class DsStorageFacade {
      * @param recordId of record to touch.
      * @throws NotFoundServiceException when a record cannot be found in storage.
      */
-    public static RecordsCountDto touchRecord(String recordId) {
+    public static RecordsCountDto touchRecord(String recordId, Integer uselessInt) {
         RecordsCountDto countDto = performStorageAction("updateMTimeForRecord(" + recordId +")", storage -> {
             String idNorm = IdNormaliser.normaliseId(recordId);
             return storage.updateMTimeForRecord(idNorm);

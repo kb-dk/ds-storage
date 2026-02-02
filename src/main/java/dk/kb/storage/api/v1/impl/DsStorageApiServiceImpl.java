@@ -218,10 +218,10 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     }
 
     @Override
-    public RecordsCountDto touchRecord(String recordId) {
+    public RecordsCountDto touchRecord(String recordId, Integer uselessInt) {
         try {
             log.debug("touchRecord(id='{}') called with call details: {}", recordId, getCallDetails());
-            return DsStorageFacade.touchRecord(recordId);
+            return DsStorageFacade.touchRecord(recordId, uselessInt);
         } catch (Exception e) {
             throw handleException(e);
         }

@@ -137,7 +137,7 @@ public class DsStorageClient {
          }           
     }
 
-    public RecordsCountDto touchRecord(String recordId){
+    public RecordsCountDto touchRecord(String recordId, Integer uselessInt){
         try {
             URI uri = new URIBuilder(serviceURI)
                     .appendPathSegments("record", "touch", recordId)
