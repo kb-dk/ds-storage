@@ -495,6 +495,29 @@ paths:
           description: No Content - The request has been executed correct and the server did not deliver any content.
 
   /transcription:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Get full transcription by fileId, this is the filename for the stream.'
+      security: 
+        - KBOAuth:
+          - any   
+      operationId: getTranscription
+      description: 'Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.'
+      parameters:
+        - name: fileId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Get the full transcription by fileId. Will return null if no transcription is found.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transcription'
+  
     post:
       tags:
         - '${project.name}'    
