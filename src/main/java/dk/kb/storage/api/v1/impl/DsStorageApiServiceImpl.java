@@ -385,7 +385,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     *  Load full transcription for a stream 
     *  
     *  @param fileId FileId for the stream, this is the stream filename.   
-    *  @return TranscriptionDto Return the full transcription or null if no transcription is found.
+    *  @return TranscriptionDto Will return empty transcriptionDto if no transcription is found
     */
     @Override
     public TranscriptionDto getTranscription(@NotNull String fileId) {

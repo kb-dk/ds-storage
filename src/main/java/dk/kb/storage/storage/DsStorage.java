@@ -1252,7 +1252,9 @@ public class DsStorage implements AutoCloseable {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
-                    return null;
+                    TranscriptionDto empty=new TranscriptionDto(); //DsStorageClient can not handle null values when serializing.
+                    empty.setFileId(fileId);
+                    return empty;
                 }
                 TranscriptionDto trans = createTranscriptionFromRS(rs);                            
                 return trans;

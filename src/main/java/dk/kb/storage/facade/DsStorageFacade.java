@@ -793,7 +793,7 @@ public class DsStorageFacade {
     *  Load full transcription for a stream 
     *  
     *  @param fileId FileId for the stream, this is the stream filename.   
-    *  @return TranscriptionDto Return the full transcription or null if no transcription is found.
+    *  @return TranscriptionDto Return empty transcriptionDto if none is found
     */
     public static TranscriptionDto getTranscription(String fileId) {        
        return performStorageAction(

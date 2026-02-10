@@ -503,7 +503,7 @@ paths:
         - KBOAuth:
           - any   
       operationId: getTranscription
-      description: 'Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.'
+      description: 'Get entry from the mapping table for the referenceId. Will return empty transcriptionDto if transcription is not found.'
       parameters:
         - name: fileId
           in: query
