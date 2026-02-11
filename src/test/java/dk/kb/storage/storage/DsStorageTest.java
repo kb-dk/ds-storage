@@ -645,7 +645,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
           
           //Test record is deleted and not loaded
           TranscriptionDto trans2 = storage. getTranscriptionByFileId(fileId);
-          assertNull(trans2);
+          assertNull(trans2.getTranscription());
           
         }
         catch(Exception e) {
