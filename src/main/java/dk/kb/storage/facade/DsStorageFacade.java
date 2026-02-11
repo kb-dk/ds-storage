@@ -788,6 +788,19 @@ public class DsStorageFacade {
         //childrenIds.forEach( c -> record.getChildren().add(getRecord(c))); // Just to make Toke happy, but only as a comment instead of the for-loop        
     }
 
+    
+    /**
+    *  Load full transcription for a stream 
+    *  
+    *  @param fileId FileId for the stream, this is the stream filename.   
+    *  @return TranscriptionDto Return empty transcriptionDto if none is found
+    */
+    public static TranscriptionDto getTranscription(String fileId) {        
+       return performStorageAction(
+               "getTranscription(fileId='" + fileId +")",
+               storage -> storage.getTranscriptionByFileId(fileId));             
+    }
+    
 
     /**
      * Callback used with {@link #performStorageAction(String, StorageAction)}.

@@ -229,7 +229,28 @@ public class DsStorageClient {
             throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
          }                               
     }
-        
+
+    /**
+     * Get mapping for a specific referenceId
+     * Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.
+     * @param referenceId  (required)
+     * @return MappingDto
+     * @throws ServiceException if fails to make API call
+     */
+    public TranscriptionDto getTranscription(String fileId) throws ServiceException {        
+        try {
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPathSegments("transcription")                                                                
+                    .addParameter("fileId",fileId)                       
+                    .build();
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET", new TranscriptionDto(), null);              
+        }
+        catch (URISyntaxException e) {
+            log.error("Invalid url:"+e.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
+         }                               
+    }
+    
     /**
      * Get a list of minimal records having a referenceId after a given lastModified time
      * Extract a list of records with a given batch size by origin and mTime larger than input. 

@@ -25,6 +25,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Providers;
 import java.util.ArrayList;
@@ -377,6 +378,19 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     @Override
     public void createOrUpdateTranscription(@Valid TranscriptionDto transcriptionDto) {
        DsStorageFacade.createOrUpdateTranscription(transcriptionDto);        
+    }
+        
+    
+    /**
+    *  Load full transcription for a stream 
+    *  
+    *  @param fileId FileId for the stream, this is the stream filename.   
+    *  @return TranscriptionDto Will return empty transcriptionDto if no transcription is found
+    */
+    @Override
+    public TranscriptionDto getTranscription(@NotNull String fileId) {
+        // TODO Auto-generated method stub
+        return DsStorageFacade.getTranscription(fileId);
     }
     
 

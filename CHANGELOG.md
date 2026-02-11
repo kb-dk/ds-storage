@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - New table in database (ds_transcriptions). DDL to create the table must be run for new release.
-- New service method transcription(POST) to add or update a transcription. Also added to DsStorageClient
-- New service method to load a transcription. Key is the external fileId (filename)
+- New service method transcription(POST) to add or update a transcription. Also added to DsStorageClient.(It was not, but is now)
+- New service method to load a transcription. Key is the external fileId (filename).
 
 ## [3.0.3](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-3.0.3) - 2025-12-03
 ### Fixed

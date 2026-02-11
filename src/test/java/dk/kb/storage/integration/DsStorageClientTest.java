@@ -22,6 +22,7 @@ import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
+import dk.kb.storage.model.v1.TranscriptionDto;
 import dk.kb.storage.util.DsStorageClient;
 import dk.kb.util.oauth2.KeycloakUtil;
 import dk.kb.util.webservice.OAuthConstants;
@@ -262,6 +263,15 @@ public class DsStorageClientTest {
         }
     }
 
+    @Test
+    public void testGetTranscription() throws IOException {
+        String fileId="7abbf6ff-3fda-41db-9632-b48343bb88bd";        
+        TranscriptionDto transcription = remote.getTranscription(fileId);
+        String snippet="kvindekvoter";
+        assertTrue(transcription.getTranscription().indexOf(snippet)>0);               
+    }
+
+    
     @Test
     public void testRemotePageLast() throws IOException {        
         Long lastMTime = null;
