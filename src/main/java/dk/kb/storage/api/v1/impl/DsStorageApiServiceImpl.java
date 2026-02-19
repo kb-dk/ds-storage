@@ -4,7 +4,6 @@ import dk.kb.storage.api.v1.DsStorageApi;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -314,35 +313,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             throw handleException(e);
         }
     }
-    
-      
-    @Override
-    public void mappingPost(MappingDto mappingDto) {
-        try {
-            log.debug("updateKalturaId() called with call details: {}", getCallDetails());
-            DsStorageFacade.createOrUpdateMapping(mappingDto);               
-        } catch (Exception e) {
-            throw handleException(e);
-        }        
-    }
-    @Override
-    public MappingDto getMapping(String referenceId) {
-        try {
-            log.debug("getMapping() called with call details: {}", getCallDetails());
-            return DsStorageFacade.getMapping(referenceId);
-            
-        } catch (Exception e) {
-            throw handleException(e);
-        }        
-    }
-    @Override
-    public RecordsCountDto updateKalturaIdForRecords() {
-        log.debug("updateKalturaIdForRecords() called with call details: {}", getCallDetails());
-        return DsStorageFacade.updateKalturaIdForRecords();        
-    }
-    
-        
-    
+             
     /**
     * <p>
     * Get a list of records after a given mTime. The records will only have fields
@@ -374,7 +345,8 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             }
         };
     }
-
+   
+    
     @Override
     public void createOrUpdateTranscription(@Valid TranscriptionDto transcriptionDto) {
        DsStorageFacade.createOrUpdateTranscription(transcriptionDto);        
