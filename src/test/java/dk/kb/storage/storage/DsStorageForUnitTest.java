@@ -19,7 +19,6 @@ public class DsStorageForUnitTest extends DsStorage  {
     private static final Logger log = LoggerFactory.getLogger(DsStorageForUnitTest.class);
 
     private static String clearTableRecordsStatement = "DELETE FROM DS_RECORDS";
-    private static String clearTableMappingsStatement = "DELETE FROM DS_MAPPING";
     private static String clearTableTranscriptionsStatement = "DELETE FROM TRANSCRIPTIONS";
 
     
@@ -36,9 +35,7 @@ public class DsStorageForUnitTest extends DsStorage  {
         try (PreparedStatement stmt = connection.prepareStatement(clearTableRecordsStatement)) {
             stmt.execute(); //No result set to close
         }        
-        try (PreparedStatement stmt = connection.prepareStatement(clearTableMappingsStatement)) {
-            stmt.execute(); //No result set to close
-        }
+        
         try (PreparedStatement stmt = connection.prepareStatement(clearTableTranscriptionsStatement)) {
             stmt.execute(); //No result set to close
         }
