@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
-import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
@@ -42,7 +41,6 @@ public class DsStorage implements AutoCloseable {
     
     private static final String TRANSCRIPTIONS_TABLE = "transcriptions";
     private static final String RECORDS_TABLE = "ds_records";
-    private static final String MAPPING_TABLE = "ds_mapping";
     private static final String ORGID_COLUMN = "orgid";
     private static final String ID_COLUMN = "id";
     private static final String IDERROR_COLUMN = "id_error";
@@ -54,10 +52,7 @@ public class DsStorage implements AutoCloseable {
     private static final String MTIME_COLUMN = "mtime";
     private static final String PARENT_ID_COLUMN = "parentid";
     private static final String RECORDS_REFERENCE_ID_COLUMN = "referenceid";
-    private static final String RECORDS_KALTURA_ID_COLUMN = "kalturaid";
-    private static final String MAPPING_REFERENCE_ID_COLUMN = "referenceid";
-    private static final String MAPPING_KALTURA_ID_COLUMN = "kalturaid";
-       
+    private static final String RECORDS_KALTURA_ID_COLUMN = "kalturaid";       
     private static final String FILE_ID_COLUMN = "fileid";
     private static final String FILE_NAME_COLUMN = "filename";
     private static final String TRANSCRIPTION_TEXT_COLUMN = "transcription";
@@ -65,21 +60,8 @@ public class DsStorage implements AutoCloseable {
     
     private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
             " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " +ORGID_COLUMN + ","+ RECORDTYPE_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  " , " + RECORDS_REFERENCE_ID_COLUMN +" , "+RECORDS_KALTURA_ID_COLUMN+")"+
-            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
-
-
-    private static String createMapping = "INSERT INTO " + MAPPING_TABLE +
-            " (" + MAPPING_REFERENCE_ID_COLUMN + ", " + MAPPING_KALTURA_ID_COLUMN +")"+
-            " VALUES (?,?)";
-
-    private static String mappingByIdStatement = "SELECT * FROM " + MAPPING_TABLE + " WHERE "+ MAPPING_REFERENCE_ID_COLUMN+" = ?";
-    
-    private static String updateMappingStatement = "UPDATE " + MAPPING_TABLE + " SET  "+                         
-            RECORDS_KALTURA_ID_COLUMN + " = ?  "+            
-            "WHERE "+
-            MAPPING_REFERENCE_ID_COLUMN + "= ?";
-    
-    
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";    
+       
     private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+          
             RECORDTYPE_COLUMN + " = ?  ,"+
             DATA_COLUMN + " = ? , "+                         
@@ -242,18 +224,7 @@ public class DsStorage implements AutoCloseable {
             " VALUES (?,?,?,?,?)";
 
     
-    //Optimized SQL that finds missing KalturaIds on records table that have a referenceId but no kalturaId. Can take some time(minutes) first time if millions of records miss
-    // kalturaId
-    //'INNER JOIN' will only return matched rows from both table  unlike 'LEFT JOIN' that will return non-matched also. 
-    //SELECT A.id, A.referenceid, B.kalturaid from ds_records A INNER JOIN ds_mapping B ON A.referenceid=B.referenceid WHERE  A.kalturaid IS NULL AND b.kalturaid IS NOT NULL         
-    //Performance can be improved by double index (referenceId,kalturaId) but will come a cost when creating/updating records. 
-    private static String joinMissingKalturaIdStatement = "SELECT A."+ID_COLUMN+", A."+RECORDS_REFERENCE_ID_COLUMN+", B."+MAPPING_KALTURA_ID_COLUMN+" FROM "+RECORDS_TABLE +
-                                                        " A INNER JOIN "+MAPPING_TABLE+" B"+ 
-                                                        " ON A."+RECORDS_REFERENCE_ID_COLUMN+"=B."+MAPPING_REFERENCE_ID_COLUMN+
-                                                        " WHERE  A."+RECORDS_KALTURA_ID_COLUMN+" IS NULL AND b."+MAPPING_KALTURA_ID_COLUMN +" IS NOT NULL";    
-    
     private static String originsStatisticsStatement = "SELECT " + ORIGIN_COLUMN + " ,COUNT(*) AS COUNT , SUM("+DELETED_COLUMN+") AS deleted,  max("+MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + ORIGIN_COLUMN;
-
     private static String deleteTranscriptionByFileIdStatement = "DELETE FROM " + TRANSCRIPTIONS_TABLE + " WHERE "+FILE_ID_COLUMN+" = ?";
     private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE "+ORIGIN_COLUMN +" = ? AND "+DELETED_COLUMN +" = 1" ;   
     private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";
@@ -881,108 +852,8 @@ public class DsStorage implements AutoCloseable {
             throw new SQLException(message, e);
         }
     }
-    
-    
-    
-      /**
-       * Create a new entry in the mapping table. The kalturaid can be null and will be updated by a job later.
-       * 
-       * @param mappingDto The referenceId must not be null. The kalturaid can be null.
-       * @throws Exception If referenceId already exists.
-       */
-     public void createNewMapping(MappingDto mappingDto) throws Exception {
-
-        if (mappingDto.getReferenceId() == null) {
-            throw new InvalidArgumentServiceException("ReferenceId must not be null"); 
-        }
-
-        try (PreparedStatement stmt = connection.prepareStatement(createMapping)) {
-            stmt.setString(1, mappingDto.getReferenceId());
-            stmt.setString(2, mappingDto.getKalturaId()); 
-            stmt.executeUpdate();
-
-        } catch (SQLException e) {
-            String message = "SQL Exception in createNewMapping with referenceId:" + mappingDto.getReferenceId() + " error:" + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }
-    }
-    
-     
-     /**
-      * Get a mappingDto by referenceId. 
-      * 
-      * @param referenceId The id key for the mapping
-      * @return referenceId  Return a mappingDto if referenceId exists. Null if the referenceId is not found in the mapping
-      *
-      * @throws SQLException if anything goes wrong while getting mapping for referenceId.
-      */
-    public MappingDto getMappingByReferenceId(String referenceId) throws SQLException {
-
-       if (referenceId == null) {
-           throw new InvalidArgumentServiceException("referenceId must not be null"); 
-       }
-
-       try (PreparedStatement stmt = connection.prepareStatement(mappingByIdStatement)) {
-           stmt.setString(1, referenceId);
- 
-           try (ResultSet rs = stmt.executeQuery()) {
-               if (!rs.next()) {
-                 throw new InvalidArgumentServiceException("No mapping found for referenceId:"+referenceId);
-               }
-             return createMappingFromRS(rs);               
-           }           
-
-       } catch (SQLException e) {
-           String message = "SQL Exception in getMappingById( id:" + referenceId + " error:" + e.getMessage();
-           log.error(message);
-           throw new SQLException(message, e);
-       }
-   }
+          
    
-     
-    /**
-     * <p>
-     * Update all records that have referenceId but missing kalturaId.<br>
-     * If the mapping exist in the mapping table referenceId <-> kalturaId, then the record will be updated with the kaltura.<br>
-     * If the mapping does not exist (yet), the record will not be updated with kaltura id.<br>
-     * <br>
-     * If many records needs to be updated this can take some time. 1M records is estimated to take 15 minutes. 
-     * </p>
-     *    
-     * @return Number of records that was enriched with kalturaId 
-     */
-   public RecordsCountDto updateKalturaIdForRecords() throws Exception {
-      
-      try (PreparedStatement stmt = connection.prepareStatement(joinMissingKalturaIdStatement)) {
-
-          int updated=0;
-
-          try (ResultSet rs = stmt.executeQuery()) {
-              while(rs.next()) {
-           
-                String id=rs.getString(ID_COLUMN);
-                String referenceId=rs.getString(MAPPING_REFERENCE_ID_COLUMN);
-                String kalturaId=rs.getString(MAPPING_KALTURA_ID_COLUMN);
-                
-                //Update the record with the kalturaId.
-                updateKalturaIdForRecords(referenceId, kalturaId);
-                log.info("Updated kalturaid for record. id={}, referenceid={}, kalturaid={}", id,referenceId,kalturaId);                
-                updated++;
-              }
-                           
-          }
-          RecordsCountDto recordsCountDto= new RecordsCountDto();
-          recordsCountDto.setCount(updated);          
-          return recordsCountDto;
-
-      } catch (SQLException e) {
-          String message = "SQL Exception in updateKalturaIdForRecords error:" + e.getMessage();
-          log.error(message);
-          throw new SQLException(message, e);
-      }
-   } 
-    
         
     public RecordsCountDto markRecordForDelete(String recordId) throws Exception {
 
@@ -1077,31 +948,7 @@ public class DsStorage implements AutoCloseable {
             log.error(message);
             throw new SQLException(message, e);
         }
-    }
-    /**
-     * 
-     * Update a mapping with a new kalturaId
-     * 
-     * @param mappingDto containing a referenceId and a kalturaId
-     * @throws Exception Will throw exception if id is not found
-     */     
-    public void updateMapping(MappingDto mappingDto) throws Exception {
-       // Sanity check
-        if (mappingDto.getReferenceId() == null) {
-            throw new InvalidArgumentServiceException("referenceId must not be null"); 
-        }
-                                              
-        try (PreparedStatement stmt = connection.prepareStatement(updateMappingStatement)) {
-            stmt.setString(1, mappingDto.getKalturaId());
-            stmt.setString(2, mappingDto.getReferenceId());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            String message = "SQL Exception in  updateMapping with id:" + mappingDto.getReferenceId() + " error:" + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }       
-    }
-    
+    }    
 
     public void updateRecord(DsRecordDto record) throws Exception {
 
@@ -1171,23 +1018,6 @@ public class DsStorage implements AutoCloseable {
         }
 
     }
-    
-    
-    /* 
-     * Convert a row in the mapping table to a mappingDto object. 
-     * 
-     */
-    private static MappingDto createMappingFromRS(ResultSet rs) throws SQLException {
-
-        String id = rs.getString(MAPPING_REFERENCE_ID_COLUMN);
-        String kalturaId = rs.getString(MAPPING_KALTURA_ID_COLUMN);
-
-        MappingDto mapping = new MappingDto();
-        mapping.setReferenceId(id);
-        mapping.setKalturaId(kalturaId);        
-        return mapping;
-    }
-    
     
     private static DsRecordDto createRecordFromRS(ResultSet rs) throws SQLException {
 

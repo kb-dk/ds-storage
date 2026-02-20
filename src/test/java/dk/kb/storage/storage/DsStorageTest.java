@@ -2,7 +2,6 @@ package dk.kb.storage.storage;
 
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
-import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.TranscriptionDto;
@@ -122,51 +121,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     }
 
     
-    @Test
-    public void testMappingCRUD() throws Exception {
-        
-        //Create with both ids
-        String id1="test_id_1";
-        String id2="test_id_2";
-        String kalturaId1="test_kalturaid_1";
-        String kalturaId1Updated="test_kalturaid_1_updated";
-        
-        MappingDto mappingDto1 = new MappingDto();
-        mappingDto1.setReferenceId(id1);
-        mappingDto1.setKalturaId(kalturaId1);    
-        storage.createNewMapping(mappingDto1);
-        
-        //create with only id
-        MappingDto mappingDto2 = new MappingDto();
-        mappingDto2.setReferenceId(id2);
-        storage.createNewMapping(mappingDto2);
-        
-        //Load records
-        MappingDto map1 = storage.getMappingByReferenceId(id1);
-        assertEquals(id1,map1.getReferenceId());
-        assertEquals(kalturaId1,map1.getKalturaId());
-                
-        MappingDto map2 = storage.getMappingByReferenceId(id2);
-        assertEquals(id2,map2.getReferenceId());
-        assertNull(map2.getKalturaId());        
-       
-        //Test id not exists
-        try {
-        MappingDto notExist = storage.getMappingByReferenceId("does_not_exist");
-        fail("None existing post should give exception");
-        }
-        catch(Exception e) {
-           //ignore
-        }
-                           
-        //update
-        mappingDto1.setKalturaId(kalturaId1Updated);
-        storage.updateMapping(mappingDto1);
-        MappingDto map1Updated = storage.getMappingByReferenceId(id1); //load again
-        assertEquals(kalturaId1Updated,map1Updated.getKalturaId());                        
-        
-    }
-        
+  
     @Test
     public void testUpdateKalturaId() throws Exception {
         String recordId="test_123";
@@ -237,79 +192,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     }
     
     
-    
-    /**
-    * Data structure
-    * <p>
-    * RECORD table:
-    * |ID |REFERENCEID |KALTURAID
-    * -------------------------------
-    * |id1|referenceid1|     (null) |        (This can be enriched with kalturaid)
-    * |id2|referenceid2|     (null) |        (this record needs to be enriched, but referenceid2 is not in the mapping table) 
-    * |id3|null        |     (null) |        (this record can not be enriched with kalturaid, no referenceId)
-    * |id4|referenceid4| kalturaid4 |        (this  already has kalturaid)
-    * <p>
-    * MAPPING table:
-    * |REFERENCEID | KALTURAID|
-    * ------------------------- 
-    * |referenceid1|kalturaid1|              (this mappen can be used to enrich record with id1)
-    * |referenceid4|kalturaid4|              (no record that has referenceid4, so not used)
-    * <p>
-    * This is the result of the SQL inner join, only one row is generated from data structure
-    * <p>
-    * JOIN-RESULT-SET
-    * |ID| REFERENCEID | KALTURAID|
-    * -----------------------------
-    * |id1|referenceid1|kalturaid1|   
-    * <p>
-    * After updating the kalturaid the record with id1 will now have kalturaid
-    * |id1|referenceid1|kalturaid1|          (this is the change in record data by calling the updatekalturaId method)
-    */    
-    @Test
-    public void testUpdateKalturaIdForRecords() throws Exception {
-        
-        //Create test data
-        createTestMappingData();
-       
-        String recordId="id1";
-        //load record1 and see kalturaid is not set
-        DsRecordDto recordBefore = storage.loadRecord(recordId);
-        assertNull(recordBefore.getKalturaId());
-        
-        
-        int updated = storage.updateKalturaIdForRecords().getCount();        
-        assertEquals(1,updated);
-        
-        //load record1 and see kalturaid is now set
-        DsRecordDto recordAfter = storage.loadRecord(recordId);
-        assertEquals("kalturaid1",recordAfter.getKalturaId()); 
-        
-        
-        //batch over records and records are extract with correct values              
-        ArrayList<DsRecordMinimalDto> records = storage.getReferenceIds("test_origin1", 0, 10);
-        
-        //records order are id2,id3,id4,id1  (since id1 was modified it is last)
-        DsRecordMinimalDto id2 = records.get(0);        
-        assertEquals("id2",id2.getId());
-        assertEquals("referenceid2",id2.getReferenceId());
-        assertNull(id2.getKalturaId());
-        
-        DsRecordMinimalDto id3 = records.get(1);        
-        assertEquals("id3",id3.getId());
-        assertNull(id3.getReferenceId());
-        assertNull(id3.getKalturaId());
-        
-        DsRecordMinimalDto id4 = records.get(2);        
-        assertEquals("id4",id4.getId());
-        assertEquals("referenceid4",id4.getReferenceId());
-        assertEquals("kalturaid4",id4.getKalturaId());
-                
-        DsRecordMinimalDto id1 = records.get(3);        
-        assertEquals("id1",id1.getId());        
-        assertEquals("referenceid1",id1.getReferenceId());
-        assertEquals("kalturaid1",id1.getKalturaId());   
-        assertTrue(id1.getmTime()>0L);
-    }
+  
 
     @Test
     public void testGetMtimeAfterWithLimitManifestation() throws Exception {
@@ -564,50 +447,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
     }
     
-   /*
-    * See {@link #testUpdateKalturaIdForRecords() testUpdateKalturaIdForRecords} method for data visualization
-    *       
-    */   
-    private void createTestMappingData()  throws Exception{
-                
-        DsRecordDto r1 = new DsRecordDto();
-        r1.setId("id1"); 
-        r1.setOrigin("test_origin1");
-        r1.setData("id1");
-        r1.setRecordType(RecordTypeDto.MANIFESTATION);
-        r1.setReferenceId("referenceid1");
-        storage.createNewRecord(r1);
-        
-        DsRecordDto r2 = new DsRecordDto();
-        r2.setId("id2");  
-        r2.setOrigin("test_origin1");
-        r2.setData("id2");
-        r2.setRecordType(RecordTypeDto.MANIFESTATION);
-        r2.setReferenceId("referenceid2");
-        storage.createNewRecord(r2);
-        
-        DsRecordDto r3 = new DsRecordDto();
-        r3.setId("id3");  
-        r3.setOrigin("test_origin1");
-        r3.setData("id3");
-        r3.setRecordType(RecordTypeDto.MANIFESTATION);
-        //No referenceid
-        storage.createNewRecord(r3);
-        
-        DsRecordDto r4 = new DsRecordDto();
-        r4.setId("id4");  
-        r4.setOrigin("test_origin1");
-        r4.setData("id4");
-        r4.setRecordType(RecordTypeDto.MANIFESTATION);
-        r4.setReferenceId("referenceid4");
-        r4.setKalturaId("kalturaid4");
-        storage.createNewRecord(r4);
-        
-        MappingDto map = new MappingDto();
-        map.setReferenceId("referenceid1");
-        map.setKalturaId("kalturaid1");            
-        storage.createNewMapping(map);       
-    }
+ 
     
     @Test
     public void testBasicCRUDForTranscription() throws Exception {

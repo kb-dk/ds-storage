@@ -16,7 +16,6 @@ package dk.kb.storage.util;
 
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
-import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -189,47 +188,7 @@ public class DsStorageClient {
             throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
         }                    
     }
-
-    /**
-     * Create a new mapping or update a mapping .
-     * Create a new mapping or update mapping if referenceId exists. Each record with a stream will have a referenceId (file-id) and needs to be mapped to the KalturaId
-     * @param mappingDto  (optional)
-     * @throws ServiceException if fails to make API call
-     */
-    public void mappingPost(MappingDto mapping) throws ServiceException {               
-        try {
-            URI uri = new URIBuilder(serviceURI)
-                     .appendPathSegments("mapping")                                                               
-                     .build();
-            Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", null, mapping);              
-        }
-        catch (URISyntaxException e) {
-            log.error("Invalid url:"+e.getMessage());
-            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
-        }                               
-    }
-
-    /**
-     * Get mapping for a specific referenceId
-     * Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.
-     * @param referenceId  (required)
-     * @return MappingDto
-     * @throws ServiceException if fails to make API call
-     */
-    public MappingDto getMapping(String referenceId) throws ServiceException {        
-        try {
-            URI uri = new URIBuilder(serviceURI)
-                    .appendPathSegments("mapping")                                                                
-                    .addParameter("referenceId",referenceId)                       
-                    .build();
-            return Service2ServiceRequest.httpCallWithOAuthToken(uri,"GET", new MappingDto(), null);              
-        }
-        catch (URISyntaxException e) {
-            log.error("Invalid url:"+e.getMessage());
-            throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
-         }                               
-    }
-
+    
     /**
      * Get mapping for a specific referenceId
      * Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.
@@ -491,29 +450,8 @@ public class DsStorageClient {
     }
     
     /**
-     * Update all records having a referenceIf with the matching Kaltura, if the mapping can be found in the mapping table
-     * Update all records having a referenceId with the matching kalturaId, if the mapping can be found in the mapping table.  If many records needs to be updated this can take some time. Estimated 15 minutes for 1M records. It is possible to update in batches if the mapping table is also updated in batches.                 
-     * @return Integer
-     * @throws ApiException if fails to make API call
-     */
-    public RecordsCountDto updateKalturaIdForRecords() throws ServiceException {
-        try {
-            URI uri = new URIBuilder(serviceURI)
-                    .appendPathSegments("record","updateKalturaId")                                                                                 
-                    .build();            
-           return Service2ServiceRequest.httpCallWithOAuthToken(uri,"POST", new RecordsCountDto(),null);              
-        }
-        catch(URISyntaxException e) {
-            log.error("Invalid url:"+e.getMessage());
-            throw new InternalServiceException(CLIENT_URL_EXCEPTION);
-        }                             
-    }
-      
-    
-    /**
-     * Create a new mapping or update a mapping .
-     * Create a new mapping or update mapping if referenceId exists. Each record with a stream will have a referenceId (file-id) and needs to be mapped to the KalturaId
-     * @param mappingDto  (optional)
+     * Create a new transcription·
+     * @param TranscriptionDto  
      * @throws ServiceException if fails to make API call
      */
     public void createOrUpdateTranscription(TranscriptionDto trans) throws ServiceException {               

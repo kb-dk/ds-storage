@@ -429,71 +429,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DsRecordMinimalList'
 
-  /records/updateKalturaId:     
-    post:
-      tags:
-        - '${project.name}'    
-      summary: 'Update all records having a referenceIf with the matching Kaltura, if the mapping can be found in the mapping table'
-      security: 
-        - KBOAuth:
-          - any   
-      description: >
-        Update all records having a referenceId with the matching kalturaId, if the mapping can be found in the mapping table. 
-        If many records needs to be updated this can take some time. Estimated 15 minutes for 1M records.
-        It is possible to update in batches if the mapping table is also updated in batches.                
-      operationId: updateKalturaIdForRecords
-          
-      responses:
-        '200':
-          description: The number of records that was enriched with kalturaId
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RecordsCount'
-
-  /mapping:
-    get:
-      tags:
-        - '${project.name}'
-      summary: 'Get mapping for a specific referenceId'
-      security: 
-        - KBOAuth:
-          - any   
-      operationId: getMapping
-      description: 'Get entry from the mapping table for the referenceId. If the entry is not found null will be returned. It is not guarantees the entry if it exists, will have the kalturaId set yet.'
-      parameters:
-        - name: referenceId
-          in: query
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: 'Get mapping for a specific referenceId. Will return null if the referenceId is not defined in the mapping'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Mapping'
-       
-    
-    post:
-      tags:
-        - '${project.name}'    
-      summary: 'Create a new mapping or update a mapping .'
-      security: 
-        - KBOAuth:
-          - any   
-      operationId: mappingPost
-      description: 'Create a new mapping or update mapping if referenceId exists. Each record with a stream will have a referenceId (file-id) and needs to be mapped to the KalturaId'
-      requestBody:
-        content:
-          application/json:    # Media type
-            schema:            # Request body contents
-              $ref: '#/components/schemas/Mapping'  # Reference to an object            
-      responses:
-        '204':
-          description: No Content - The request has been executed correct and the server did not deliver any content.
-
+  
   /transcription:
     get:
       tags:
@@ -747,19 +683,6 @@ components:
         transcriptionLines:
           type: string
           description: 'Each line from the transcription text.Must start with seconds.mm to and from interval. Line break between each sentence. Example: 27.06 - 32.04  This is a text'
-
-    Mapping:
-      type: object
-      required:
-        - referenceId               
-      properties:
-        referenceId:
-          type: string
-          description: 'Unique identifier for the record. As for now the file-id (filename) for the stream is used. '
-        kalturaId:
-          type: string
-          description: 'The  kaltura ID given to the record in kaltura '
-
 
     DsRecordList:
       type: array
