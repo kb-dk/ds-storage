@@ -17,7 +17,6 @@ package dk.kb.storage.integration;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
-import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -160,24 +159,7 @@ public class DsStorageClientTest {
          remote.updateKalturaIdForRecord(refId,kalturaId);         
     }
     
-    @Test
-    public void testMappingPost()  {                       
-         String refId="1234";
-         String kalturaId="1234";
-         MappingDto dto = new MappingDto();
-         dto.setKalturaId(kalturaId);
-         dto.setReferenceId(refId);
-         remote.mappingPost(dto);         
-    }
-        
-    
-    @Test
-    public void testGetMapping()  {                       
-         String refId="d24be758-c6fe-4f58-ae6d-164125b78a8b"; //This is exist now                                   
-         MappingDto mapping = remote.getMapping(refId);
-         //System.out.println(mapping);
-    }
-    
+   
     @Test
     public void testGetMinimalRecords() {                       
         String origin="ds.radio";

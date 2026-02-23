@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 
 import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.MappingDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.storage.DsStorageUnitTestUtil;
 import dk.kb.util.webservice.exception.InternalServiceException;
@@ -569,50 +568,4 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         DsStorageFacade.createOrUpdateRecord(c1_2);
 
     }
-    @Test    
-    public void testCreateAndUpdateMapping() {
-    
-        String refId="referenceid_unittest_id123";
-        try {
-           MappingDto mapping = DsStorageFacade.getMapping("does_not_exist");
-           fail();          
-        }
-        catch (Exception e) {
-            //expected    
-        }
-     
-        //Create
-        try {            
-            MappingDto mapping = new MappingDto();
-            mapping.setReferenceId(refId);
-            mapping.setKalturaId("kaltura_unittest_id123");
-            DsStorageFacade.createOrUpdateMapping(mapping);                      
-         }
-         catch (Exception e) {
-             e.printStackTrace();
-           fail();    
-         }
-        
-        //update
-        try {
-            MappingDto mapping = new MappingDto();
-            mapping.setReferenceId(refId);
-            mapping.setKalturaId("kaltura_unittest_id1234"); //4 added
-            DsStorageFacade.createOrUpdateMapping(mapping);                      
-         }
-         catch (Exception e) {
-           fail();    
-         }
-        
-        //read updated value
-        
-        try {        
-            MappingDto mapping = DsStorageFacade.getMapping(refId);
-            assertEquals("kaltura_unittest_id1234",mapping.getKalturaId());
-         }
-         catch (Exception e) {
-           fail();    
-         }        
     }
-
-}

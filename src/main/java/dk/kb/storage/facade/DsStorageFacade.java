@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.DsRecordMinimalDto;
-import dk.kb.storage.model.v1.MappingDto;
+
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
@@ -80,48 +80,6 @@ public class DsStorageFacade {
         return totalDelivered;
     }
     
-
-    
-    /**
-     * <p>
-     * Get a mapping having (referenceid,kalturaid). If there is no entry for the referenceid in the mapping table null will be returned.
-     * The referenceid can exist but kalturaid can be null even if the entry is uploaded to kaltura, but the mapping table has not been updated yet.
-     * </p>
-     * 
-     * @param referenceId The referenceId for the record. 
-     * 
-     */
-    public static MappingDto getMapping(String referenceId)  {                       
-        return performStorageAction("getMapping(" + referenceId + ")", storage -> storage.getMappingByReferenceId(referenceId));
-    }    
-    
-
-    /**
-     * <p>
-     * If the mapping does not exist a new entry will be created in the mapping table.<br>
-     * The referenceid can not be null, but kalturaId can be null.<br>
-     * If the mapping already exist for the referenceid, the kalturaId value will be updated
-     * </p>
-     * 
-     * @param mappingDto The mapping entry to be created or updated
-     * 
-     */
-    public static void createOrUpdateMapping(MappingDto mappingDto)  {
-        performStorageAction("createOrUpdateMapping(" + mappingDto.getReferenceId() + ")", storage -> {                      
-            try {
-                storage.getMappingByReferenceId(mappingDto.getReferenceId()); //throws exception if not found
-                storage.updateMapping(mappingDto);
-                log.info("Updated mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
-            }
-            catch(Exception e){
-                storage.createNewMapping(mappingDto);
-                log.info("Created new mapping referenceId={}, kalturaId={}",mappingDto.getReferenceId(),mappingDto.getKalturaId());
-           }                        
-            return null; // Something must be returned
-        });
-    }
-
-
     /**
      * <p>
      * Create or update a new transcription. The primary key is fileId that comes from
@@ -222,24 +180,7 @@ public class DsStorageFacade {
         });
     }
     
-    
-    
-    
-    /**
-     * <p>
-     * Update all records that have referenceId but missing kalturaId.<br>
-     * If the mapping exist in the mapping table referenceId <-> kalturaId, then the record will be updated with the kaltura.<br>
-     * If the mapping does not exist (yet), the record will not be updated with kaltura id.<br>
-     * <br>
-     * If many records needs to be updated this can take some time. 1M records is estimated to take 15 minutes. 
-     * </p>
-     *    
-     * @return Number of records that was enriched with kalturaId 
-     */
-    public static RecordsCountDto updateKalturaIdForRecords() {
-       return performStorageAction("updateKalturaIdForRecords", DsStorage::updateKalturaIdForRecords);
-    }  
-    
+        
     public static ArrayList<OriginCountDto> getOriginStatistics() {
         return performStorageAction("getOriginStatistics", DsStorage::getOriginStatictics);
     }
