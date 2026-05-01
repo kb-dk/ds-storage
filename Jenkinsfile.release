@@ -12,5 +12,5 @@ releasePipeline(
     project: "ds-storage",
     buildToTrigger: "ds-license",
     // List only the versions this specific repo needs
-    extraParameters: ["ds-parent", "ds-shared", "ds-storage", "ds-license"]
+    extraParameters: ["ds-parent", "ds-shared"]
 )
