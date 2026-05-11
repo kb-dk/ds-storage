@@ -12,6 +12,10 @@ origins:
   - name: ds.tv
     updateStrategy: NONE
   - name: ds.radio
+    updateStrategy: NONE  
+  - name: ds.mediestream2.tv
+    updateStrategy: NONE
+  - name: ds.mediestream2.radio
     updateStrategy: NONE
   - name: doms.radio
     updateStrategy: CHILD
