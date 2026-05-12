@@ -42,6 +42,7 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
     
     
     
+
     @Test
     public void testCreateAndUpdate() {
         //TODO describe flow below
@@ -59,12 +60,16 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         String origin="doms.radio"; //Must be defined in yaml properties as allowed origin
         String data = "Hello";
         String parentId="doms.radio:id_1_parent";
-
+        String file_ref="1234";
+        String kalturaID="kalturaId1";
+        
         DsRecordDto record = new DsRecordDto();
         record.setId(id);
         record.setOrigin(origin);
         record.setData(data);
         record.setParentId(parentId);
+        record.setKalturaId(kalturaID);
+        record.setReferenceId(file_ref);
         record.setRecordType(RecordTypeDto.MANIFESTATION);
         DsStorageFacade.createOrUpdateRecord(record );
 
@@ -84,22 +89,30 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         String dataUpdate = "Hello updated";
         String parentIdUpdated="doms.radio:id_2_parent";
         long cTimeBefore = recordLoaded.getcTime(); //Must be the same
-
+        record.setKalturaId(null); //This must be set correct automatic
+        record.setReferenceId(file_ref);        
         record.setData(dataUpdate);
         record.setParentId(parentIdUpdated);            
 
         DsStorageFacade.createOrUpdateRecord(record);
 
-        //Check new updated record is correct.
+        //Check new updated record is correct and kalturaID kept
         DsRecordDto recordUpdated = DsStorageFacade.getRecord(id,false);
         assertEquals(id,recordUpdated.getId());
         assertEquals(origin,recordUpdated .getOrigin());
         assertEquals(parentIdUpdated,record.getParentId());        
         assertTrue(recordUpdated.getmTime() >recordUpdated.getcTime() ); //Modified is now newer
         assertEquals(cTimeBefore, recordUpdated.getcTime());  //Created time is not changed on update
-
-
+        assertEquals(kalturaID, recordUpdated.getKalturaId()); //KalturaId is kept
+        
+        //test kalturaID is blanked.
+        record.setReferenceId("new_ref"); //this is a new file so kaltura should be blanked
+        DsStorageFacade.createOrUpdateRecord(record);
+        recordUpdated = DsStorageFacade.getRecord(id,false);
+        assertNull(recordUpdated.getKalturaId());        
+        
     }
+
 
     
     @Test
@@ -126,12 +139,12 @@ public class DsStorageFacadeTest extends DsStorageUnitTestUtil{
         assertEquals(referenceId,newCreatedRecord.getReferenceId());
         assertEquals(kalturaId,newCreatedRecord.getKalturaId());
 
-        //New update record, but the new record does not have kalturaId, but has a difference referenceId
+        //New update record, but the new record does not have kalturaId, but has a difference referenceId. Kalturaid must be blanked
         record.setReferenceId(referenceIdUpdated);        
-        record.setKalturaId(null); //blank, but updated post will still have old value
+        record.setKalturaId(null); //blank,
         DsStorageFacade.createOrUpdateRecord(record);        
         DsRecordDto updatedRecord=DsStorageFacade.getRecordTree(id);
-        assertEquals(kalturaId,updatedRecord.getKalturaId());            
+        assertNull(updatedRecord.getKalturaId());            
     }
     
     @Test

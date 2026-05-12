@@ -138,10 +138,14 @@ public class DsStorageFacade {
                 DsRecordDto oldRecord = storage.loadRecord(record.getId());
               
                 //Keep old kalturaId if referenceid is the same.
-                 if (record.getKalturaId() == null && record.getReferenceId() != null && !record.getReferenceId().equals(oldRecord.getReferenceId())) {                   
+                if (record.getKalturaId() == null && record.getReferenceId() != null  && record.getReferenceId().equals(oldRecord.getReferenceId()) ) {                   
                     record.setKalturaId(oldRecord.getKalturaId());                      
-                 }                                
-                log.info("Updating record with id: '{}'", record.getId());
+                   log.info("Updating record with id: '{}' Keeping kalturaID: '{}'", record.getId() , oldRecord.getKalturaId());
+                }
+                else {                
+                   log.info("Updating record with id: '{}' Clearing kalturaID since referenceID has changed '{}' to  '{}'", record.getId() ,oldRecord.getReferenceId(),record.getReferenceId() );
+                    record.setKalturaId(null);
+                }                
                 storage.updateRecord(record);
             } else {               
                 log.info("Creating new record with id: '{}'", record.getId());

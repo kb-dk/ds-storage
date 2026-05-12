@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed all logic using intermediate Kaltura Mapping table. Not used any longer.
 - Table can be deleted with: DROP TABLE DS_MAPPING;
 
+### Fixed
+- Fixed keeping kalturaID in table when updating a record, if referenceID is the same for new and old record.
+
 ## [4.0.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-4.0.0) - 2026-01-29
 
 ### Added
