@@ -432,6 +432,7 @@
                     </excludes>
                 </configuration>
             </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
@@ -443,8 +444,8 @@
                         </manifest>
                     </archive>
 
-                    <!-- Generate a JAR with client classes and openapi-YAML for easy use by other services -->
-                    <attachClasses>true</attachClasses>
+                   <!-- Generation of API jar is done seperate plugin and only contains DTOs and client class -->                    
+                   <!-- <attachClasses>true</attachClasses> --> 
 
                     <!--Enable maven filtering for the web.xml-->
                     <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
@@ -469,8 +470,26 @@
                 </configuration>
             </plugin>
 
-
-
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-jar-plugin</artifactId>            
+               <executions>
+                   <execution>
+                   <id>build-specific-jar</id>
+                   <phase>package</phase>
+                   <goals>
+                       <goal>jar</goal>
+                   </goals>
+                  <configuration>                
+                      <classifier>api</classifier>
+                      <includes>                       
+                          <include>dk/kb/storage/model/**</include>
+                          <include>dk/kb/storage/util/DsStorageClient*</include>                                            
+                      </includes>
+                 </configuration>
+                 </execution>
+              </executions>
+            </plugin>
 
             <!-- Used only for mvn jetty:run jetty:run-war -->
             <plugin>

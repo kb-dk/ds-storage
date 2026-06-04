@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Removed all logic using intermediate Kaltura Mapping table. Not used any longer.
 - Table can be deleted with: DROP TABLE DS_MAPPING;
+- Create minimum client jar. Cross module dependencies uses this new jar instead of the full classes jar.
 
 ### Fixed
 - Fixed keeping kalturaID in table when updating a record, if referenceID is the same for new and old record.
