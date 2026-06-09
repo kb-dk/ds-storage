@@ -475,8 +475,30 @@ paths:
         '204':
           description: No Content - The request has been executed correct and the server did not deliver any content.
 
-
-
+  /rerun_cluster:
+    post:
+      tags:
+        - '${project.name}'
+      summary: 'Create a rerun_cluster or update an existing.'
+      security:
+        - KBOAuth:
+          - any
+      operationId: createOrUpdateRerunCluster
+      description: 'Create or update an existing rerun_cluster. If a record have a matching file_id then the update the mtime for that record.'
+      requestBody:
+        content:
+          application/json:    # Media type
+            schema:            # Request body contents
+              $ref: '#/components/schemas/RerunClusterRequest'  # Reference to an object
+      responses:
+        '201':
+          description: 'Return the created RerunClusterResponse.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RerunClusterResponse'
+        '204':
+          description: "No Content - The request has been executed correct and the server did not deliver any content."
 
   # The ping service should be in all projects, should not do any advanced processing
   # and should respond quickly with a simple message, e.g. "pong".
@@ -669,7 +691,7 @@ components:
       properties:
         fileId:
           type: string
-          description: 'Filedd that should match preservica.'
+          description: 'FileId that should match preservica.'
         fileName:
           type: string
           description: 'Filename on the filesystem. Sometimes files have extension, sometimes not.'     
@@ -683,6 +705,57 @@ components:
         transcriptionLines:
           type: string
           description: 'Each line from the transcription text.Must start with seconds.mm to and from interval. Line break between each sentence. Example: 27.06 - 32.04  This is a text'
+
+    RerunClusterRequest:
+      type: object
+      required:
+        - fileId
+        - rerun_cluster_id
+        - cluster_id_creation_date
+      properties:
+        fileId:
+          type: string
+          format: uuid
+          description: 'fileId that matches a Preservica.'
+        rerunClusterId:
+          type: string
+          format: uuid
+          description: 'All files with this id, is a rerun of the same broadcast.'
+        clusterIdCreationDate:
+          type: string
+          format: date-time
+          description: 'When was this identified as a rerun by AI team.'
+
+    RerunClusterResponse:
+      type: object
+      required:
+        - id
+        - fileId
+        - rerun_cluster_id
+        - cluster_id_creation_date
+        - created_time
+        - modified_time
+      properties:
+        fileId:
+          type: string
+          format: uuid
+          description: 'fileId that matches a Preservica.'
+        rerunClusterId:
+          type: string
+          format: uuid
+          description: 'All files with this id, is a rerun of the same broadcast.'
+        clusterIdCreationDate:
+          type: string
+          format: date-time
+          description: 'When was this identified as a rerun by AI team.'
+        createdTime:
+          type: string
+          format: date-time
+          description: 'When was this rerun saved in database'
+        modifiedTime:
+          type: string
+          format: date-time
+          description: 'When was this rerun last updated in database'
 
     DsRecordList:
       type: array

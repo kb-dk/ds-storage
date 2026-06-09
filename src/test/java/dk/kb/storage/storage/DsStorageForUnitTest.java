@@ -20,6 +20,7 @@ public class DsStorageForUnitTest extends DsStorage  {
 
     private static String clearTableRecordsStatement = "DELETE FROM DS_RECORDS";
     private static String clearTableTranscriptionsStatement = "DELETE FROM TRANSCRIPTIONS";
+    private static String clearTableRerunClustersStatement = "DELETE FROM rerun_clusters";
 
     
     public  DsStorageForUnitTest() throws SQLException {
@@ -28,8 +29,8 @@ public class DsStorageForUnitTest extends DsStorage  {
    
 
     /** 
-     * Will clear data in ds_records and ds_mapping tables. Unit test functionality only. 
-     * 
+     * Will clear data in ds_records, transcriptions and rerun_clusters tables.
+     * Unit test functionality only.
      */
     public void clearMappingAndRecordTable() throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(clearTableRecordsStatement)) {
@@ -37,6 +38,10 @@ public class DsStorageForUnitTest extends DsStorage  {
         }        
         
         try (PreparedStatement stmt = connection.prepareStatement(clearTableTranscriptionsStatement)) {
+            stmt.execute(); //No result set to close
+        }
+
+        try (PreparedStatement stmt = connection.prepareStatement(clearTableRerunClustersStatement)) {
             stmt.execute(); //No result set to close
         }
         
