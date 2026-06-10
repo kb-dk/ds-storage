@@ -45,5 +45,5 @@ CREATE TABLE IF NOT EXISTS rerun_clusters (
     modified_time TIMESTAMP WITH TIME ZONE NOT NULL -- auditing
 );
 
-CREATE INDEX IF NOT EXISTS ON rerun_clusters(file_id);
-CREATE INDEX IF NOT EXISTS ON rerun_clusters(rerun_cluster_id);
+CREATE INDEX IF NOT EXISTS rerun_clusters_file_id_idx ON rerun_clusters(file_id);
+CREATE INDEX IF NOT EXISTS rerun_clusters_rerun_cluster_id_idx ON rerun_clusters(rerun_cluster_id);
