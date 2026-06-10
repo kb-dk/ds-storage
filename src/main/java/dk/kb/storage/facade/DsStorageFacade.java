@@ -517,11 +517,11 @@ public class DsStorageFacade {
      * @return RerunClusterResponseDto
      */
     public static RerunClusterResponseDto createOrUpdateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
-        // Is there already a rerunCluster?
+        // Try to create a rerun cluster
         try {
             createRerunCluster(rerunClusterRequestDto);
         } catch (InternalServiceException exception) {
-            // If the root exception is SQLException, then create the restricted id
+            // If the root exception is SQLException, then update the rerun cluster instead
             if (exception.getCause().getCause() instanceof SQLException) {
                 updateRerunCluster(rerunClusterRequestDto);
             } else {
