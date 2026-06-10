@@ -5,6 +5,8 @@ All notable changes to ds-storage will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-5.0.0) - 2026-06-10
+
 ### Changed
 - Removed all logic using intermediate Kaltura Mapping table. Not used any longer.
 - Table can be deleted with: DROP TABLE DS_MAPPING;
