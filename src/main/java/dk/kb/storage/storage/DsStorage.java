@@ -1,6 +1,7 @@
 package dk.kb.storage.storage;
 
 import dk.kb.storage.config.ServiceConfig;
+import dk.kb.storage.mapper.RerunClusterResponseDtoMapper;
 import dk.kb.storage.model.v1.*;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 import dk.kb.util.Pair;
@@ -14,11 +15,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
-
+import java.time.OffsetDateTime;
+import java.util.*;
 
 /*
  * This class will be called by the facade class. The facade class is also responsible for commit or rollback
@@ -27,6 +25,8 @@ import java.util.Objects;
 public class DsStorage implements AutoCloseable {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorage.class);
+
+    private final static RerunClusterResponseDtoMapper rerunClusterResponseDtoMapper = new RerunClusterResponseDtoMapper();
 
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ",Locale.getDefault());
 
@@ -49,13 +49,6 @@ public class DsStorage implements AutoCloseable {
     private static final String FILE_NAME_COLUMN = "filename";
     private static final String TRANSCRIPTION_TEXT_COLUMN = "transcription";
     private static final String TRANSCRIPTION_LINES_COLUMN = "transcription_lines";
-
-    private static final String RERUN_CLUSTERS_TABLE = "rerun_clusters";
-    private static final String RERUN_CLUSTERS_FILE_ID = "file_id";
-    private static final String RERUN_CLUSTERS_RERUN_CLUSTER_ID = "rerun_cluster_id";
-    private static final String RERUN_CLUSTERS_CLUSTER_ID_CREATION_DATE = "cluster_id_creation_date";
-    private static final String RERUN_CLUSTERS_CREATED_TIME = "created_time";
-    private static final String RERUN_CLUSTERS_MODIFIED_TIME = "modified_time";
 
     private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
             " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " +ORGID_COLUMN + ","+ RECORDTYPE_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  " , " + RECORDS_REFERENCE_ID_COLUMN +" , "+RECORDS_KALTURA_ID_COLUMN+")"+
@@ -228,15 +221,47 @@ public class DsStorage implements AutoCloseable {
     private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";
     private static String countRecordsInOriginStatement = "SELECT COUNT(*) FROM " + RECORDS_TABLE +  " WHERE " + ORIGIN_COLUMN + " = ? AND " + MTIME_COLUMN + " > ?";
 
-    private static String createRerunClusterStatement =
-            "INSERT INTO " + RERUN_CLUSTERS_TABLE +
-            " (" +
-              RERUN_CLUSTERS_FILE_ID + ", " +
-              RERUN_CLUSTERS_RERUN_CLUSTER_ID + ", " +
-              RERUN_CLUSTERS_CLUSTER_ID_CREATION_DATE + ", " +
-              RERUN_CLUSTERS_CREATED_TIME + ", " +
-              RERUN_CLUSTERS_MODIFIED_TIME + ") " +
-            " VALUES (?, ?, ?, now(), now())";
+    private static String getRerunClusterByFileIdStatement = """
+        SELECT
+            id,
+            file_id,
+            rerun_cluster_id,
+            cluster_id_creation_date,
+            created_time,
+            modified_time
+        FROM
+            rerun_clusters
+        WHERE
+            file_id = ?
+        """;
+
+    private static String createRerunClusterStatement = """
+        INSERT INTO rerun_clusters(
+            file_id,
+            rerun_cluster_id,
+            cluster_id_creation_date,
+            created_time,
+            modified_time
+        )
+        VALUES(
+            ?,
+            ?,
+            ?,
+            ?,
+            ?
+        )
+        """;
+
+    private static String updateRerunClusterStatement = """
+        UPDATE
+            rerun_clusters
+        SET
+            rerun_cluster_id = ?,
+            cluster_id_creation_date = ?,
+            modified_time = ?
+        WHERE
+            file_id = ?
+        """;
 
     private static BasicDataSource dataSource;
 
@@ -1025,18 +1050,65 @@ public class DsStorage implements AutoCloseable {
     }
 
     /**
+     * Get a rerun cluster by fileId
      *
-     * @param rerunClusterDto
+     * @param fileId
+     * @return
      * @throws Exception
      */
-    public void createRerunCluster(RerunClusterDto rerunClusterDto) throws Exception {
+    public RerunClusterResponseDto getRerunClusterByFileId(UUID fileId) throws Exception {
+        try (PreparedStatement stmt = connection.prepareStatement(getRerunClusterByFileIdStatement)) {
+            stmt.setObject(1, fileId);
+            ResultSet resultSet = stmt.executeQuery();
+
+            while (resultSet.next()) {
+                return rerunClusterResponseDtoMapper.map(resultSet);
+            }
+
+            return null;
+        } catch (SQLException e) {
+            String message = "SQL Exception in getRerunClusterByFileId with fileId:'" + fileId + "' error: " + e.getMessage();
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+    }
+
+    /**
+     * Create a rerun cluster
+     *
+     * @param rerunClusterRequestDto
+     * @throws Exception
+     */
+    public void createRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) throws Exception {
         try (PreparedStatement stmt = connection.prepareStatement(createRerunClusterStatement)) {
-            stmt.setString(1, rerunClusterDto.getFileId());
-            stmt.setString(2, rerunClusterDto.getRerunClusterId());
-            stmt.setLong(3, rerunClusterDto.getClusterIdCreationDate);
+            stmt.setObject(1, rerunClusterRequestDto.getFileId());
+            stmt.setObject(2, rerunClusterRequestDto.getRerunClusterId());
+            stmt.setObject(3, rerunClusterRequestDto.getClusterIdCreationDate());
+            stmt.setObject(4, OffsetDateTime.now());
+            stmt.setObject(5, OffsetDateTime.now());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            String message = "SQL Exception in createRerunCluster with file_id:" + transcription.getFileId() + " error:" + e.getMessage();
+            String message = "SQL Exception in createRerunCluster with fileId:'" + rerunClusterRequestDto.getFileId() + "' error: " + e.getMessage();
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+    }
+
+    /**
+     * Update a rerun cluster
+     *
+     * @param rerunClusterRequestDto
+     * @throws Exception
+     */
+    public void updateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) throws Exception {
+        try (PreparedStatement stmt = connection.prepareStatement(updateRerunClusterStatement)) {
+            stmt.setObject(1, rerunClusterRequestDto.getRerunClusterId());
+            stmt.setObject(2, rerunClusterRequestDto.getClusterIdCreationDate());
+            stmt.setObject(3, OffsetDateTime.now());
+            stmt.setObject(4, rerunClusterRequestDto.getFileId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            String message = "SQL Exception in updateRerunCluster with fileId:'" + rerunClusterRequestDto.getFileId() + "' error: " + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }

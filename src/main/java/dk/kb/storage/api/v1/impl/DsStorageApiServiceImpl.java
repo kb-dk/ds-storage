@@ -3,14 +3,10 @@ package dk.kb.storage.api.v1.impl;
 import dk.kb.storage.api.v1.DsStorageApi;
 import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.facade.DsStorageFacade;
-import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.OriginCountDto;
-import dk.kb.storage.model.v1.OriginDto;
-import dk.kb.storage.model.v1.RecordTypeDto;
-import dk.kb.storage.model.v1.RecordsCountDto;
-import dk.kb.storage.model.v1.TranscriptionDto;
+import dk.kb.storage.model.v1.*;
 import dk.kb.util.Pair;
 import dk.kb.util.webservice.ImplBase;
+import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
 import dk.kb.util.webservice.stream.ExportWriter;
 import dk.kb.util.webservice.stream.ExportWriterFactory;
 import dk.kb.util.webservice.stream.ContinuationUtil;
@@ -364,6 +360,25 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
         // TODO Auto-generated method stub
         return DsStorageFacade.getTranscription(fileId);
     }
-    
 
+    /**
+     * Create or update rerun cluster
+     *
+     * @param rerunClusterRequestDto
+     * @return RerunClusterResponseDto
+     */
+    @Override
+    public RerunClusterResponseDto createOrUpdateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
+        // Maybe these are not needed!Sanity check
+        if (rerunClusterRequestDto.getFileId() == null) {
+            throw new InvalidArgumentServiceException("'fileId' can not be null");
+        }
+        if (rerunClusterRequestDto.getRerunClusterId() == null) {
+            throw new InvalidArgumentServiceException("'rerunClusterId' can not be null");
+        }
+        if (rerunClusterRequestDto.getClusterIdCreationDate() == null) {
+            throw new InvalidArgumentServiceException("'clusterIdCreationDate' can not be null");
+        }
+        return DsStorageFacade.createOrUpdateRerunCluster(rerunClusterRequestDto);
+    }
 }

@@ -1,20 +1,15 @@
 package dk.kb.storage.storage;
 
-import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.DsRecordMinimalDto;
-import dk.kb.storage.model.v1.OriginCountDto;
-import dk.kb.storage.model.v1.RecordTypeDto;
-import dk.kb.storage.model.v1.TranscriptionDto;
+import dk.kb.storage.model.v1.*;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.sql.SQLException;
+import java.time.OffsetDateTime;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -496,49 +491,94 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     }
 
     @Test
-    public void insertRerurntestBasicCRUDForTranscription() throws Exception {
-        try {
-          //Create
-          String fileId="a3332323-3323233-333333";
-          String fileName="a3332323-3323233-333333.mp3";
-          String transcription="This is linie1. This is linie2";
-          String transcriptionLines="00:00 - 10:00This is linie1.\n10:00 - 20:00  This is linie2";
+    public void createRerunCluster_whenCreatingRerunCluster_thenReturnRerunCluster() throws Exception {
+        // Arrange
+        UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
+        UUID rerunClusterId = UUID.fromString("9c79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
+        OffsetDateTime clusterIdCreationDate = OffsetDateTime.parse("2026-04-30T12:26:57.570+02:00");
 
-          TranscriptionDto trans = new TranscriptionDto();
-          trans.setFileId(fileId);
-          trans.setFileName(fileName);
-          trans.setTranscription(transcription);
-          trans.setTranscriptionLines(transcriptionLines);
-          storage.createNewTranscription(trans);
+        RerunClusterRequestDto rerunClusterRequestDto = new RerunClusterRequestDto();
+        rerunClusterRequestDto.setFileId(fileId);
+        rerunClusterRequestDto.setRerunClusterId(rerunClusterId);
+        rerunClusterRequestDto.setClusterIdCreationDate(clusterIdCreationDate);
 
-          //Count
-          int count=storage.countTranscriptionByFileId(fileId);
-          assertEquals(1,count);
+        // Act
+        storage.createRerunCluster(rerunClusterRequestDto);
+        RerunClusterResponseDto rerunClusterResponseDto = storage.getRerunClusterByFileId(fileId);
 
-          //load
-          TranscriptionDto transLoaded = storage.getTranscriptionByFileId(fileId);
-          assertEquals(fileId,transLoaded.getFileId());
-          assertEquals(fileName,transLoaded.getFileName());
-          assertTrue(transLoaded.getmTime() >0);
-          assertEquals(transcription,transLoaded.getTranscription());
-          assertEquals(transcriptionLines,transLoaded.getTranscriptionLines());
-
-          //delete. Should not fail
-          storage.deleteTranscriptionByFileId(fileId);
-
-          count=storage.countTranscriptionByFileId(fileId);
-          assertEquals(0,count);
-
-          //Test record is deleted and not loaded
-          TranscriptionDto trans2 = storage. getTranscriptionByFileId(fileId);
-          assertNull(trans2.getTranscription());
-
-        }
-        catch(Exception e) {
-          e.printStackTrace();
-          fail();
-
-        }
+        // Assert
+        assertNotNull(rerunClusterResponseDto);
+        assertNotNull(rerunClusterResponseDto.getId());
+        assertEquals(fileId, rerunClusterResponseDto.getFileId());
+        assertEquals(rerunClusterId, rerunClusterResponseDto.getRerunClusterId());
+        assertEquals(clusterIdCreationDate, rerunClusterResponseDto.getClusterIdCreationDate());
+        assertTrue(OffsetDateTime.now().isAfter(rerunClusterResponseDto.getCreatedTime()));
+        assertTrue(OffsetDateTime.now().isAfter(rerunClusterResponseDto.getModifiedTime()));
     }
 
+    @Test
+    public void createRerunCluster_whenFileIdAlreadyExists_thenThrowNewSQLException() throws Exception {
+        // Arrange
+        UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
+        UUID rerunClusterId = UUID.fromString("9c79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
+        OffsetDateTime clusterIdCreationDate = OffsetDateTime.parse("2026-04-30T12:26:57.570+02:00");
+
+        RerunClusterRequestDto rerunClusterRequestDto = new RerunClusterRequestDto();
+        rerunClusterRequestDto.setFileId(fileId);
+        rerunClusterRequestDto.setRerunClusterId(rerunClusterId);
+        rerunClusterRequestDto.setClusterIdCreationDate(clusterIdCreationDate);
+
+        String expectedMessage = "SQL Exception in createRerunCluster with fileId:'" + fileId + "' error: Unique index or primary key violation: ";
+
+        storage.createRerunCluster(rerunClusterRequestDto);
+
+        // Act
+        Exception exception = assertThrows(SQLException.class, () -> storage.createRerunCluster(rerunClusterRequestDto));
+
+        // Assert
+        assertTrue(exception.getMessage().startsWith(expectedMessage));
+    }
+
+    @Test
+    public void updateRerunCluster_whenNewRerunClusterInformation_thenReturnUpdatedRerunCluster() throws Exception {
+        // Arrange
+        UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
+        UUID rerunClusterId = UUID.fromString("9c79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
+        OffsetDateTime clusterIdCreationDate = OffsetDateTime.parse("2026-04-30T12:26:57.570+02:00");
+
+        UUID updateRerunClusterId = UUID.fromString("1a79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
+        OffsetDateTime updateClusterIdCreationDate = OffsetDateTime.parse("2026-05-30T00:00:00.001+02:00");
+
+        RerunClusterRequestDto rerunRerunClusterRequestDto = new RerunClusterRequestDto();
+        rerunRerunClusterRequestDto.setFileId(fileId);
+        rerunRerunClusterRequestDto.setRerunClusterId(rerunClusterId);
+        rerunRerunClusterRequestDto.setClusterIdCreationDate(clusterIdCreationDate);
+
+        RerunClusterRequestDto updateRerunClusterRequestDto = new RerunClusterRequestDto();
+        updateRerunClusterRequestDto.setFileId(fileId);
+        updateRerunClusterRequestDto.setRerunClusterId(updateRerunClusterId);
+        updateRerunClusterRequestDto.setClusterIdCreationDate(updateClusterIdCreationDate);
+
+        storage.createRerunCluster(rerunRerunClusterRequestDto);
+        RerunClusterResponseDto createdRerunClusterResponseDto = storage.getRerunClusterByFileId(fileId);
+
+        // Act
+        storage.updateRerunCluster(updateRerunClusterRequestDto);
+        RerunClusterResponseDto updatedRerunClusterResponseDto = storage.getRerunClusterByFileId(fileId);
+
+        // Assert
+        assertNotNull(updatedRerunClusterResponseDto);
+        assertEquals(createdRerunClusterResponseDto.getId(), updatedRerunClusterResponseDto.getId());
+
+        assertEquals(createdRerunClusterResponseDto.getFileId(), updatedRerunClusterResponseDto.getFileId());
+
+        assertNotEquals(createdRerunClusterResponseDto.getRerunClusterId(), updatedRerunClusterResponseDto.getRerunClusterId());
+        assertEquals(updateRerunClusterId, updatedRerunClusterResponseDto.getRerunClusterId());
+
+        assertNotEquals(createdRerunClusterResponseDto.getClusterIdCreationDate(), updatedRerunClusterResponseDto.getClusterIdCreationDate());
+        assertEquals(updateClusterIdCreationDate, updatedRerunClusterResponseDto.getClusterIdCreationDate());
+
+        assertEquals(createdRerunClusterResponseDto.getCreatedTime(), updatedRerunClusterResponseDto.getCreatedTime());
+        assertTrue(createdRerunClusterResponseDto.getModifiedTime().isBefore(updatedRerunClusterResponseDto.getModifiedTime()));
+    }
 }

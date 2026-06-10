@@ -736,6 +736,9 @@ components:
         - created_time
         - modified_time
       properties:
+        id:
+          type: integer
+          description: 'Primary key'
         fileId:
           type: string
           format: uuid

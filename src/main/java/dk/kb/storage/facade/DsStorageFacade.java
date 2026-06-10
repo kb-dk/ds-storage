@@ -1,12 +1,10 @@
 package dk.kb.storage.facade;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
+import dk.kb.storage.model.v1.*;
 import dk.kb.util.Pair;
 import dk.kb.util.webservice.stream.ExportWriter;
 
@@ -14,21 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import dk.kb.storage.config.ServiceConfig;
-import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.DsRecordMinimalDto;
 
-import dk.kb.storage.model.v1.OriginCountDto;
-import dk.kb.storage.model.v1.OriginDto;
-import dk.kb.storage.model.v1.RecordTypeDto;
-import dk.kb.storage.model.v1.RecordsCountDto;
-import dk.kb.storage.model.v1.TranscriptionDto;
-import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.util.IdNormaliser;
 import dk.kb.util.webservice.exception.InternalServiceException;
 import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
 import dk.kb.util.webservice.exception.NotFoundServiceException;
 
+import javax.ws.rs.NotFoundException;
 
 
 public class DsStorageFacade {
@@ -499,6 +490,82 @@ public class DsStorageFacade {
                 storage -> storage.getMaxMtimeAfter(origin, recordType, mTime, maxRecords));
     }
 
+    /**
+     * Return rerunCluster from fileId
+     *
+     * @param fileId UUID of fileId.
+     * @return RerunClusterResponseDto
+     */
+    public static RerunClusterResponseDto getRerunClusterByFileId(UUID fileId) {
+        return performStorageAction("getRerunClusterByFileId(" + fileId + ")", storage -> {
+            RerunClusterResponseDto rerunClusterResponseDto = storage.getRerunClusterByFileId(fileId);
+
+            if (rerunClusterResponseDto == null) {
+                final String errorMessage = "rerunCluster fileId='" + fileId + "' not found";
+                log.error(errorMessage);
+                throw new NotFoundException(errorMessage);
+            }
+
+            return rerunClusterResponseDto;
+        });
+    }
+
+    /**
+     * Create or update a rerun cluster.
+     *
+     * @param rerunClusterRequestDto The entry to be created or updated
+     * @return RerunClusterResponseDto
+     */
+    public static RerunClusterResponseDto createOrUpdateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
+        // Is there already a rerunCluster?
+        try {
+            createRerunCluster(rerunClusterRequestDto);
+        } catch (InternalServiceException exception) {
+            // If the root exception is SQLException, then create the restricted id
+            if (exception.getCause().getCause() instanceof SQLException) {
+                updateRerunCluster(rerunClusterRequestDto);
+            } else {
+                throw exception;
+            }
+        }
+        RerunClusterResponseDto rerunClusterResponseDto = getRerunClusterByFileId(rerunClusterRequestDto.getFileId());
+        return rerunClusterResponseDto;
+    }
+
+    /**
+     * Create a rerun cluster.
+     *
+     * @param rerunClusterRequestDto The entry to be created
+     * @return RerunClusterResponseDto
+     */
+    public static void createRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
+        performStorageAction("createRerunCluster(" + rerunClusterRequestDto.getFileId() + ")", storage -> {
+            storage.createRerunCluster(rerunClusterRequestDto);
+            // Update modified time on record(s) matching with fileId in ds_records table so the information about rerun cluster gets
+            // picked up in the next indexing job.
+            int touched = storage.updateMTimeForRecordByFileId(rerunClusterRequestDto.getFileId().toString());
+            log.info("Created rerun cluster with fileId='{}'. Number of records touched in ds_records='{}'", rerunClusterRequestDto.getFileId(), touched);
+            return null;
+        });
+    }
+
+    /**
+     * Update a rerun cluster.
+     *
+     * @param rerunClusterRequestDto The entry to be updated
+     * @return RerunClusterResponseDto
+     */
+    public static void updateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
+        performStorageAction("updateRerunCluster(" + rerunClusterRequestDto.getFileId() + ")", storage -> {
+            storage.updateRerunCluster(rerunClusterRequestDto);
+            RerunClusterResponseDto rerunClusterResponseDto = storage.getRerunClusterByFileId(rerunClusterRequestDto.getFileId());
+            // Update modified time on record(s) matching with fileId in ds_records table so the information about rerun cluster gets
+            // picked up in the next indexing job.
+            int touched = storage.updateMTimeForRecordByFileId(rerunClusterRequestDto.getFileId().toString());
+            log.info("Updated rerun cluster with fileId='{}'. Number of records touched in ds_records='{}'", rerunClusterRequestDto.getFileId(), touched);
+            return null;
+        });
+    }
 
     /*
      * This is called whenever a record is modified (create/update/markfordelete). The recordId here
