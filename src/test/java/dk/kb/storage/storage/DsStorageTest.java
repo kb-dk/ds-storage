@@ -540,7 +540,7 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
     }
 
     @Test
-    public void updateRerunCluster_whenNewRerunClusterInformation_thenReturnUpdatedRerunCluster() throws Exception {
+    public void updateRerunCluster_whenUpdatingRerunClusterInformation_thenReturnUpdatedRerunCluster() throws Exception {
         // Arrange
         UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
         UUID rerunClusterId = UUID.fromString("9c79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
@@ -580,5 +580,17 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
         assertEquals(createdRerunClusterResponseDto.getCreatedTime(), updatedRerunClusterResponseDto.getCreatedTime());
         assertTrue(createdRerunClusterResponseDto.getModifiedTime().isBefore(updatedRerunClusterResponseDto.getModifiedTime()));
+    }
+
+    @Test
+    public void getRerunClusterByFileId_whenFileIdDoNotExists_thenReturnNull() throws Exception {
+        // Arrange
+        UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
+
+        // Act
+        RerunClusterResponseDto rerunClusterResponseDto = storage.getRerunClusterByFileId(fileId);
+
+        // Assert
+        assertNull(rerunClusterResponseDto);
     }
 }

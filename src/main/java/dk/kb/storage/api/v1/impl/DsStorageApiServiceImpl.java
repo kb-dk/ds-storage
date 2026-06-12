@@ -26,6 +26,7 @@ import javax.ws.rs.ext.Providers;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * ds-storage
@@ -106,7 +107,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             
         }       
     }
-    
+
     private StreamingOutput getRecordsModifiedAfterNoLocalTree(String origin, Long mTime, Long maxRecords) {
         try {
             log.debug("getRecordsModifiedAfter(origin='{}', mTime={}, maxRecords={}) with batchSize={} " +
@@ -369,7 +370,7 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
      */
     @Override
     public RerunClusterResponseDto createOrUpdateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
-        // Maybe these are not needed!Sanity check
+        // Maybe these are not needed! Sanity check
         if (rerunClusterRequestDto.getFileId() == null) {
             throw new InvalidArgumentServiceException("'fileId' can not be null");
         }
@@ -380,5 +381,16 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
             throw new InvalidArgumentServiceException("'clusterIdCreationDate' can not be null");
         }
         return DsStorageFacade.createOrUpdateRerunCluster(rerunClusterRequestDto);
+    }
+
+    /**
+     * Get a Rerun Cluster from fileId.
+     *
+     * @param fileId uuid
+     * @return RerunClusterResponseDto
+     */
+    @Override
+    public RerunClusterResponseDto getRerunClusterByFileId(UUID fileId) {
+        return DsStorageFacade.getRerunClusterByFileId(fileId);
     }
 }

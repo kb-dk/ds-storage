@@ -479,12 +479,12 @@ paths:
     post:
       tags:
         - '${project.name}'
-      summary: 'Create a rerun_cluster or update an existing.'
+      summary: 'Create a Rerun Cluster or update an existing Rerun Cluster from fileId.'
       security:
         - KBOAuth:
           - any
       operationId: createOrUpdateRerunCluster
-      description: 'Create or update an existing rerun_cluster. If a record have a matching file_id then the update the mtime for that record.'
+      description: 'Create or update an existing Rerun Cluster. If a record have a matching file_id then the update the mtime for that record.'
       requestBody:
         content:
           application/json:    # Media type
@@ -499,6 +499,32 @@ paths:
                 $ref: '#/components/schemas/RerunClusterResponse'
         '204':
           description: "No Content - The request has been executed correct and the server did not deliver any content."
+
+  /rerun_cluster/{fileId}:
+    get:
+      tags:
+        - '${project.name}'
+      summary: 'Get a Rerun Cluster from fileId.'
+      security:
+        - KBOAuth:
+            - any
+      operationId: getRerunClusterByFileId
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 'Return the RerunClusterResponse.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RerunClusterResponse'
+        '404':
+          description: "Rerun Cluster fileId not found."
 
   # The ping service should be in all projects, should not do any advanced processing
   # and should respond quickly with a simple message, e.g. "pong".
