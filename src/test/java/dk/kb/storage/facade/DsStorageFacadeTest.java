@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import dk.kb.storage.model.v1.DsRecordDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
-import dk.kb.storage.storage.DsStorageUnitTestUtil;
+import dk.kb.storage.storage.UnitTestUtil;
 import dk.kb.util.webservice.exception.InternalServiceException;
 
 import javax.ws.rs.NotFoundException;
@@ -26,7 +26,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DsStorageFacadeTest extends DsStorageUnitTestUtil {
+public class DsStorageFacadeTest extends UnitTestUtil {
     protected static DsStorageForUnitTest storage = null;
 
     @BeforeAll

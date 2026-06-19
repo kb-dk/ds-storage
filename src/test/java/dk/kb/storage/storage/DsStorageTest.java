@@ -14,7 +14,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class DsStorageTest extends DsStorageUnitTestUtil{
+public class DsStorageTest extends UnitTestUtil {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorageTest.class);
 
