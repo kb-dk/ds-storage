@@ -43,7 +43,7 @@ public class DsStorageFacadeTest extends UnitTestUtil {
      */
     @BeforeEach
     public void beforeEach() throws Exception {
-        storage.clearMappingAndRecordTable();
+        storage.clearTableRecords();
         storage.commit();
     }
 

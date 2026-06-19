@@ -32,7 +32,7 @@ public class DsStorageForUnitTest extends DsStorage  {
      * Will clear data in ds_records, transcriptions and rerun_clusters tables.
      * Unit test functionality only.
      */
-    public void clearMappingAndRecordTable() throws SQLException {
+    public void clearTableRecords() throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(clearTableRecordsStatement)) {
             stmt.execute(); //No result set to close
         }        
