@@ -12,7 +12,6 @@ info:
 servers:
   #  /api must match servlet-mapping in web.xml
   - url: '${config:openapi.serverurl}'
-    description: 'Version 1'
 
 paths:
   

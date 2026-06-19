@@ -41,7 +41,7 @@ import javax.validation.Valid;
  */
 {{/appName}}
 @Path("{{^useAnnotatedBasePath}}/{{/useAnnotatedBasePath}}{{#useAnnotatedBasePath}}{{contextPath}}{{/useAnnotatedBasePath}}")
-@Api(value = "/", description = "{{description}}")
+@Api(value = "/")
 {{#addConsumesProducesJson}}
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
