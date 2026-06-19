@@ -7,11 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * <p>
  * This class is a small extension of the RerunClusterStorage with a few methods used for unittest
  * that we do not want in the production code.
- *
- * <p>
  * Between each unittest the all tables are cleared for data and the method is only defined in this subclass
  */
 public class RerunClusterStorageForUnitTest extends RerunClusterStorage {
@@ -36,5 +33,4 @@ public class RerunClusterStorageForUnitTest extends RerunClusterStorage {
         connection.commit();
         log.info("Tables cleared for unittest");
     }
-
 }

@@ -11,18 +11,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Objects;
 
 /*
  * This class will be called by the facade class. The facade class is also responsible for commit or rollback
-*/
+ */
 
 public class DsStorage extends BaseModuleStorage {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorage.class);
 
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ",Locale.getDefault());
-
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ", Locale.getDefault());
 
     private static final String TRANSCRIPTIONS_TABLE = "transcriptions";
     private static final String RECORDS_TABLE = "ds_records";
@@ -44,91 +46,89 @@ public class DsStorage extends BaseModuleStorage {
     private static final String TRANSCRIPTION_LINES_COLUMN = "transcription_lines";
 
     private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
-            " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " +ORGID_COLUMN + ","+ RECORDTYPE_COLUMN +"," + IDERROR_COLUMN +","+ DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN +  " , " + RECORDS_REFERENCE_ID_COLUMN +" , "+RECORDS_KALTURA_ID_COLUMN+")"+
+            " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " + ORGID_COLUMN + "," + RECORDTYPE_COLUMN + "," + IDERROR_COLUMN + "," + DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN + " , " + RECORDS_REFERENCE_ID_COLUMN + " , " + RECORDS_KALTURA_ID_COLUMN + ")" +
             " VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 
-    private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  "+
-            RECORDTYPE_COLUMN + " = ?  ,"+
-            DATA_COLUMN + " = ? , "+
-            MTIME_COLUMN + " = ? , "+
-            DELETED_COLUMN + " = 0 , "+
-            RECORDS_REFERENCE_ID_COLUMN + " = ? , "+
-            RECORDS_KALTURA_ID_COLUMN + " = ? , "+
-            PARENT_ID_COLUMN + " = ?  "+
-            "WHERE "+
+    private static String updateRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  " +
+            RECORDTYPE_COLUMN + " = ?  ," +
+            DATA_COLUMN + " = ? , " +
+            MTIME_COLUMN + " = ? , " +
+            DELETED_COLUMN + " = 0 , " +
+            RECORDS_REFERENCE_ID_COLUMN + " = ? , " +
+            RECORDS_KALTURA_ID_COLUMN + " = ? , " +
+            PARENT_ID_COLUMN + " = ?  " +
+            "WHERE " +
             ID_COLUMN + "= ?";
 
 
-    private static String updateKalturaIdStatement = "UPDATE " + RECORDS_TABLE + " SET  "+
-            RECORDS_KALTURA_ID_COLUMN + " = ? ,"+
-            MTIME_COLUMN + " = ?  "+
-            "WHERE "+
-            ID_COLUMN+ "= ?";
-
-
-    private static String getRecordsByReferenceId = "SELECT "+ID_COLUMN+ " FROM " +RECORDS_TABLE  + " WHERE "+ RECORDS_REFERENCE_ID_COLUMN+" = ?";
-
-    private static String updateReferenceIdStatement = "UPDATE " + RECORDS_TABLE + " SET  "+
-            RECORDS_REFERENCE_ID_COLUMN + " = ? ,"+
-            MTIME_COLUMN + " = ?  "+
-            "WHERE "+
+    private static String updateKalturaIdStatement = "UPDATE " + RECORDS_TABLE + " SET  " +
+            RECORDS_KALTURA_ID_COLUMN + " = ? ," +
+            MTIME_COLUMN + " = ?  " +
+            "WHERE " +
             ID_COLUMN + "= ?";
 
 
-    private static String markRecordForDeleteStatement = "UPDATE " + RECORDS_TABLE + " SET  "+
-            DELETED_COLUMN + " = 1,  "+
-            MTIME_COLUMN + " = ? "+
-            "WHERE "+
+    private static String getRecordsByReferenceId = "SELECT " + ID_COLUMN + " FROM " + RECORDS_TABLE + " WHERE " + RECORDS_REFERENCE_ID_COLUMN + " = ?";
+
+    private static String updateReferenceIdStatement = "UPDATE " + RECORDS_TABLE + " SET  " +
+            RECORDS_REFERENCE_ID_COLUMN + " = ? ," +
+            MTIME_COLUMN + " = ?  " +
+            "WHERE " +
             ID_COLUMN + "= ?";
 
-    private static String deleteRecordsForOriginStateMent= "DELETE FROM " + RECORDS_TABLE + " WHERE  "+
-            ORIGIN_COLUMN + " = ? AND "+
-            MTIME_COLUMN +" >=  ? AND "+
-            MTIME_COLUMN +" <=  ?";
+
+    private static String markRecordForDeleteStatement = "UPDATE " + RECORDS_TABLE + " SET  " +
+            DELETED_COLUMN + " = 1,  " +
+            MTIME_COLUMN + " = ? " +
+            "WHERE " +
+            ID_COLUMN + "= ?";
+
+    private static String deleteRecordsForOriginStateMent = "DELETE FROM " + RECORDS_TABLE + " WHERE  " +
+            ORIGIN_COLUMN + " = ? AND " +
+            MTIME_COLUMN + " >=  ? AND " +
+            MTIME_COLUMN + " <=  ?";
 
     private static String updateMTimeForRecordStatement = "UPDATE " + RECORDS_TABLE + " SET  " +
-            MTIME_COLUMN + " = ? "+
-            "WHERE "+
+            MTIME_COLUMN + " = ? " +
+            "WHERE " +
             ID_COLUMN + "= ?";
 
-    private static String childrenIdsStatement = "SELECT " + ID_COLUMN +" FROM " + RECORDS_TABLE +
+    private static String childrenIdsStatement = "SELECT " + ID_COLUMN + " FROM " + RECORDS_TABLE +
             " WHERE "
             + PARENT_ID_COLUMN + "= ?";
 
     private static String recordByIdStatement = "SELECT * FROM " + RECORDS_TABLE + " WHERE ID= ?";
 
+    private static String transcriptionByFileIdStatement = "SELECT * FROM " + TRANSCRIPTIONS_TABLE + " WHERE " + FILE_ID_COLUMN + " = ?";
 
-    private static String transcriptionByFileIdStatement = "SELECT * FROM " + TRANSCRIPTIONS_TABLE+ " WHERE "+FILE_ID_COLUMN +" = ?";
-
-    private static String transcriptionByFileIdCountStatement = "SELECT count(*) as count FROM " + TRANSCRIPTIONS_TABLE+ " WHERE "+FILE_ID_COLUMN +" = ?";
+    private static String transcriptionByFileIdCountStatement = "SELECT count(*) as count FROM " + TRANSCRIPTIONS_TABLE + " WHERE " + FILE_ID_COLUMN + " = ?";
 
     // SELECT mtime FROM ds_records WHERE origin= 'test_base' ORDER BY mtime DESC
     private static final String maxMtimeStatement =
             "SELECT " + MTIME_COLUMN + " FROM " + RECORDS_TABLE +
-            " WHERE " + ORIGIN_COLUMN + "= ?" +
-            " ORDER BY " + MTIME_COLUMN + " DESC";
+                    " WHERE " + ORIGIN_COLUMN + "= ?" +
+                    " ORDER BY " + MTIME_COLUMN + " DESC";
 
     // SELECT mtime FROM ds_records WHERE origin= 'test_base' AND recordtype='record type' ORDER BY mtime DESC
     private static final String maxMtimeTypeStatement =
             "SELECT " + MTIME_COLUMN + " FROM " + RECORDS_TABLE +
-            " WHERE " + ORIGIN_COLUMN + "= ?" +
-            " AND " + RECORDTYPE_COLUMN + "= ?" +
-            " ORDER BY " + MTIME_COLUMN + " DESC";
+                    " WHERE " + ORIGIN_COLUMN + "= ?" +
+                    " AND " + RECORDTYPE_COLUMN + "= ?" +
+                    " ORDER BY " + MTIME_COLUMN + " DESC";
 
 
     //SELECT id,mTime,referenceId,kalturaId FROM ds_records WHERE origin= 'ds.tv' and mTime > 0 ORDER BY mtime ASC LIMIT 50
     private static final String referenceIdsStatement =
             "SELECT " + MTIME_COLUMN + ", "
-                      + ID_COLUMN +","
-                      + MTIME_COLUMN+ " ,"
-                      + RECORDS_REFERENCE_ID_COLUMN +" ,"
-                      + RECORDS_KALTURA_ID_COLUMN
+                    + ID_COLUMN + ","
+                    + MTIME_COLUMN + " ,"
+                    + RECORDS_REFERENCE_ID_COLUMN + " ,"
+                    + RECORDS_KALTURA_ID_COLUMN
                     + " FROM " + RECORDS_TABLE +
-            " WHERE " + ORIGIN_COLUMN + "= ?" +
-            " AND " + MTIME_COLUMN +" > ?" +
-            " ORDER BY " + MTIME_COLUMN + " ASC" +
-            " LIMIT ?";
-
+                    " WHERE " + ORIGIN_COLUMN + "= ?" +
+                    " AND " + MTIME_COLUMN + " > ?" +
+                    " ORDER BY " + MTIME_COLUMN + " ASC" +
+                    " LIMIT ?";
 
     // TODO: Optimise this
     // The current implementation creates a temporary table
@@ -136,83 +136,83 @@ public class DsStorage extends BaseModuleStorage {
     // Alternative 2: First count the number of "hits", then use that as OFFSET
     private static final String maxMtimeAfterWithLimitStatement =
             "SELECT MAX (" + MTIME_COLUMN + ") AS max_mtime, " +
-            "       COUNT (*) AS limit_count " +
-            "FROM " +
-            "( SELECT " + MTIME_COLUMN +
-            "  FROM " + RECORDS_TABLE +
-            "  WHERE " + ORIGIN_COLUMN + "= ?" +
-            "  AND " + MTIME_COLUMN + " > ?" +
-            "  ORDER BY " + MTIME_COLUMN + " ASC" +
-            "  LIMIT ?) AS max_mtime_sub";
+                    "       COUNT (*) AS limit_count " +
+                    "FROM " +
+                    "( SELECT " + MTIME_COLUMN +
+                    "  FROM " + RECORDS_TABLE +
+                    "  WHERE " + ORIGIN_COLUMN + "= ?" +
+                    "  AND " + MTIME_COLUMN + " > ?" +
+                    "  ORDER BY " + MTIME_COLUMN + " ASC" +
+                    "  LIMIT ?) AS max_mtime_sub";
 
     // TODO: Optimise this after maxMtimeAfterWithLimitStatement has been optimised
     private static final String maxMtimeAfterWithLimitTypeStatement =
             "SELECT MAX (" + MTIME_COLUMN + ") AS max_mtime, " +
-            "       COUNT (*) AS limit_count " +
-            "FROM " +
-            "( SELECT " + MTIME_COLUMN +
-            "  FROM " + RECORDS_TABLE +
-            "  WHERE " + ORIGIN_COLUMN + "= ?" +
-            "  AND " + RECORDTYPE_COLUMN + "= ?" +
-            "  AND " + MTIME_COLUMN + " > ?" +
-            "  ORDER BY " + MTIME_COLUMN + " ASC" +
-            "  LIMIT ?) AS max_mtime_sub";
+                    "       COUNT (*) AS limit_count " +
+                    "FROM " +
+                    "( SELECT " + MTIME_COLUMN +
+                    "  FROM " + RECORDS_TABLE +
+                    "  WHERE " + ORIGIN_COLUMN + "= ?" +
+                    "  AND " + RECORDTYPE_COLUMN + "= ?" +
+                    "  AND " + MTIME_COLUMN + " > ?" +
+                    "  ORDER BY " + MTIME_COLUMN + " ASC" +
+                    "  LIMIT ?) AS max_mtime_sub";
 
     //SELECT * FROM  ds_records  WHERE origin= 'test_base' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
     private static final String recordsModifiedAfterStatement =
             "SELECT * FROM " + RECORDS_TABLE +
-            " WHERE " +ORIGIN_COLUMN +"= ?" +
-            " AND "+MTIME_COLUMN+" > ?" +
-            " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
+                    " WHERE " + ORIGIN_COLUMN + "= ?" +
+                    " AND " + MTIME_COLUMN + " > ?" +
+                    " ORDER BY " + MTIME_COLUMN + " ASC LIMIT ?";
 
     //SELECT ID FROM  ds_records  WHERE origin= 'test_base' AND recordtype = 'MANIFESTATION' AND mtime  > 1637237120476001 ORDER BY mtime ASC LIMIT 100
-     private static String recordsIDByRecordTypeModifiedAfterStatement =
-             "SELECT "+ ID_COLUMN+ " FROM " + RECORDS_TABLE +
-             " WHERE " +ORIGIN_COLUMN +"= ?" +
-             " AND "+RECORDTYPE_COLUMN+" = ?" +
-             " AND "+MTIME_COLUMN+" > ?" +
-             " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
+    private static String recordsIDByRecordTypeModifiedAfterStatement =
+            "SELECT " + ID_COLUMN + " FROM " + RECORDS_TABLE +
+                    " WHERE " + ORIGIN_COLUMN + "= ?" +
+                    " AND " + RECORDTYPE_COLUMN + " = ?" +
+                    " AND " + MTIME_COLUMN + " > ?" +
+                    " ORDER BY " + MTIME_COLUMN + " ASC LIMIT ?";
 
 
     //SELECT * FROM  ds_records  WHERE origin= 'test_origin' AND mtime  > 1637237120476001 AND PARENTID IS NOT NULL ORDER BY mtime ASC LIMIT 100
     private static String recordsModifiedAfterChildrenOnlyStatement =
             "SELECT * FROM " + RECORDS_TABLE +
-            " WHERE +"+ORIGIN_COLUMN +"= ?" +
-            " AND "+MTIME_COLUMN+" > ?" +
-            " AND "+PARENT_ID_COLUMN+" IS NOT NULL"+
-            " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
+                    " WHERE +" + ORIGIN_COLUMN + "= ?" +
+                    " AND " + MTIME_COLUMN + " > ?" +
+                    " AND " + PARENT_ID_COLUMN + " IS NOT NULL" +
+                    " ORDER BY " + MTIME_COLUMN + " ASC LIMIT ?";
 
     //SELECT * FROM  ds_records  WHERE origin= 'test_origin' AND mtime  > 1637237120476001 AND parentId IS NULL ORDER BY mtime ASC LIMIT 100    
     private static String recordsModifiedAfterParentsOnlyStatement =
             "SELECT * FROM " + RECORDS_TABLE +
-            " WHERE +"+ORIGIN_COLUMN +"= ?" +
-            " AND "+MTIME_COLUMN+" > ?" +
-            " AND "+PARENT_ID_COLUMN+" IS NULL"+
-            " ORDER BY "+MTIME_COLUMN+ " ASC LIMIT ?";
+                    " WHERE +" + ORIGIN_COLUMN + "= ?" +
+                    " AND " + MTIME_COLUMN + " > ?" +
+                    " AND " + PARENT_ID_COLUMN + " IS NULL" +
+                    " ORDER BY " + MTIME_COLUMN + " ASC LIMIT ?";
 
 
     //SELECT * FROM  ds_records  WHERE origin= 'test_origin' AND mtime  > 1637237120476001 AND parentId IS NULL ORDER BY mtime ASC LIMIT 100    
     private static String createTranscriptionStatement =
             "INSERT INTO " + TRANSCRIPTIONS_TABLE +
-            " (" +
-              FILE_ID_COLUMN + ", "+
-              FILE_NAME_COLUMN +", "+
-              MTIME_COLUMN +", "+
-              TRANSCRIPTION_TEXT_COLUMN+ ", "+
-              TRANSCRIPTION_LINES_COLUMN+") "+
-            " VALUES (?,?,?,?,?)";
+                    " (" +
+                    FILE_ID_COLUMN + ", " +
+                    FILE_NAME_COLUMN + ", " +
+                    MTIME_COLUMN + ", " +
+                    TRANSCRIPTION_TEXT_COLUMN + ", " +
+                    TRANSCRIPTION_LINES_COLUMN + ") " +
+                    " VALUES (?,?,?,?,?)";
 
-    private static String originsStatisticsStatement = "SELECT " + ORIGIN_COLUMN + " ,COUNT(*) AS COUNT , SUM("+DELETED_COLUMN+") AS deleted,  max("+MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + ORIGIN_COLUMN;
-    private static String deleteTranscriptionByFileIdStatement = "DELETE FROM " + TRANSCRIPTIONS_TABLE + " WHERE "+FILE_ID_COLUMN+" = ?";
-    private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE "+ORIGIN_COLUMN +" = ? AND "+DELETED_COLUMN +" = 1" ;
-    private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";
-    private static String countRecordsInOriginStatement = "SELECT COUNT(*) FROM " + RECORDS_TABLE +  " WHERE " + ORIGIN_COLUMN + " = ? AND " + MTIME_COLUMN + " > ?";
+    private static String originsStatisticsStatement = "SELECT " + ORIGIN_COLUMN + " ,COUNT(*) AS COUNT , SUM(" + DELETED_COLUMN + ") AS deleted,  max(" + MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + ORIGIN_COLUMN;
+    private static String deleteTranscriptionByFileIdStatement = "DELETE FROM " + TRANSCRIPTIONS_TABLE + " WHERE " + FILE_ID_COLUMN + " = ?";
+    private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE " + ORIGIN_COLUMN + " = ? AND " + DELETED_COLUMN + " = 1";
+    private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE + " WHERE " + ID_COLUMN + " = ?";
+    private static String countRecordsInOriginStatement = "SELECT COUNT(*) FROM " + RECORDS_TABLE + " WHERE " + ORIGIN_COLUMN + " = ? AND " + MTIME_COLUMN + " > ?";
 
     public DsStorage() throws SQLException {
         super();
     }
 
-    /*
+    /**
      * Load a record. Will not load childrenIds
      */
     public DsRecordDto loadRecord(String id) throws SQLException {
@@ -223,7 +223,7 @@ public class DsStorage extends BaseModuleStorage {
                 if (!rs.next()) {
                     return null;// Or throw exception?
                 }
-                DsRecordDto  record = createRecordFromRS(rs);
+                DsRecordDto record = createRecordFromRS(rs);
                 return record;
             }
         }
@@ -231,7 +231,7 @@ public class DsStorage extends BaseModuleStorage {
 
     /**
      * Load a record and also load children ids
-     *  Return null if record does not exist
+     * Return null if record does not exist
      */
     public DsRecordDto loadRecordWithChildIds(String id) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(recordByIdStatement)) {
@@ -241,7 +241,7 @@ public class DsStorage extends BaseModuleStorage {
                 if (!rs.next()) {
                     return null;
                 }
-                DsRecordDto  record = createRecordFromRS(rs);
+                DsRecordDto record = createRecordFromRS(rs);
 
                 //load children                
                 record.setChildrenIds(getChildrenIds(id));
@@ -250,7 +250,6 @@ public class DsStorage extends BaseModuleStorage {
         }
     }
 
-
     public boolean recordExists(String id) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(recordIdExistsStatement)) {
             stmt.setString(1, id);
@@ -258,14 +257,12 @@ public class DsStorage extends BaseModuleStorage {
             try (ResultSet rs = stmt.executeQuery()) {
                 rs.next(); //Count has always next
                 int count = rs.getInt("COUNT");
-                return  count == 1;
+                return count == 1;
             }
         }
     }
 
-
     public ArrayList<String> getChildrenIds(String parentId) throws SQLException {
-
         ArrayList<String> childIds = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(childrenIdsStatement)) {
             stmt.setString(1, parentId);
@@ -278,7 +275,6 @@ public class DsStorage extends BaseModuleStorage {
         }
         return childIds;
     }
-
 
     /**
      * Normally we only want 1 record returned. But some records use same stream(file reference) by mistake in data.
@@ -303,23 +299,20 @@ public class DsStorage extends BaseModuleStorage {
 
     /**
      * Will only extract with records strictly larger than mTime!
-     * Will be sorted by mTime. Latest is last
-     * <p>
+     * Will be sorted by mTime. Latest is last.
      * Only parents posts (those that have children) will be load or only children (those that have parent)
-     *
      */
-    public ArrayList<DsRecordDto > getModifiedAfterParentsOnly(String origin, long mTime, int batchSize) throws Exception {
+    public ArrayList<DsRecordDto> getModifiedAfterParentsOnly(String origin, long mTime, int batchSize) throws Exception {
 
-        if (batchSize <1 || batchSize > 100000) { //No doom switch
+        if (batchSize < 1 || batchSize > 100000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 100000");
         }
-        ArrayList<DsRecordDto > records = new ArrayList<>();
+        ArrayList<DsRecordDto> records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterParentsOnlyStatement)) {
 
             prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
-        }
-        catch(Exception e) {
-            throw new Exception("SQL error getModifiedAfterParentsOn",e);
+        } catch (Exception e) {
+            throw new Exception("SQL error getModifiedAfterParentsOn", e);
 
         }
 
@@ -328,11 +321,12 @@ public class DsStorage extends BaseModuleStorage {
 
     /**
      * Prepare the SQL statement, execute the SQL query and convert the result set into DS Records that are added to the records array.
-     * @param origin to query against.
-     * @param mTime to retrieve records from.
+     *
+     * @param origin    to query against.
+     * @param mTime     to retrieve records from.
      * @param batchSize to retrieve.
-     * @param records array where records are added.
-     * @param stmt the already prepared statement.
+     * @param records   array where records are added.
+     * @param stmt      the already prepared statement.
      */
     private void prepareStatementAndGetRecords(String origin, long mTime, int batchSize, ArrayList<DsRecordDto> records, PreparedStatement stmt) throws SQLException {
         stmt.setString(1, origin);
@@ -340,28 +334,24 @@ public class DsStorage extends BaseModuleStorage {
         stmt.setLong(3, batchSize);
         try (ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                DsRecordDto  record = createRecordFromRS(rs);
+                DsRecordDto record = createRecordFromRS(rs);
                 records.add(record);
             }
         }
     }
 
-
     /**
-     * <p>
      * Get a list of records after a given mTime. The records will only have fields
-     * id, mTime, referenceid and kalturaid defined
-     * </p>
+     * id, mTime, referenceid and kalturaid defined.
      *
-     *@param origin The origin to fetch records from
-     *@param mTime only fetch records with mTime larger that this
-     *@param batchSize Number of maximum records to return
-     *
+     * @param origin    The origin to fetch records from
+     * @param mTime     only fetch records with mTime larger that this
+     * @param batchSize Number of maximum records to return
      * @return List of records only have fields id,mTime,referenceid and kalturaid
      */
     public ArrayList<DsRecordMinimalDto> getReferenceIds(String origin, long mTime, int batchSize) throws SQLException {
 
-        if (batchSize <1 || batchSize > 100000) { //No doom switch
+        if (batchSize < 1 || batchSize > 100000) { //No doom switch
             throw new InvalidArgumentServiceException("Batchsize must be in range 1 to 100000");
         }
         ArrayList<DsRecordMinimalDto> records = new ArrayList<>();
@@ -373,13 +363,12 @@ public class DsStorage extends BaseModuleStorage {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    DsRecordMinimalDto  record = createRecordReferenceIdFromRS(rs);
+                    DsRecordMinimalDto record = createRecordReferenceIdFromRS(rs);
                     records.add(record);
                 }
             }
-        }
-        catch(Exception e) {
-            throw new SQLException("SQL error getReferenceIds",e);
+        } catch (Exception e) {
+            throw new SQLException("SQL error getReferenceIds", e);
         }
 
         return records;
@@ -387,10 +376,11 @@ public class DsStorage extends BaseModuleStorage {
 
     /**
      * Extract max {@code record.mTime} in {@code origin}.
-     * @param origin only records from the {@code origin} will be inspected.
+     *
+     * @param origin     only records from the {@code origin} will be inspected.
      * @param recordType only records with the given type will be inspected.
      * @return max {@code record.mTime} within the given {@code origin} and with the given {@code recordType} or 0
-     *         if there were no records.
+     * if there were no records.
      */
     public long getMaxMtime(String origin, RecordTypeDto recordType) throws SQLException {
         try (PreparedStatement stmt = connection.prepareStatement(maxMtimeTypeStatement)) {
@@ -399,7 +389,7 @@ public class DsStorage extends BaseModuleStorage {
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? rs.getLong(MTIME_COLUMN) : 0;
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             String message = "SQL Exception in getMaxMtime with recordType";
             log.error(message);
             throw new SQLException(message, e);
@@ -408,6 +398,7 @@ public class DsStorage extends BaseModuleStorage {
 
     /**
      * Extract max {@code record.mTime} in {@code origin}.
+     *
      * @param origin only records from the {@code origin} will be inspected.
      * @return max {@code record.mTime} within the given {@code origin} or 0 if there were no records.
      */
@@ -417,7 +408,7 @@ public class DsStorage extends BaseModuleStorage {
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next() ? rs.getLong(MTIME_COLUMN) : 0;
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             String message = "SQL Exception in getMaxMtime";
             log.error(message);
             throw new SQLException(message, e);
@@ -429,18 +420,19 @@ public class DsStorage extends BaseModuleStorage {
      * ordered by {@code record.mTime} and limited to {@code maxRecords}.
      * Secondarily, check whether there are any records with record.mTime higher than the returned
      * maximum mTime.
-     * @param origin only records from the {@code origin} will be inspected.
-     * @param mTime only records with modification time larger than {@code mTime} will be inspected.
+     *
+     * @param origin     only records from the {@code origin} will be inspected.
+     * @param mTime      only records with modification time larger than {@code mTime} will be inspected.
      * @param maxRecords only this number of records will be inspected. {@code -1} means no limit.
      * @return pair of (maximum {@code record.mTime} or null if no match, true if there exists at
-     *         least 1 record with {@code record.mTime} higher than the maximum within the constraints).
+     * least 1 record with {@code record.mTime} higher than the maximum within the constraints).
      */
     public Pair<Long, Boolean> getMaxMtimeAfter(String origin, long mTime, long maxRecords) throws SQLException {
         // No maxRecords is simple: Just check the last record.mTime > mTime
         if (maxRecords == -1) {
             long maxMtime = getMaxMtime(origin);
             return new Pair<>(maxMtime == 0L || maxMtime <= mTime ? null : maxMtime,
-                              false);
+                    false);
         }
 
         // Determine max record.mTime and count the number of records within the limits
@@ -456,7 +448,7 @@ public class DsStorage extends BaseModuleStorage {
                     totalCount = rs.getLong("limit_count");
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             String message = "SQL Exception in getMaxMtimeAfter(origin='" + origin + "', mTime=" + mTime +
                     ", maxRecords=" + maxRecords + ")";
             log.error(message);
@@ -467,7 +459,7 @@ public class DsStorage extends BaseModuleStorage {
             return new Pair<>(null, false);
         }
 
-        if (totalCount <maxRecords) { // Exhaustive match (no subsequent records)
+        if (totalCount < maxRecords) { // Exhaustive match (no subsequent records)
             return new Pair<>(maxMTime, false);
         }
 
@@ -483,12 +475,13 @@ public class DsStorage extends BaseModuleStorage {
      * ordered by {@code record.mTime} and limited to {@code maxRecords}.
      * Secondarily, check whether there are any records with record.mTime higher than the returned
      * maximum mTime.
-     * @param origin only records from the {@code origin} will be inspected.
+     *
+     * @param origin     only records from the {@code origin} will be inspected.
      * @param recordType only records with the given type will be inspected.
-     * @param mTime only records with modification time larger than {@code mTime} will be inspected.
+     * @param mTime      only records with modification time larger than {@code mTime} will be inspected.
      * @param maxRecords only this number of records will be inspected. {@code -1} means no limit.
      * @return pair of (maximum {@code record.mTime} or null if no match, true if there exists at
-     *         least 1 record with {@code record.mTime} higher than the maximum within the constraints).
+     * least 1 record with {@code record.mTime} higher than the maximum within the constraints).
      */
     public Pair<Long, Boolean> getMaxMtimeAfter(String origin, RecordTypeDto recordType, long mTime, long maxRecords)
             throws SQLException {
@@ -496,7 +489,7 @@ public class DsStorage extends BaseModuleStorage {
         if (maxRecords == -1) {
             long maxMtime = getMaxMtime(origin, recordType);
             return new Pair<>(maxMtime == 0L || maxMtime <= mTime ? null : maxMtime,
-                              false);
+                    false);
         }
 
         // Determine max record.mTime and count the number of records within the limits
@@ -513,9 +506,9 @@ public class DsStorage extends BaseModuleStorage {
                     totalCount = rs.getLong("limit_count");
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             String message = "SQL Exception in getMaxMtimeAfter(origin='" + origin + "', recordType='" + recordType +
-                             "', mTime=" + mTime + ", maxRecords=" + maxRecords + ")";
+                    "', mTime=" + mTime + ", maxRecords=" + maxRecords + ")";
             log.error(message);
             throw new SQLException(message, e);
         }
@@ -524,7 +517,7 @@ public class DsStorage extends BaseModuleStorage {
             return new Pair<>(null, false);
         }
 
-        if (totalCount <maxRecords) { // Exhaustive match (no subsequent records)
+        if (totalCount < maxRecords) { // Exhaustive match (no subsequent records)
             return new Pair<>(maxMTime, false);
         }
 
@@ -538,21 +531,18 @@ public class DsStorage extends BaseModuleStorage {
     /**
      * Will only extract with records strictly larger than mTime!
      * Will be sorted by mTime. Latest is last
-     * <p>
      * Will extract all no matter of parent or child ids
-     *
      */
-    public ArrayList<DsRecordDto > getRecordsModifiedAfter(String origin, long mTime, int batchSize) throws Exception {
+    public ArrayList<DsRecordDto> getRecordsModifiedAfter(String origin, long mTime, int batchSize) throws Exception {
 
-        if (batchSize <1 || batchSize > 10000) { //No doom switch
+        if (batchSize < 1 || batchSize > 10000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 10000");
         }
         ArrayList<DsRecordDto> records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement)) {
 
             prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             String message = "SQL Exception in getRecordsModifiedAfter";
             log.error(message);
             throw new SQLException(message, e);
@@ -561,17 +551,13 @@ public class DsStorage extends BaseModuleStorage {
         return records;
     }
 
-
-
     /**
      * Will only extract ID.
-     * Will be sorted by mTime. Latest is last     *
-     * Will extract all no matter of parent or child ids
-     *
+     * Will be sorted by mTime. Latest is last.
+     * Will extract all no matter of parent or child ids.
      */
     public ArrayList<String> getRecordsIdsByRecordTypeModifiedAfter(String origin, RecordTypeDto recordType, long mTime, int batchSize) throws Exception {
-
-        if (batchSize <1 || batchSize > 10000) { //No doom switch
+        if (batchSize < 1 || batchSize > 10000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 10000");
         }
         ArrayList<String> recordsIds = new ArrayList<>();
@@ -586,8 +572,7 @@ public class DsStorage extends BaseModuleStorage {
                     recordsIds.add(rs.getString(ID_COLUMN));
                 }
             }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             String message = "SQL Exception in getRecordsIdsByRecordTypeModifiedAfter";
             log.error(message);
             throw new SQLException(message, e);
@@ -596,26 +581,21 @@ public class DsStorage extends BaseModuleStorage {
         return recordsIds;
     }
 
-
-
     /**
      * Will only extract with records strictly larger than mTime!
-     * Will be sorted by mTime. Latest is last
-     * <p>
+     * Will be sorted by mTime. Latest is last.
      * Will only fetch children records. That is those that has a parent.
-     *
      */
-    public ArrayList<DsRecordDto>  getModifiedAfterChildrenOnly(String origin, long mTime, int batchSize) throws Exception {
+    public ArrayList<DsRecordDto> getModifiedAfterChildrenOnly(String origin, long mTime, int batchSize) throws Exception {
 
-        if (batchSize <1 || batchSize > 100000) { //No doom switch
+        if (batchSize < 1 || batchSize > 100000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 100000");
         }
         ArrayList<DsRecordDto> records = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterChildrenOnlyStatement)) {
 
             prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             String message = "SQL Exception in getModifiedAfterChildrenOnly";
             log.error(message);
             throw new SQLException(message, e);
@@ -625,7 +605,6 @@ public class DsStorage extends BaseModuleStorage {
     }
 
     public ArrayList<OriginCountDto> getOriginStatictics() throws SQLException {
-
         ArrayList<OriginCountDto> originCountList = new ArrayList<>();
         try (PreparedStatement stmt = connection.prepareStatement(originsStatisticsStatement)) {
 
@@ -650,18 +629,19 @@ public class DsStorage extends BaseModuleStorage {
 
     /**
      * Get total amount of records for a specific {@link #ORIGIN_COLUMN}.
+     *
      * @param origin the origin to query for in the database.
      * @param mTime  is needed to only deliver the values that are actually extracted.
      * @return the amount of records for the specified origin.
      */
     public Long getAmountOfRecordsForOrigin(String origin, Long mTime) throws SQLException {
         long recordsInOrigin = 0L;
-        try (PreparedStatement statement = connection.prepareStatement(countRecordsInOriginStatement)){
+        try (PreparedStatement statement = connection.prepareStatement(countRecordsInOriginStatement)) {
             statement.setString(1, origin);
             statement.setLong(2, Objects.requireNonNullElse(mTime, 0L));
 
             try (ResultSet rs = statement.executeQuery()) {
-                if (rs.next()){
+                if (rs.next()) {
                     recordsInOrigin = rs.getLong(1);
                 }
             }
@@ -671,7 +651,6 @@ public class DsStorage extends BaseModuleStorage {
     }
 
     public void createNewRecord(DsRecordDto record) throws Exception {
-
         // Sanity check
         if (record.getId() == null) {
             throw new Exception("Id must not be null"); // TODO exception enum types, messages?
@@ -710,12 +689,9 @@ public class DsStorage extends BaseModuleStorage {
     }
 
     /**
-     * @param transcription  fileId must not be full
-     *
+     * @param transcription fileId must not be full
      */
     public void createNewTranscription(TranscriptionDto transcription) throws Exception {
-
-
         long nowStamp = UniqueTimestampGenerator.next();
 
         try (PreparedStatement stmt = connection.prepareStatement(createTranscriptionStatement)) {
@@ -734,6 +710,7 @@ public class DsStorage extends BaseModuleStorage {
 
     /**
      * Update the modified time for input record.
+     *
      * @param recordId of record to update
      * @return an object containing information on how many records have been updated. (Always one in this case?)
      */
@@ -749,10 +726,10 @@ public class DsStorage extends BaseModuleStorage {
         try (PreparedStatement stmt = connection.prepareStatement(updateMTimeForRecordStatement)) {
             stmt.setLong(1, nowStamp);
             stmt.setString(2, recordId);
-           int numberUpdated =  stmt.executeUpdate();
-           RecordsCountDto countDto= new RecordsCountDto();
-           countDto.setCount(numberUpdated);
-           return countDto;
+            int numberUpdated = stmt.executeUpdate();
+            RecordsCountDto countDto = new RecordsCountDto();
+            countDto.setCount(numberUpdated);
+            return countDto;
         } catch (SQLException e) {
             String message = "SQL Exception in updateMTimeForRecord with id:" + recordId + " error:" + e.getMessage();
             log.error(message);
@@ -761,7 +738,6 @@ public class DsStorage extends BaseModuleStorage {
     }
 
     public RecordsCountDto markRecordForDelete(String recordId) throws Exception {
-
         // Sanity check
         if (recordId == null) {
             throw new Exception("Id must not be null"); // TODO exception enum types, messages?
@@ -773,45 +749,42 @@ public class DsStorage extends BaseModuleStorage {
         try (PreparedStatement stmt = connection.prepareStatement(markRecordForDeleteStatement)) {
             stmt.setLong(1, nowStamp);
             stmt.setString(2, recordId);
-           int numberUpdated =  stmt.executeUpdate();
-           RecordsCountDto countDto= new  RecordsCountDto();
-           countDto.setCount(numberUpdated);
-           return countDto;
+            int numberUpdated = stmt.executeUpdate();
+            RecordsCountDto countDto = new RecordsCountDto();
+            countDto.setCount(numberUpdated);
+            return countDto;
         } catch (SQLException e) {
             String message = "SQL Exception in markRecordForDelete  with id:" + recordId + " error:" + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }
-
     }
 
     /**
      * Delete all records for an origin that has been modified time interval. The records will be deleted and not just marked for deletion
      *
-     * @param origin The origin for the collection. Value must be defined in the configuration
+     * @param origin    The origin for the collection. Value must be defined in the configuration
      * @param mTimeFrom modified time from. Format is millis +3 digits
-     * @param mTimeTo modified time to. Format is millis +3 digits
+     * @param mTimeTo   modified time to. Format is millis +3 digits
      */
-    public RecordsCountDto deleteRecordsForOrigin(String origin, long mTimeFrom,long mTimeTo) throws Exception {
+    public RecordsCountDto deleteRecordsForOrigin(String origin, long mTimeFrom, long mTimeTo) throws Exception {
         try (PreparedStatement stmt = connection.prepareStatement(deleteRecordsForOriginStateMent)) {
             stmt.setString(1, origin);
             stmt.setLong(2, mTimeFrom);
             stmt.setLong(3, mTimeTo);
-            int deleted= stmt.executeUpdate();
-            RecordsCountDto countDto= new RecordsCountDto();
+            int deleted = stmt.executeUpdate();
+            RecordsCountDto countDto = new RecordsCountDto();
             countDto.setCount(deleted);
             return countDto;
 
         } catch (SQLException e) {
             String message = "SQL Exception in deleteRecordsForOrigin for origin:" + origin + " error:" + e.getMessage();
-            log.error(message,e);
+            log.error(message, e);
             throw new SQLException(message, e);
         }
     }
 
-
     public RecordsCountDto deleteMarkedForDelete(String origin) throws Exception {
-
         // Sanity check
         if (origin == null) {
             throw new Exception("Origin must not be null"); // TODO exception enum types, messages?
@@ -820,7 +793,7 @@ public class DsStorage extends BaseModuleStorage {
         try (PreparedStatement stmt = connection.prepareStatement(deleteMarkedForDeleteStatement)) {
             stmt.setString(1, origin);
             int numberDeleted = stmt.executeUpdate();
-            RecordsCountDto countDto= new RecordsCountDto();
+            RecordsCountDto countDto = new RecordsCountDto();
             countDto.setCount(numberDeleted);
             return countDto;
 
@@ -829,12 +802,10 @@ public class DsStorage extends BaseModuleStorage {
             log.error(message);
             throw new SQLException(message, e);
         }
-
     }
 
     /**
-     *
-     * Delete a transcription by fileid
+     * Delete a transcription by fileId.
      *
      * @param fileId the fileId. If fileId is not found nothing will be deleted, but it will be logged.
      * @return Number of deleted records. Value 1 should be expected but can be higher if several records by mistake have same stream
@@ -845,7 +816,7 @@ public class DsStorage extends BaseModuleStorage {
             stmt.setString(1, fileId);
             int numberDeleted = stmt.executeUpdate();
             if (numberDeleted != 1) {
-                log.warn("Delete transcription by fileId did not delete 1 as expected. Deleted='{}', FileId='{}'",numberDeleted,fileId);
+                log.warn("Delete transcription by fileId did not delete 1 as expected. Deleted='{}', FileId='{}'", numberDeleted, fileId);
             }
             return numberDeleted;
         } catch (SQLException e) {
@@ -856,7 +827,6 @@ public class DsStorage extends BaseModuleStorage {
     }
 
     public void updateRecord(DsRecordDto record) throws Exception {
-
         // Sanity check
         if (record.getId() == null) {
             throw new Exception("Id must not be null"); // TODO exception enum types, messages?
@@ -884,32 +854,28 @@ public class DsStorage extends BaseModuleStorage {
         }
     }
 
-
     public void updateKalturaIdForRecords(String referenceId, String kalturaId) throws Exception {
-
         ArrayList<String> recordIds = getIdsByReferenceId(referenceId);
         if (recordIds.size() > 1) {
-          log.warn("More than 1 record found with referenceId:"+referenceId);
+            log.warn("More than 1 record found with referenceId:" + referenceId);
         }
 
-
-        for (String id:recordIds) {
+        for (String id : recordIds) {
             long nowStamp = UniqueTimestampGenerator.next();
             try (PreparedStatement stmt = connection.prepareStatement(updateKalturaIdStatement)) {
-              stmt.setString(1, kalturaId);
-              stmt.setLong(2, nowStamp);
-              stmt.setString(3, id);
-              int updated = stmt.executeUpdate();
-          } catch (SQLException e) {
-              String message = "SQL Exception in updateKalturaId for referenceId:" + referenceId + " error:" + e.getMessage();
-              log.error(message);
-              throw new SQLException(message, e);
-           }
-       }
+                stmt.setString(1, kalturaId);
+                stmt.setLong(2, nowStamp);
+                stmt.setString(3, id);
+                int updated = stmt.executeUpdate();
+            } catch (SQLException e) {
+                String message = "SQL Exception in updateKalturaId for referenceId:" + referenceId + " error:" + e.getMessage();
+                log.error(message);
+                throw new SQLException(message, e);
+            }
+        }
     }
 
     public void updateReferenceIdForRecord(String recordId, String referenceId) throws Exception {
-
         long nowStamp = UniqueTimestampGenerator.next();
         try (PreparedStatement stmt = connection.prepareStatement(updateReferenceIdStatement)) {
             stmt.setString(1, referenceId);
@@ -921,11 +887,9 @@ public class DsStorage extends BaseModuleStorage {
             log.error(message);
             throw new SQLException(message, e);
         }
-
     }
 
     private static DsRecordDto createRecordFromRS(ResultSet rs) throws SQLException {
-
         String id = rs.getString(ID_COLUMN);
         String origin = rs.getString(ORIGIN_COLUMN);
         boolean idError = rs.getInt(IDERROR_COLUMN) == 1;
@@ -960,7 +924,6 @@ public class DsStorage extends BaseModuleStorage {
         return record;
     }
 
-
     private static DsRecordMinimalDto createRecordReferenceIdFromRS(ResultSet rs) throws SQLException {
         String id = rs.getString(ID_COLUMN);
         long mTime = rs.getLong(MTIME_COLUMN);
@@ -981,13 +944,13 @@ public class DsStorage extends BaseModuleStorage {
      * @param fileId the fileId to load
      * @return TranscriptionDto. If fileId is not found will return null
      */
-    public TranscriptionDto  getTranscriptionByFileId(String fileId) throws SQLException {
-        try (PreparedStatement stmt = connection.prepareStatement(transcriptionByFileIdStatement )) {
+    public TranscriptionDto getTranscriptionByFileId(String fileId) throws SQLException {
+        try (PreparedStatement stmt = connection.prepareStatement(transcriptionByFileIdStatement)) {
             stmt.setString(1, fileId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (!rs.next()) {
-                    TranscriptionDto empty=new TranscriptionDto(); //DsStorageClient can not handle null values when serializing.
+                    TranscriptionDto empty = new TranscriptionDto(); //DsStorageClient can not handle null values when serializing.
                     empty.setFileId(fileId);
                     return empty;
                 }
@@ -1004,7 +967,7 @@ public class DsStorage extends BaseModuleStorage {
      * @return 0 or 1. FileId is unique
      */
     public int countTranscriptionByFileId(String fileId) throws SQLException {
-        try (PreparedStatement stmt = connection.prepareStatement( transcriptionByFileIdCountStatement)) {
+        try (PreparedStatement stmt = connection.prepareStatement(transcriptionByFileIdCountStatement)) {
             stmt.setString(1, fileId);
             try (ResultSet rs = stmt.executeQuery()) {
                 rs.next();//always value                
@@ -1015,7 +978,7 @@ public class DsStorage extends BaseModuleStorage {
 
     private static TranscriptionDto createTranscriptionFromRS(ResultSet rs) throws SQLException {
         String fileId = rs.getString(FILE_ID_COLUMN);
-        String fileName= rs.getString(FILE_NAME_COLUMN);
+        String fileName = rs.getString(FILE_NAME_COLUMN);
         long mTime = rs.getLong(MTIME_COLUMN);
         String transcriptionText = rs.getString(TRANSCRIPTION_TEXT_COLUMN);
         String transcriptionLines = rs.getString(TRANSCRIPTION_LINES_COLUMN);
@@ -1036,11 +999,11 @@ public class DsStorage extends BaseModuleStorage {
         return isTrue ? 1 : 0;
     }
 
-   /*
-   * Method is synchronized because simple dateformat is not thread safe. Faster to reuse synchronized than to construct new every time.
-   */
+    /*
+     * Method is synchronized because simple dateformat is not thread safe. Faster to reuse synchronized than to construct new every time.
+     */
     private static synchronized String convertToHumanDate(long millis_time_1000) {
-     return dateFormat.format(new Date(millis_time_1000/1000));
+        return dateFormat.format(new Date(millis_time_1000 / 1000));
 
     }
 }

@@ -7,11 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * <p>
  * This class is a small extension of the DsStorage with a few methods used for unittest 
  * that we do not want in the production code.
- *
- * <p>
  * Between each unittest the all tables are cleared for data and the method is only defined in this subclass  
  */
 public class DsStorageForUnitTest extends DsStorage {
@@ -41,5 +38,4 @@ public class DsStorageForUnitTest extends DsStorage {
         connection.commit();
         log.info("Tables cleared for unittest");
     }
-
 }
