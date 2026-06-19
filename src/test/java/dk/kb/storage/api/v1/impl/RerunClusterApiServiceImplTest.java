@@ -1,18 +1,53 @@
 package dk.kb.storage.api.v1.impl;
 
+import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.RerunClusterRequestDto;
 import dk.kb.storage.model.v1.RerunClusterResponseDto;
-import dk.kb.storage.storage.DsStorageUnitTestUtil;
+import dk.kb.storage.storage.*;
+import dk.kb.storage.util.H2DbUtil;
 import dk.kb.util.webservice.exception.InternalServiceException;
 import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import static java.time.ZoneOffset.UTC;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DsStorageApiServiceImplTest extends DsStorageUnitTestUtil {
+public class RerunClusterApiServiceImplTest extends UnitTestUtil {
+    protected static RerunClusterStorageForUnitTest storage = null;
+
+    @BeforeAll
+    public static void beforeClass() throws Exception {
+        ServiceConfig.initialize("conf/ds-storage*.yaml");
+        H2DbUtil.createEmptyH2DBFromDDL(URL, DRIVER, USERNAME, PASSWORD);
+        BaseModuleStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
+        storage = new RerunClusterStorageForUnitTest();
+    }
+
+    /**
+     * Delete all records between each unittest. The clearTableRecords is only called from here.
+     * The facade class is responsible for committing transactions. So clean up between unittests.
+     */
+    @BeforeEach
+    public void beforeEach() throws Exception {
+        storage.clearTableRecords();
+        storage.commit();
+    }
+
+    /**
+     * No reason to delete DB data file after test, since we clear table it before each test.
+     * This way you can open the DB in a DB-browser after the unittest and see the result.
+     * Just run that single test and look in the DB
+     */
+    @AfterAll
+    public static void afterClass() {
+        RerunClusterStorage.shutdown();
+    }
 
     @Test
     public void createOrUpdateRerunCluster_whenCreatingRerunCluster_thenReturnCreatedRerunCluster() {
@@ -26,10 +61,10 @@ public class DsStorageApiServiceImplTest extends DsStorageUnitTestUtil {
         rerunClusterRequestDto.setRerunClusterId(rerunClusterId);
         rerunClusterRequestDto.setClusterIdCreationDate(clusterIdCreationDate);
 
-        DsStorageApiServiceImpl dsStorageApiServiceImpl = new DsStorageApiServiceImpl();
+        RerunClusterApiServiceImpl rerunClusterApiServiceImpl = new RerunClusterApiServiceImpl();
 
         // Act
-        RerunClusterResponseDto rerunClusterResponseDto = dsStorageApiServiceImpl.createOrUpdateRerunCluster(rerunClusterRequestDto);
+        RerunClusterResponseDto rerunClusterResponseDto = rerunClusterApiServiceImpl.createOrUpdateRerunCluster(rerunClusterRequestDto);
 
         // Assert
         assertNotNull(rerunClusterResponseDto);
@@ -37,8 +72,8 @@ public class DsStorageApiServiceImplTest extends DsStorageUnitTestUtil {
         assertEquals(fileId, rerunClusterResponseDto.getFileId());
         assertEquals(rerunClusterId, rerunClusterResponseDto.getRerunClusterId());
         assertEquals(clusterIdCreationDate, rerunClusterResponseDto.getClusterIdCreationDate());
-        assertTrue(OffsetDateTime.now().isAfter(rerunClusterResponseDto.getCreatedTime()));
-        assertTrue(OffsetDateTime.now().isAfter(rerunClusterResponseDto.getModifiedTime()));
+        assertTrue(OffsetDateTime.now(UTC).isAfter(rerunClusterResponseDto.getCreatedTime()));
+        assertTrue(OffsetDateTime.now(UTC).isAfter(rerunClusterResponseDto.getModifiedTime()));
     }
 
     @Test
@@ -61,12 +96,12 @@ public class DsStorageApiServiceImplTest extends DsStorageUnitTestUtil {
         updateRerunClusterRequestDto.setRerunClusterId(updateRerunClusterId);
         updateRerunClusterRequestDto.setClusterIdCreationDate(updateClusterIdCreationDate);
 
-        DsStorageApiServiceImpl dsStorageApiServiceImpl = new DsStorageApiServiceImpl();
+        RerunClusterApiServiceImpl rerunClusterApiServiceImpl = new RerunClusterApiServiceImpl();
 
-        RerunClusterResponseDto createdRerunClusterResponseDto = dsStorageApiServiceImpl.createOrUpdateRerunCluster(rerunClusterRequestDto);
+        RerunClusterResponseDto createdRerunClusterResponseDto = rerunClusterApiServiceImpl.createOrUpdateRerunCluster(rerunClusterRequestDto);
 
         // Act
-        RerunClusterResponseDto updatedRerunClusterResponseDto = dsStorageApiServiceImpl.createOrUpdateRerunCluster(updateRerunClusterRequestDto);
+        RerunClusterResponseDto updatedRerunClusterResponseDto = rerunClusterApiServiceImpl.createOrUpdateRerunCluster(updateRerunClusterRequestDto);
 
         // Assert
         assertNotNull(updatedRerunClusterResponseDto);
@@ -97,10 +132,10 @@ public class DsStorageApiServiceImplTest extends DsStorageUnitTestUtil {
 
         String expectedMessage = "'fileId' can not be null";
 
-        DsStorageApiServiceImpl dsStorageApiServiceImpl = new DsStorageApiServiceImpl();
+        RerunClusterApiServiceImpl rerunClusterApiServiceImpl = new RerunClusterApiServiceImpl();
 
         // Act
-        Exception exception = assertThrows(InvalidArgumentServiceException.class, () -> dsStorageApiServiceImpl.createOrUpdateRerunCluster(rerunClusterRequestDto));
+        Exception exception = assertThrows(InvalidArgumentServiceException.class, () -> rerunClusterApiServiceImpl.createOrUpdateRerunCluster(rerunClusterRequestDto));
 
         // Assert
         assertEquals(expectedMessage, exception.getMessage());
@@ -119,10 +154,10 @@ public class DsStorageApiServiceImplTest extends DsStorageUnitTestUtil {
 
         String expectedMessage = "'rerunClusterId' can not be null";
 
-        DsStorageApiServiceImpl dsStorageApiServiceImpl = new DsStorageApiServiceImpl();
+        RerunClusterApiServiceImpl rerunClusterApiServiceImpl = new RerunClusterApiServiceImpl();
 
         // Act
-        Exception exception = assertThrows(InvalidArgumentServiceException.class, () -> dsStorageApiServiceImpl.createOrUpdateRerunCluster(rerunClusterRequestDto));
+        Exception exception = assertThrows(InvalidArgumentServiceException.class, () -> rerunClusterApiServiceImpl.createOrUpdateRerunCluster(rerunClusterRequestDto));
 
         // Assert
         assertEquals(expectedMessage, exception.getMessage());
@@ -141,10 +176,10 @@ public class DsStorageApiServiceImplTest extends DsStorageUnitTestUtil {
 
         String expectedMessage = "'clusterIdCreationDate' can not be null";
 
-        DsStorageApiServiceImpl dsStorageApiServiceImpl = new DsStorageApiServiceImpl();
+        RerunClusterApiServiceImpl rerunClusterApiServiceImpl = new RerunClusterApiServiceImpl();
 
         // Act
-        Exception exception = assertThrows(InvalidArgumentServiceException.class, () -> dsStorageApiServiceImpl.createOrUpdateRerunCluster(rerunClusterRequestDto));
+        Exception exception = assertThrows(InvalidArgumentServiceException.class, () -> rerunClusterApiServiceImpl.createOrUpdateRerunCluster(rerunClusterRequestDto));
 
         // Assert
         assertEquals(expectedMessage, exception.getMessage());
@@ -155,12 +190,12 @@ public class DsStorageApiServiceImplTest extends DsStorageUnitTestUtil {
         // Arrange
         UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
 
-        String expectedMessage = "javax.ws.rs.NotFoundException: rerunCluster fileId='" + fileId + "' not found";
+        String expectedMessage = "dk.kb.util.webservice.exception.InternalServiceException: javax.ws.rs.NotFoundException: rerunCluster fileId='" + fileId + "' not found";
 
-        DsStorageApiServiceImpl dsStorageApiServiceImpl = new DsStorageApiServiceImpl();
+        RerunClusterApiServiceImpl rerunClusterApiServiceImpl = new RerunClusterApiServiceImpl();
 
         // Act
-        Exception exception = assertThrows(InternalServiceException.class, () -> dsStorageApiServiceImpl.getRerunClusterByFileId(fileId));
+        Exception exception = assertThrows(InternalServiceException.class, () -> rerunClusterApiServiceImpl.getRerunClusterByFileId(fileId));
 
         // Assert
         assertEquals(expectedMessage, exception.getMessage());

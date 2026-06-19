@@ -1,6 +1,7 @@
 package dk.kb.storage.storage;
 
 import dk.kb.storage.config.ServiceConfig;
+import dk.kb.storage.util.UniqueTimestampGenerator;
 import dk.kb.util.webservice.exception.InternalServiceException;
 import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
 import org.apache.commons.dbcp2.BasicDataSource;
@@ -8,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
@@ -19,6 +21,15 @@ public abstract class BaseModuleStorage implements AutoCloseable {
 
     protected Connection connection = null; // private
     protected static BasicDataSource dataSource = null; // shared
+
+    private static String updateMTimeForRecordByFileIdStatement = """
+            UPDATE
+                ds_records
+            SET
+                mtime = ?
+            WHERE
+                referenceid = ?
+            """;
 
     public BaseModuleStorage() throws SQLException {
         connection = dataSource.getConnection();
@@ -152,6 +163,31 @@ public abstract class BaseModuleStorage implements AutoCloseable {
         } catch (Exception e) {
             log.error("Exception performing action '{}'", actionID, e);
             throw new InternalServiceException(e);
+        }
+    }
+
+    /**
+     * Update the modified time for records with the fileId. It is not given that such a record exist.
+     *
+     * @param fileId of record(s) to update.
+     * @return how many records have been updated. 0 or 1 are expected values. But can be higher to data errors
+     */
+    public int updateMTimeForRecordByFileId(String fileId) throws Exception {
+        // Sanity check
+        if (fileId == null) {
+            throw new Exception("FileId must not be null");
+        }
+        long nowStamp = UniqueTimestampGenerator.next();
+
+        try (PreparedStatement stmt = connection.prepareStatement(updateMTimeForRecordByFileIdStatement)) {
+            stmt.setLong(1, nowStamp);
+            stmt.setString(2, fileId);
+            int numberUpdated = stmt.executeUpdate();
+            return numberUpdated;
+        } catch (SQLException e) {
+            String message = "SQL Exception in updateMTimeForRecordByFileId with fileid:" + fileId;
+            log.error(message);
+            throw new SQLException(message, e);
         }
     }
 

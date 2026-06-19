@@ -14,19 +14,16 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Between each unittest the all tables are cleared for data and the method is only defined in this subclass  
  */
-public class DsStorageForUnitTest extends DsStorage  {
+public class DsStorageForUnitTest extends DsStorage {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorageForUnitTest.class);
 
     private static String clearTableRecordsStatement = "DELETE FROM DS_RECORDS";
     private static String clearTableTranscriptionsStatement = "DELETE FROM TRANSCRIPTIONS";
-    private static String clearTableRerunClustersStatement = "DELETE FROM rerun_clusters";
-
     
     public  DsStorageForUnitTest() throws SQLException {
         super();
     }
-   
 
     /** 
      * Will clear data in ds_records, transcriptions and rerun_clusters tables.
@@ -38,10 +35,6 @@ public class DsStorageForUnitTest extends DsStorage  {
         }        
         
         try (PreparedStatement stmt = connection.prepareStatement(clearTableTranscriptionsStatement)) {
-            stmt.execute(); //No result set to close
-        }
-
-        try (PreparedStatement stmt = connection.prepareStatement(clearTableRerunClustersStatement)) {
             stmt.execute(); //No result set to close
         }
         

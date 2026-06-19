@@ -6,7 +6,6 @@ import dk.kb.storage.facade.DsStorageFacade;
 import dk.kb.storage.model.v1.*;
 import dk.kb.util.Pair;
 import dk.kb.util.webservice.ImplBase;
-import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
 import dk.kb.util.webservice.stream.ExportWriter;
 import dk.kb.util.webservice.stream.ExportWriterFactory;
 import dk.kb.util.webservice.stream.ContinuationUtil;
@@ -26,7 +25,6 @@ import javax.ws.rs.ext.Providers;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * ds-storage
@@ -360,37 +358,5 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
     public TranscriptionDto getTranscription(@NotNull String fileId) {
         // TODO Auto-generated method stub
         return DsStorageFacade.getTranscription(fileId);
-    }
-
-    /**
-     * Create or update rerun cluster
-     *
-     * @param rerunClusterRequestDto
-     * @return RerunClusterResponseDto
-     */
-    @Override
-    public RerunClusterResponseDto createOrUpdateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
-        // Maybe these are not needed! Sanity check
-        if (rerunClusterRequestDto.getFileId() == null) {
-            throw new InvalidArgumentServiceException("'fileId' can not be null");
-        }
-        if (rerunClusterRequestDto.getRerunClusterId() == null) {
-            throw new InvalidArgumentServiceException("'rerunClusterId' can not be null");
-        }
-        if (rerunClusterRequestDto.getClusterIdCreationDate() == null) {
-            throw new InvalidArgumentServiceException("'clusterIdCreationDate' can not be null");
-        }
-        return DsStorageFacade.createOrUpdateRerunCluster(rerunClusterRequestDto);
-    }
-
-    /**
-     * Get a Rerun Cluster from fileId.
-     *
-     * @param fileId uuid
-     * @return RerunClusterResponseDto
-     */
-    @Override
-    public RerunClusterResponseDto getRerunClusterByFileId(UUID fileId) {
-        return DsStorageFacade.getRerunClusterByFileId(fileId);
     }
 }

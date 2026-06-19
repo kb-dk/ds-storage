@@ -1,6 +1,5 @@
 package dk.kb.storage.facade;
 
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -19,9 +18,6 @@ import dk.kb.storage.util.IdNormaliser;
 import dk.kb.util.webservice.exception.InternalServiceException;
 import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
 import dk.kb.util.webservice.exception.NotFoundServiceException;
-
-import javax.ws.rs.NotFoundException;
-
 
 public class DsStorageFacade {
 
@@ -493,83 +489,6 @@ public class DsStorageFacade {
                 ", maxRecords=" + maxRecords + ")",
                 DsStorage.class,
                 storage -> ((DsStorage) storage).getMaxMtimeAfter(origin, recordType, mTime, maxRecords));
-    }
-
-    /**
-     * Return rerunCluster from fileId
-     *
-     * @param fileId UUID of fileId.
-     * @return RerunClusterResponseDto
-     */
-    public static RerunClusterResponseDto getRerunClusterByFileId(UUID fileId) {
-        return BaseModuleStorage.performStorageAction("getRerunClusterByFileId(" + fileId + ")", DsStorage.class, storage -> {
-            RerunClusterResponseDto rerunClusterResponseDto = ((DsStorage) storage).getRerunClusterByFileId(fileId);
-
-            if (rerunClusterResponseDto == null) {
-                final String errorMessage = "rerunCluster fileId='" + fileId + "' not found";
-                log.error(errorMessage);
-                throw new NotFoundException(errorMessage);
-            }
-
-            return rerunClusterResponseDto;
-        });
-    }
-
-    /**
-     * Create or update a rerun cluster.
-     *
-     * @param rerunClusterRequestDto The entry to be created or updated
-     * @return RerunClusterResponseDto
-     */
-    public static RerunClusterResponseDto createOrUpdateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
-        // Try to create a rerun cluster
-        try {
-            createRerunCluster(rerunClusterRequestDto);
-        } catch (InternalServiceException exception) {
-            // If the root exception is SQLException, then update the rerun cluster instead
-            if (exception.getCause().getCause() instanceof SQLException) {
-                updateRerunCluster(rerunClusterRequestDto);
-            } else {
-                throw exception;
-            }
-        }
-        RerunClusterResponseDto rerunClusterResponseDto = getRerunClusterByFileId(rerunClusterRequestDto.getFileId());
-        return rerunClusterResponseDto;
-    }
-
-    /**
-     * Create a rerun cluster.
-     *
-     * @param rerunClusterRequestDto The entry to be created
-     * @return RerunClusterResponseDto
-     */
-    public static void createRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
-        BaseModuleStorage.performStorageAction("createRerunCluster(" + rerunClusterRequestDto.getFileId() + ")", DsStorage.class, storage -> {
-            ((DsStorage) storage).createRerunCluster(rerunClusterRequestDto);
-            // Update modified time on record(s) matching with fileId in ds_records table so the information about rerun cluster gets
-            // picked up in the next indexing job.
-            int touched = ((DsStorage) storage).updateMTimeForRecordByFileId(rerunClusterRequestDto.getFileId().toString());
-            log.info("Created rerun cluster with fileId='{}'. Number of records touched in ds_records='{}'", rerunClusterRequestDto.getFileId(), touched);
-            return null;
-        });
-    }
-
-    /**
-     * Update a rerun cluster.
-     *
-     * @param rerunClusterRequestDto The entry to be updated
-     * @return RerunClusterResponseDto
-     */
-    public static void updateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
-        BaseModuleStorage.performStorageAction("updateRerunCluster(" + rerunClusterRequestDto.getFileId() + ")", DsStorage.class, storage -> {
-            ((DsStorage) storage).updateRerunCluster(rerunClusterRequestDto);
-            RerunClusterResponseDto rerunClusterResponseDto = ((DsStorage) storage).getRerunClusterByFileId(rerunClusterRequestDto.getFileId());
-            // Update modified time on record(s) matching with fileId in ds_records table so the information about rerun cluster gets
-            // picked up in the next indexing job.
-            int touched = ((DsStorage) storage).updateMTimeForRecordByFileId(rerunClusterRequestDto.getFileId().toString());
-            log.info("Updated rerun cluster with fileId='{}'. Number of records touched in ds_records='{}'", rerunClusterRequestDto.getFileId(), touched);
-            return null;
-        });
     }
 
     /*

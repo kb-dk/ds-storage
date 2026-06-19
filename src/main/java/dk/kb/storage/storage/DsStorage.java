@@ -1,21 +1,16 @@
 package dk.kb.storage.storage;
 
-import dk.kb.storage.config.ServiceConfig;
-import dk.kb.storage.mapper.RerunClusterResponseDtoMapper;
 import dk.kb.storage.model.v1.*;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 import dk.kb.util.Pair;
 import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.time.OffsetDateTime;
 import java.util.*;
 
 /*
@@ -25,8 +20,6 @@ import java.util.*;
 public class DsStorage extends BaseModuleStorage {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorage.class);
-
-    private final static RerunClusterResponseDtoMapper rerunClusterResponseDtoMapper = new RerunClusterResponseDtoMapper();
 
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ",Locale.getDefault());
 
@@ -97,12 +90,6 @@ public class DsStorage extends BaseModuleStorage {
             MTIME_COLUMN + " = ? "+
             "WHERE "+
             ID_COLUMN + "= ?";
-
-    private static String updateMTimeForRecordByFileIdStatement = "UPDATE " + RECORDS_TABLE + " SET  " +
-            MTIME_COLUMN + " = ? "+
-            "WHERE "+
-            RECORDS_REFERENCE_ID_COLUMN  + "= ?";
-
 
     private static String childrenIdsStatement = "SELECT " + ID_COLUMN +" FROM " + RECORDS_TABLE +
             " WHERE "
@@ -220,48 +207,6 @@ public class DsStorage extends BaseModuleStorage {
     private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE "+ORIGIN_COLUMN +" = ? AND "+DELETED_COLUMN +" = 1" ;
     private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE+ " WHERE "+ID_COLUMN +" = ?";
     private static String countRecordsInOriginStatement = "SELECT COUNT(*) FROM " + RECORDS_TABLE +  " WHERE " + ORIGIN_COLUMN + " = ? AND " + MTIME_COLUMN + " > ?";
-
-    private static String getRerunClusterByFileIdStatement = """
-        SELECT
-            id,
-            file_id,
-            rerun_cluster_id,
-            cluster_id_creation_date,
-            created_time,
-            modified_time
-        FROM
-            rerun_clusters
-        WHERE
-            file_id = ?
-        """;
-
-    private static String createRerunClusterStatement = """
-        INSERT INTO rerun_clusters(
-            file_id,
-            rerun_cluster_id,
-            cluster_id_creation_date,
-            created_time,
-            modified_time
-        )
-        VALUES(
-            ?,
-            ?,
-            ?,
-            ?,
-            ?
-        )
-        """;
-
-    private static String updateRerunClusterStatement = """
-        UPDATE
-            rerun_clusters
-        SET
-            rerun_cluster_id = ?,
-            cluster_id_creation_date = ?,
-            modified_time = ?
-        WHERE
-            file_id = ?
-        """;
 
     public DsStorage() throws SQLException {
         super();
@@ -815,33 +760,6 @@ public class DsStorage extends BaseModuleStorage {
         }
     }
 
-
-    /**
-     * Update the modified time for records with the fileId. It is not given that such a record exist.
-     * @param fileId of record(s) to update.
-     * @return how many records have been updated. 0 or 1 are expected values. But can be higher to data errors
-     */
-    public int updateMTimeForRecordByFileId(String fileId) throws Exception {
-        // Sanity check
-        if (fileId == null) {
-            throw new Exception("FileId must not be null");
-        }
-        long nowStamp = UniqueTimestampGenerator.next();
-
-        try (PreparedStatement stmt = connection.prepareStatement(updateMTimeForRecordByFileIdStatement)) {
-            stmt.setLong(1, nowStamp);
-            stmt.setString(2, fileId);
-           int numberUpdated =  stmt.executeUpdate();
-           return numberUpdated;
-        } catch (SQLException e) {
-            String message = "SQL Exception in updateMTimeForRecordByFileId with fileid:" + fileId;
-            log.error(message);
-            throw new SQLException(message, e);
-        }
-    }
-
-
-
     public RecordsCountDto markRecordForDelete(String recordId) throws Exception {
 
         // Sanity check
@@ -1004,71 +922,6 @@ public class DsStorage extends BaseModuleStorage {
             throw new SQLException(message, e);
         }
 
-    }
-
-    /**
-     * Get a rerun cluster by fileId
-     *
-     * @param fileId
-     * @return
-     * @throws Exception
-     */
-    public RerunClusterResponseDto getRerunClusterByFileId(UUID fileId) throws Exception {
-        try (PreparedStatement stmt = connection.prepareStatement(getRerunClusterByFileIdStatement)) {
-            stmt.setObject(1, fileId);
-            ResultSet resultSet = stmt.executeQuery();
-
-            while (resultSet.next()) {
-                return rerunClusterResponseDtoMapper.map(resultSet);
-            }
-
-            return null;
-        } catch (SQLException e) {
-            String message = "SQL Exception in getRerunClusterByFileId with fileId:'" + fileId + "' error: " + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }
-    }
-
-    /**
-     * Create a rerun cluster
-     *
-     * @param rerunClusterRequestDto
-     * @throws Exception
-     */
-    public void createRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) throws Exception {
-        try (PreparedStatement stmt = connection.prepareStatement(createRerunClusterStatement)) {
-            stmt.setObject(1, rerunClusterRequestDto.getFileId());
-            stmt.setObject(2, rerunClusterRequestDto.getRerunClusterId());
-            stmt.setObject(3, rerunClusterRequestDto.getClusterIdCreationDate());
-            stmt.setObject(4, OffsetDateTime.now());
-            stmt.setObject(5, OffsetDateTime.now());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            String message = "SQL Exception in createRerunCluster with fileId:'" + rerunClusterRequestDto.getFileId() + "' error: " + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }
-    }
-
-    /**
-     * Update a rerun cluster
-     *
-     * @param rerunClusterRequestDto
-     * @throws Exception
-     */
-    public void updateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) throws Exception {
-        try (PreparedStatement stmt = connection.prepareStatement(updateRerunClusterStatement)) {
-            stmt.setObject(1, rerunClusterRequestDto.getRerunClusterId());
-            stmt.setObject(2, rerunClusterRequestDto.getClusterIdCreationDate());
-            stmt.setObject(3, OffsetDateTime.now());
-            stmt.setObject(4, rerunClusterRequestDto.getFileId());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            String message = "SQL Exception in updateRerunCluster with fileId:'" + rerunClusterRequestDto.getFileId() + "' error: " + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }
     }
 
     private static DsRecordDto createRecordFromRS(ResultSet rs) throws SQLException {

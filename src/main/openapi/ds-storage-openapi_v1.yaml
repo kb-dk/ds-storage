@@ -474,10 +474,10 @@ paths:
         '204':
           description: No Content - The request has been executed correct and the server did not deliver any content.
 
-  /rerun_cluster:
+  /rerun-cluster:
     post:
       tags:
-        - '${project.name}'
+        - 'RerunCluster'
       summary: 'Create a Rerun Cluster or update an existing Rerun Cluster from fileId.'
       security:
         - KBOAuth:
@@ -499,10 +499,10 @@ paths:
         '204':
           description: "No Content - The request has been executed correct and the server did not deliver any content."
 
-  /rerun_cluster/{fileId}:
+  /rerun-cluster/{fileId}:
     get:
       tags:
-        - '${project.name}'
+        - 'RerunCluster'
       summary: 'Get a Rerun Cluster from fileId.'
       security:
         - KBOAuth:
