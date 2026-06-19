@@ -22,7 +22,7 @@ import java.util.*;
  * This class will be called by the facade class. The facade class is also responsible for commit or rollback
 */
 
-public class DsStorage implements AutoCloseable {
+public class DsStorage extends BaseModuleStorage {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorage.class);
 
@@ -263,51 +263,8 @@ public class DsStorage implements AutoCloseable {
             file_id = ?
         """;
 
-    private static BasicDataSource dataSource;
-
-    // statistics shown on monitor.jsp page
-    public static Date INITDATE = null;
-
-    protected Connection connection;
-
-    public static void initialize(String driverName, String driverUrl, String userName, String password) {
-
-        int connectionPoolSize = ServiceConfig.getConnectionPoolSize();
-
-        dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(driverName);
-        dataSource.setUsername(userName);
-        dataSource.setPassword(password);
-        dataSource.setUrl(driverUrl);
-
-        dataSource.setDefaultReadOnly(false);
-        dataSource.setDefaultAutoCommit(false);
-
-
-
-        //TODO maybe set some datasource options.
-        // enable detection and logging of connection leaks
-        /*
-         * dataSource.setRemoveAbandonedOnBorrow(
-         * AlmaPickupNumbersPropertiesHolder.PICKUPNUMBERS_DATABASE_TIME_BEFORE_RECLAIM
-         * > 0); dataSource.setRemoveAbandonedOnMaintenance(
-         * AlmaPickupNumbersPropertiesHolder.PICKUPNUMBERS_DATABASE_TIME_BEFORE_RECLAIM
-         * > 0); dataSource.setRemoveAbandonedTimeout(AlmaPickupNumbersPropertiesHolder.
-         * PICKUPNUMBERS_DATABASE_TIME_BEFORE_RECLAIM); //1 hour
-         * dataSource.setLogAbandoned(AlmaPickupNumbersPropertiesHolder.
-         * PICKUPNUMBERS_DATABASE_TIME_BEFORE_RECLAIM > 0);
-         * dataSource.setMaxWaitMillis(AlmaPickupNumbersPropertiesHolder.
-         * PICKUPNUMBERS_DATABASE_POOL_CONNECT_TIMEOUT);
-         */
-        //Idle settings defaults (min/max) has good values.     
-        dataSource.setMaxOpenPreparedStatements(connectionPoolSize);
-        INITDATE = new Date();
-
-        log.info("DsStorage initialized with driverName='{}', driverURL='{}', connectionPoolSize='{}' ", driverName, driverUrl,connectionPoolSize);
-    }
-
     public DsStorage() throws SQLException {
-        connection = dataSource.getConnection();
+        super();
     }
 
     /*
@@ -1232,50 +1189,5 @@ public class DsStorage implements AutoCloseable {
     private static synchronized String convertToHumanDate(long millis_time_1000) {
      return dateFormat.format(new Date(millis_time_1000/1000));
 
-    }
-
-    /*
-     * FOR TEST JETTY RUN ONLY!
-     *
-     */
-    public void createNewDatabase(String ddlFile) throws SQLException {
-        connection.createStatement().execute("RUNSCRIPT FROM '" + ddlFile+ "'");
-    }
-
-
-    public void commit() throws SQLException {
-        connection.commit();
-    }
-
-    public void rollback() {
-        try {
-            connection.rollback();
-        } catch (Exception e) {
-            // nothing to do here
-        }
-    }
-
-    @Override
-    public void close() {
-        try {
-            connection.close();
-        } catch (Exception e) {
-            // nothing to do here
-        }
-    }
-
-    // This is called from InitializationContextListener by the Web-container
-    // when server is shutdown,
-    // Just to be sure the DB lock file is free.
-    public static void shutdown() {
-        log.info("Shutdown ds-storage");
-        try {
-            if (dataSource != null) {
-                dataSource.close();
-            }
-        } catch (Exception e) {
-            // ignore errors during shutdown, we cant do anything about it anyway
-            log.error("shutdown failed", e);
-        }
     }
 }

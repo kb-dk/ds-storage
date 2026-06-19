@@ -18,6 +18,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import dk.kb.storage.config.ServiceConfig;
+import dk.kb.storage.storage.BaseModuleStorage;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.util.H2DbUtil;
 
@@ -213,7 +214,7 @@ public class ContextListener implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent sce) {
         try {
         	log.info("Shutdown service v{}", getClass().getPackage().getImplementationVersion());
-            DsStorage.shutdown();
+            BaseModuleStorage.shutdown();
             
             Enumeration<Driver> drivers = DriverManager.getDrivers();
             

@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import dk.kb.storage.model.v1.*;
+import dk.kb.storage.storage.BaseModuleStorage;
 import dk.kb.util.Pair;
 import dk.kb.util.webservice.stream.ExportWriter;
 
@@ -41,7 +42,7 @@ public class DsStorageFacade {
      */
     public static  ArrayList<DsRecordMinimalDto>  getReferenceIds(String origin, long mTime, int batchSize)  {                       
         String id = String.format(Locale.ROOT, "getReferenceIds(origin='%s', mTime=%d, batchSize=%d)", origin, mTime, batchSize);
-        return performStorageAction(id, storage -> storage.getReferenceIds(origin, mTime, batchSize));
+        return BaseModuleStorage.performStorageAction(id, DsStorage.class, storage -> ((DsStorage) storage).getReferenceIds(origin, mTime, batchSize));
     }
 
     public static Long getMinimalRecordsModifiedAfter(
@@ -53,8 +54,8 @@ public class DsStorageFacade {
         long totalDelivered = 0L;
         while (pending > 0) {
             int request = pending < batchSize ? (int) pending : batchSize;
-            long delivered = performStorageAction(id, storage -> {
-                ArrayList<DsRecordMinimalDto> records = storage.getReferenceIds(origin, lastMTime.get(), request);
+            long delivered = BaseModuleStorage.performStorageAction(id, DsStorage.class, storage -> {
+                ArrayList<DsRecordMinimalDto> records = ((DsStorage) storage).getReferenceIds(origin, lastMTime.get(), request);
                 writer.writeAll(records);
                 if (!records.isEmpty()) {
                     lastMTime.set(records.get(records.size()-1).getmTime());
@@ -81,19 +82,19 @@ public class DsStorageFacade {
      * 
      */
     public static void createOrUpdateTranscription(TranscriptionDto transcription)   {
-        performStorageAction("createOrUpdatTranscription(" + transcription.getFileId() + ")", storage -> {                      
+        BaseModuleStorage.performStorageAction("createOrUpdatTranscription(" + transcription.getFileId() + ")", DsStorage.class, storage -> {
            String fileId=transcription.getFileId();     
            // Sanity check
            if (fileId == null) {
                throw new Exception("Fileid must not be null");
            }
-           int count = storage.countTranscriptionByFileId(fileId);
+           int count = ((DsStorage) storage).countTranscriptionByFileId(fileId);
            if (count>0) {
-             storage.deleteTranscriptionByFileId(fileId);
+             ((DsStorage) storage).deleteTranscriptionByFileId(fileId);
             }              
-            storage.createNewTranscription(transcription);      
+            ((DsStorage) storage).createNewTranscription(transcription);
             //Touch the record in the ds_records table so will be selected in next indexing job and transcriptions will be indexed as well.
-            int touched=storage.updateMTimeForRecordByFileId(fileId);
+            int touched=((DsStorage) storage).updateMTimeForRecordByFileId(fileId);
             log.info("Create/Updated transcription with fileId='{}' number of records touched='{}'",fileId,touched);                                         
             return null; // Something must be returned
         });
@@ -102,7 +103,7 @@ public class DsStorageFacade {
     
     
     public static void createOrUpdateRecord(DsRecordDto record)  {
-        performStorageAction("createOrUpdateRecord(" + record.getId() + ")", storage -> {
+        BaseModuleStorage.performStorageAction("createOrUpdateRecord(" + record.getId() + ")", DsStorage.class, storage -> {
             validateOriginExists(record.getOrigin());        
             validateIdHasOriginPrefix(record.getOrigin(), record.getId());
             validateRecordType(record.getRecordType());
@@ -123,10 +124,10 @@ public class DsStorageFacade {
                 record.setParentId(IdNormaliser.normaliseId(record.getParentId()));                
             }            
             
-            boolean recordExists = storage.recordExists(record.getId());
+            boolean recordExists = ((DsStorage) storage).recordExists(record.getId());
             if (recordExists) {
                 //Have to load record to see if referenceId has changed. Then we need to clear kalturaId
-                DsRecordDto oldRecord = storage.loadRecord(record.getId());
+                DsRecordDto oldRecord = ((DsStorage) storage).loadRecord(record.getId());
               
                 //Keep old kalturaId if referenceid is the same.
                 if (record.getKalturaId() == null && record.getReferenceId() != null  && record.getReferenceId().equals(oldRecord.getReferenceId()) ) {                   
@@ -137,12 +138,12 @@ public class DsStorageFacade {
                    log.info("Updating record with id: '{}' Clearing kalturaID since referenceID has changed '{}' to  '{}'", record.getId() ,oldRecord.getReferenceId(),record.getReferenceId() );
                     record.setKalturaId(null);
                 }                
-                storage.updateRecord(record);
+                ((DsStorage) storage).updateRecord(record);
             } else {               
                 log.info("Creating new record with id: '{}'", record.getId());
-                storage.createNewRecord(record);
+                ((DsStorage) storage).createNewRecord(record);
             }
-            updateMTimeForParentChild(storage,record.getId());
+            updateMTimeForParentChild(((DsStorage) storage), record.getId());
             return null; // Something must be returned
         });
     }
@@ -156,8 +157,8 @@ public class DsStorageFacade {
      * @param kalturaId The Kaltura id in the kaltura system. The id is given to a record after upload.
      */
     public static void updateKalturaIdForRecord(String referenceId, String kalturaId){
-         performStorageAction("updateKalturaIdForRecord(" + referenceId + ")", storage -> {
-         storage.updateKalturaIdForRecords(referenceId, kalturaId);         
+         BaseModuleStorage.performStorageAction("updateKalturaIdForRecord(" + referenceId + ")", DsStorage.class, storage -> {
+         ((DsStorage) storage).updateKalturaIdForRecords(referenceId, kalturaId);
         return null;    // Something must be returned
         });
     }
@@ -169,15 +170,17 @@ public class DsStorageFacade {
      * @param referenceId The referenceId to set for the record
      */
     public static void updateReferenceIdForRecord(String recordId, String referenceId){
-         performStorageAction("updateKalturaIdForRecord(" + referenceId + ")", storage -> {
-         storage.updateReferenceIdForRecord(recordId,referenceId);         
+         BaseModuleStorage.performStorageAction("updateKalturaIdForRecord(" + referenceId + ")", DsStorage.class, storage -> {
+         ((DsStorage) storage).updateReferenceIdForRecord(recordId,referenceId);
         return null;    // Something must be returned
         });
     }
     
         
     public static ArrayList<OriginCountDto> getOriginStatistics() {
-        return performStorageAction("getOriginStatistics", DsStorage::getOriginStatictics);
+        return BaseModuleStorage.performStorageAction("getOriginStatistics", DsStorage.class, storage -> {
+            return ((DsStorage) storage).getOriginStatictics();
+        });
     }
 
     /**
@@ -187,9 +190,9 @@ public class DsStorageFacade {
      * @return the number of records sent through the stream.
      */
     public static long countRecordsInOrigin(String origin, long mTime){
-        return performStorageAction("getAmountOfRecordsForOrigin(origin: " + origin +")", storage -> {
+        return BaseModuleStorage.performStorageAction("getAmountOfRecordsForOrigin(origin: " + origin +")", DsStorage.class, storage -> {
             validateOriginExists(origin);
-            return storage.getAmountOfRecordsForOrigin(origin, mTime);
+            return ((DsStorage) storage).getAmountOfRecordsForOrigin(origin, mTime);
         } );
     }
 
@@ -211,8 +214,8 @@ public class DsStorageFacade {
         long totalDelivered = 0L;
         while (pending > 0) {
             int request = pending < batchSize ? (int) pending : batchSize;
-            long delivered = performStorageAction(id, storage -> {
-                ArrayList<DsRecordDto> records = storage.getRecordsModifiedAfter(origin, lastMTime.get(), request);
+            long delivered = BaseModuleStorage.performStorageAction(id, DsStorage.class, storage -> {
+                ArrayList<DsRecordDto> records = ((DsStorage) storage).getRecordsModifiedAfter(origin, lastMTime.get(), request);
                 writer.writeAll(records);
                 if (!records.isEmpty()) {
                     lastMTime.set(records.get(records.size()-1).getmTime());
@@ -247,10 +250,10 @@ public class DsStorageFacade {
         long totalDelivered = 0L;
         while (pending > 0) {
             int request = pending < batchSize ? (int) pending : batchSize;
-            long delivered = performStorageAction(id, storage -> {
+            long delivered = BaseModuleStorage.performStorageAction(id, DsStorage.class, storage -> {
 
                 //important. Only load id's for performance. Then load the recordTree
-                ArrayList<String> ids = storage.getRecordsIdsByRecordTypeModifiedAfter(origin, recordType,lastMTime.get(), request);
+                ArrayList<String> ids = ((DsStorage) storage).getRecordsIdsByRecordTypeModifiedAfter(origin, recordType,lastMTime.get(), request);
 
                 ArrayList<DsRecordDto> records = new ArrayList<>();
                 for (String singleId : ids) {
@@ -311,9 +314,9 @@ public class DsStorageFacade {
      * 
      */
     private static DsRecordDto getRecord(String recordId) {
-        return performStorageAction(" getRecord(" + recordId + ")", storage -> {
+        return BaseModuleStorage.performStorageAction(" getRecord(" + recordId + ")", DsStorage.class, storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);
-           DsRecordDto record = storage.loadRecordWithChildIds(idNorm);
+           DsRecordDto record = ((DsStorage) storage).loadRecordWithChildIds(idNorm);
            return record;
         });
     }
@@ -328,7 +331,7 @@ public class DsStorageFacade {
      */
     public static DsRecordDto getRecordTree(String recordId) {
              
-        return performStorageAction("getRecord(" + recordId + ")", storage -> {
+        return BaseModuleStorage.performStorageAction("getRecord(" + recordId + ")", DsStorage.class, storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);          
         DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children. Will return null if record not found
                 
@@ -353,7 +356,7 @@ public class DsStorageFacade {
      */
     private static DsRecordDto getRecordTreeLocal(String recordId) {
            
-        return performStorageAction("getRecordTreeLocal(" + recordId + ")", storage -> {
+        return BaseModuleStorage.performStorageAction("getRecordTreeLocal(" + recordId + ")", DsStorage.class, storage -> {
         String idNorm = IdNormaliser.normaliseId(recordId);          
         DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children as id's. 
         setLocalTreeForRecord(record);                                     
@@ -368,9 +371,9 @@ public class DsStorageFacade {
      * @throws NotFoundServiceException when a record cannot be found in storage.
      */
     public static RecordsCountDto touchRecord(String recordId) {
-        RecordsCountDto countDto = performStorageAction("updateMTimeForRecord(" + recordId +")", storage -> {
+        RecordsCountDto countDto = BaseModuleStorage.performStorageAction("updateMTimeForRecord(" + recordId +")", DsStorage.class, storage -> {
             String idNorm = IdNormaliser.normaliseId(recordId);
-            return storage.updateMTimeForRecord(idNorm);
+            return ((DsStorage) storage).updateMTimeForRecord(idNorm);
         });
 
         if (countDto.getCount() == null | countDto.getCount() < 1){
@@ -420,9 +423,9 @@ public class DsStorageFacade {
      * @param mTimeTo modified time to. Format is millis +3 digits
      */
     public static RecordsCountDto deleteRecordsForOrigin(String origin, long mTimeFrom, long mTimeTo) {
-        return performStorageAction("deleteRecordsForOrigin(" + origin + ")", storage -> {
+        return BaseModuleStorage.performStorageAction("deleteRecordsForOrigin(" + origin + ")", DsStorage.class, storage -> {
             validateOriginExists(origin);
-            RecordsCountDto count = storage.deleteRecordsForOrigin(origin,mTimeFrom,mTimeTo);                       
+            RecordsCountDto count = ((DsStorage) storage).deleteRecordsForOrigin(origin,mTimeFrom,mTimeTo);
             log.info("Deleted {} records from origin={}",count.getCount(),origin);                                            
             return count;
         });
@@ -431,10 +434,10 @@ public class DsStorageFacade {
 
     public static RecordsCountDto markRecordForDelete(String recordId) {
         //TODO touch children etc.
-        return performStorageAction("markRecordForDelete(" + recordId + ")", storage -> {
+        return BaseModuleStorage.performStorageAction("markRecordForDelete(" + recordId + ")", DsStorage.class, storage -> {
             String idNorm = IdNormaliser.normaliseId(recordId);            
-            RecordsCountDto countDto = storage.markRecordForDelete(idNorm);
-            updateMTimeForParentChild(storage,recordId);
+            RecordsCountDto countDto = ((DsStorage) storage).markRecordForDelete(idNorm);
+            updateMTimeForParentChild(((DsStorage) storage), recordId);
             log.info("Record marked for delete: '{}'", recordId);                       
             return countDto;
         });
@@ -442,10 +445,10 @@ public class DsStorageFacade {
 
 
     public static RecordsCountDto deleteMarkedForDelete(String origin) {
-        return performStorageAction("deleteMarkedForDelete(" + origin + ")", storage -> {
+        return BaseModuleStorage.performStorageAction("deleteMarkedForDelete(" + origin + ")", DsStorage.class, storage -> {
             validateOriginExists(origin);
 
-            RecordsCountDto count =  storage.deleteMarkedForDelete(origin);
+            RecordsCountDto count =  ((DsStorage) storage).deleteMarkedForDelete(origin);
             log.info("Deleted all marked for delete records for origin: '{}'. Number deleted: '{}'", origin, count.getCount());
 
             //We are not touching parent/children relation when deleting for real.
@@ -465,9 +468,10 @@ public class DsStorageFacade {
      *         least 1 record with {@code record.mTime} higher than the maximum within the constraints).
      */
     public static Pair<Long, Boolean> getMaxMtimeAfter(String origin, long mTime, long maxRecords) {
-        return performStorageAction(
+        return BaseModuleStorage.performStorageAction(
                 "getMaxMtimeAfter(origin='" + origin + "', mTime=" + mTime + ", maxRecords=" + maxRecords + ")",
-                storage -> storage.getMaxMtimeAfter(origin, mTime, maxRecords));
+                DsStorage.class,
+                storage -> ((DsStorage) storage).getMaxMtimeAfter(origin, mTime, maxRecords));
     }
 
     /**
@@ -484,10 +488,11 @@ public class DsStorageFacade {
      */
     public static Pair<Long, Boolean> getMaxMtimeAfter(
             String origin, RecordTypeDto recordType, long mTime, long maxRecords) {
-        return performStorageAction(
+        return BaseModuleStorage.performStorageAction(
                 "getMaxMtimeAfter(origin='" + origin + "', type='" + recordType + "', mTime=" + mTime +
                 ", maxRecords=" + maxRecords + ")",
-                storage -> storage.getMaxMtimeAfter(origin, recordType, mTime, maxRecords));
+                DsStorage.class,
+                storage -> ((DsStorage) storage).getMaxMtimeAfter(origin, recordType, mTime, maxRecords));
     }
 
     /**
@@ -497,8 +502,8 @@ public class DsStorageFacade {
      * @return RerunClusterResponseDto
      */
     public static RerunClusterResponseDto getRerunClusterByFileId(UUID fileId) {
-        return performStorageAction("getRerunClusterByFileId(" + fileId + ")", storage -> {
-            RerunClusterResponseDto rerunClusterResponseDto = storage.getRerunClusterByFileId(fileId);
+        return BaseModuleStorage.performStorageAction("getRerunClusterByFileId(" + fileId + ")", DsStorage.class, storage -> {
+            RerunClusterResponseDto rerunClusterResponseDto = ((DsStorage) storage).getRerunClusterByFileId(fileId);
 
             if (rerunClusterResponseDto == null) {
                 final String errorMessage = "rerunCluster fileId='" + fileId + "' not found";
@@ -539,11 +544,11 @@ public class DsStorageFacade {
      * @return RerunClusterResponseDto
      */
     public static void createRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
-        performStorageAction("createRerunCluster(" + rerunClusterRequestDto.getFileId() + ")", storage -> {
-            storage.createRerunCluster(rerunClusterRequestDto);
+        BaseModuleStorage.performStorageAction("createRerunCluster(" + rerunClusterRequestDto.getFileId() + ")", DsStorage.class, storage -> {
+            ((DsStorage) storage).createRerunCluster(rerunClusterRequestDto);
             // Update modified time on record(s) matching with fileId in ds_records table so the information about rerun cluster gets
             // picked up in the next indexing job.
-            int touched = storage.updateMTimeForRecordByFileId(rerunClusterRequestDto.getFileId().toString());
+            int touched = ((DsStorage) storage).updateMTimeForRecordByFileId(rerunClusterRequestDto.getFileId().toString());
             log.info("Created rerun cluster with fileId='{}'. Number of records touched in ds_records='{}'", rerunClusterRequestDto.getFileId(), touched);
             return null;
         });
@@ -556,12 +561,12 @@ public class DsStorageFacade {
      * @return RerunClusterResponseDto
      */
     public static void updateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
-        performStorageAction("updateRerunCluster(" + rerunClusterRequestDto.getFileId() + ")", storage -> {
-            storage.updateRerunCluster(rerunClusterRequestDto);
-            RerunClusterResponseDto rerunClusterResponseDto = storage.getRerunClusterByFileId(rerunClusterRequestDto.getFileId());
+        BaseModuleStorage.performStorageAction("updateRerunCluster(" + rerunClusterRequestDto.getFileId() + ")", DsStorage.class, storage -> {
+            ((DsStorage) storage).updateRerunCluster(rerunClusterRequestDto);
+            RerunClusterResponseDto rerunClusterResponseDto = ((DsStorage) storage).getRerunClusterByFileId(rerunClusterRequestDto.getFileId());
             // Update modified time on record(s) matching with fileId in ds_records table so the information about rerun cluster gets
             // picked up in the next indexing job.
-            int touched = storage.updateMTimeForRecordByFileId(rerunClusterRequestDto.getFileId().toString());
+            int touched = ((DsStorage) storage).updateMTimeForRecordByFileId(rerunClusterRequestDto.getFileId().toString());
             log.info("Updated rerun cluster with fileId='{}'. Number of records touched in ds_records='{}'", rerunClusterRequestDto.getFileId(), touched);
             return null;
         });
@@ -687,52 +692,7 @@ public class DsStorageFacade {
             throw new InvalidArgumentServiceException("RecordType must not be null");
         }
     }
-    
-    
-    /**
-     * Starts a storage transaction and performs the given action on it, returning the result from the action.
-     * <p>
-     * If the action throws an exception, a {@link DsStorage#rollback()} is performed.
-     * If the action passes without exceptions, a {@link DsStorage#commit()} is performed.
-     * @param actionID a debug-oriented ID for the action, typically the name of the calling method.
-     * @param action the action to perform on the storage.
-     * @return return value from the action.
-     * @throws InternalServiceException if anything goes wrong.
-     */
-    private static <T> T performStorageAction(String actionID, StorageAction<T> action) {
-         long start=System.currentTimeMillis();
-        try (DsStorage storage = new DsStorage()) {
-            T result;
-            try {
-                result = action.process(storage);
-            }
-            catch(InvalidArgumentServiceException e) {
-                log.warn("Exception performing action '{}'. Initiating rollback", actionID, e.getMessage());
-                storage.rollback();
-                throw new InvalidArgumentServiceException(e);                
-            }            
-            catch (Exception e) {
-                log.warn("Exception performing action '{}'. Initiating rollback", actionID, e);
-                storage.rollback();
-                throw new InternalServiceException(e);
-            }
 
-            try {
-                storage.commit();
-            } catch (SQLException e) {
-                log.error("Exception committing after action '{}'", actionID, e);
-                throw new InternalServiceException(e);
-            }
-
-            log.debug("Storage method '{}' SQL time in millis: {} ", actionID, (System.currentTimeMillis()-start));
-            return result;
-        } catch (SQLException e) { //Connecting to storage failed
-            log.error("SQLException performing action '{}'", actionID, e);
-            throw new InternalServiceException(e);
-        }
-    }
-
-    
     /**
      * This method will call itself recursively
      * The callstack length will only be equal to depth of tree, so not an issue.
@@ -808,27 +768,8 @@ public class DsStorageFacade {
     *  @return TranscriptionDto Return empty transcriptionDto if none is found
     */
     public static TranscriptionDto getTranscription(String fileId) {        
-       return performStorageAction(
+       return BaseModuleStorage.performStorageAction(
                "getTranscription(fileId='" + fileId +")",
-               storage -> storage.getTranscriptionByFileId(fileId));             
+               DsStorage.class, storage -> ((DsStorage) storage).getTranscriptionByFileId(fileId));
     }
-    
-
-    /**
-     * Callback used with {@link #performStorageAction(String, StorageAction)}.
-     * @param <T> the object returned from the {@link StorageAction#process(DsStorage)} method.
-     */
-    @FunctionalInterface
-    private interface StorageAction<T> {
-        /**
-         * Access or modify the given storage inside a transaction.
-         * If the method throws an exception, it will be logged, a {@link DsStorage#rollback()} will be performed and
-         * a wrapping {@link dk.kb.util.webservice.exception.ServiceException} will be thrown.
-         * @param storage a storage ready for requests and updates.
-         * @return custom return value.
-         * @throws Exception if something went wrong.
-         */
-        T process(DsStorage storage) throws Exception;
-    }
-
 }

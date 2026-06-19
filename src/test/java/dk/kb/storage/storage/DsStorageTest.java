@@ -1,9 +1,9 @@
 package dk.kb.storage.storage;
 
+import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.*;
+import dk.kb.storage.util.H2DbUtil;
 import dk.kb.storage.util.UniqueTimestampGenerator;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +18,33 @@ public class DsStorageTest extends DsStorageUnitTestUtil{
 
     private static final Logger log = LoggerFactory.getLogger(DsStorageTest.class);
 
+    @BeforeAll
+    public static void beforeClass() throws Exception {
+        ServiceConfig.initialize("conf/ds-storage*.yaml");
+        H2DbUtil.createEmptyH2DBFromDDL(URL, DRIVER, USERNAME, PASSWORD);
+        BaseModuleStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
+        storage = new DsStorageForUnitTest();
+    }
+
+    /**
+     * Delete all records between each unittest. The clearTableRecords is only called from here.
+     * The facade class is responsible for committing transactions. So clean up between unittests.
+     */
+    @BeforeEach
+    public void beforeEach() throws Exception {
+        storage.clearMappingAndRecordTable();
+        storage.commit();
+    }
+
+    /**
+     * No reason to delete DB data file after test, since we clear table it before each test.
+     * This way you can open the DB in a DB-browser after the unittest and see the result.
+     * Just run that single test and look in the DB
+     */
+    @AfterAll
+    public static void afterClass() {
+        DsStorage.shutdown();
+    }
 
     @Test
     public void testBasicCRUD() throws Exception {
