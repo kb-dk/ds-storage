@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Date;
 
 /**
  * The BaseModuleStorage, which sets up the connection to the database which is then used by {@link DsStorage}, {@link RerunClusterStorage}.
@@ -17,9 +16,6 @@ import java.util.Date;
  */
 public abstract class BaseModuleStorage implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger(BaseModuleStorage.class);
-
-    // statistics shown on monitor.jsp page
-    public static Date INITDATE = null;
 
     protected Connection connection = null; // private
     protected static BasicDataSource dataSource = null; // shared
@@ -64,7 +60,6 @@ public abstract class BaseModuleStorage implements AutoCloseable {
          */
         //Idle settings defaults (min/max) has good values.
         dataSource.setMaxOpenPreparedStatements(connectionPoolSize);
-        INITDATE = new Date();
 
         log.info("DsStorage BaseModuleStorage initialized with driverName='{}', driverURL='{}', connectionPoolSize='{}' ", driverName, driverUrl, connectionPoolSize);
     }
