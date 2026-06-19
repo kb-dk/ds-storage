@@ -18,6 +18,8 @@ public class DsStorageTest extends UnitTestUtil {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorageTest.class);
 
+    private static DsStorageForUnitTest storage = null;
+
     @BeforeAll
     public static void beforeClass() throws Exception {
         ServiceConfig.initialize("conf/ds-storage*.yaml");

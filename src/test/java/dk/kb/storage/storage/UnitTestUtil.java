@@ -15,6 +15,4 @@ public abstract class UnitTestUtil {
     protected static final String URL = "jdbc:h2:" + TEST_CLASSES_PATH + "/h2/ds_storage;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE";
     protected static final String USERNAME = "";
     protected static final String PASSWORD = "";
-
-    protected static DsStorageForUnitTest storage = null;
 }
