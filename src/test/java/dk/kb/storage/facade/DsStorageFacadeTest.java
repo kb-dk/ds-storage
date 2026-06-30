@@ -17,6 +17,8 @@ import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.storage.UnitTestUtil;
 import dk.kb.util.webservice.exception.InternalServiceException;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DsStorageFacadeTest extends UnitTestUtil {
@@ -25,7 +27,7 @@ public class DsStorageFacadeTest extends UnitTestUtil {
     @BeforeAll
     public static void beforeClass() throws Exception {
         ServiceConfig.initialize("conf/ds-storage*.yaml");
-        H2DbUtil.createEmptyH2DBFromDDL(URL, DRIVER, USERNAME, PASSWORD);
+        H2DbUtil.createEmptyH2DBFromDDL(URL, DRIVER, USERNAME, PASSWORD, List.of("ddl/create_ds_storage_h2_unittest.ddl"));
         BaseModuleStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
         storage = new DsStorageForUnitTest();
     }

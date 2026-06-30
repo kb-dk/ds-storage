@@ -23,7 +23,7 @@ public class RerunClusterStorageTest extends UnitTestUtil {
     @BeforeAll
     public static void beforeClass() throws Exception {
         ServiceConfig.initialize("conf/ds-storage*.yaml");
-        H2DbUtil.createEmptyH2DBFromDDL(URL, DRIVER, USERNAME, PASSWORD);
+        H2DbUtil.createEmptyH2DBFromDDL(URL, DRIVER, USERNAME, PASSWORD, List.of("ddl/create_rerun_clusters_h2_unittest.ddl"));
         BaseModuleStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
         storage = new RerunClusterStorageForUnitTest();
     }

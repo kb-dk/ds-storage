@@ -11,6 +11,7 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -109,12 +110,13 @@ public class ContextListener implements ServletContextListener {
 
     private void createLocalH2ForJettyEnvironment(String driver, String url, String user, String password) {
         try {
-         log.info("Setting up H2 database under jetty in development mode");          
-      	  H2DbUtil.createEmptyH2DBFromDDL(url, driver,  user, password);
-      	}
-      	catch(Exception e) {
-      	  log.error("Unable to create local h2 database for jetty environment",e);        	    
-     	 }
+            log.info("Setting up H2 database under jetty in development mode");
+            H2DbUtil.createEmptyH2DBFromDDL(url, driver, user, password, List.of(
+                    "ddl/create_ds_storage_h2_unittest.ddl.ddl",
+                    "ddl/create_rerun_clusters_h2_unittest.ddl.ddl"));
+        } catch (Exception e) {
+            log.error("Unable to create local h2 database for jetty environment", e);
+        }
     }
     
     /**

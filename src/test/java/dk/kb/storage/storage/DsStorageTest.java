@@ -22,7 +22,7 @@ public class DsStorageTest extends UnitTestUtil {
     @BeforeAll
     public static void beforeClass() throws Exception {
         ServiceConfig.initialize("conf/ds-storage*.yaml");
-        H2DbUtil.createEmptyH2DBFromDDL(URL, DRIVER, USERNAME, PASSWORD);
+        H2DbUtil.createEmptyH2DBFromDDL(URL, DRIVER, USERNAME, PASSWORD, List.of("ddl/create_ds_storage_h2_unittest.ddl"));
         BaseModuleStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
         storage = new DsStorageForUnitTest();
     }
