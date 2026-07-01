@@ -1,61 +1,101 @@
 package dk.kb.storage.storage;
 
-import dk.kb.storage.mapper.RerunClusterResponseDtoMapper;
-import dk.kb.storage.model.v1.RerunClusterRequestDto;
-import dk.kb.storage.model.v1.RerunClusterResponseDto;
+import dk.kb.storage.mapper.RecordsCountDtoMapper;
+import dk.kb.storage.mapper.RerunClusterDtoMapper;
+import dk.kb.storage.model.v1.RecordsCountDto;
+import dk.kb.storage.model.v1.RerunClusterDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.OffsetDateTime;
 import java.util.UUID;
-
-import static java.time.ZoneOffset.UTC;
 
 public class RerunClusterStorage extends BaseModuleStorage {
     private static final Logger log = LoggerFactory.getLogger(RerunClusterStorage.class);
-    private final static RerunClusterResponseDtoMapper rerunClusterResponseDtoMapper = new RerunClusterResponseDtoMapper();
+
+    private final static RecordsCountDtoMapper recordsCountDtoMapper = new RecordsCountDtoMapper();
+    private final static RerunClusterDtoMapper rerunClusterDtoMapper = new RerunClusterDtoMapper();
+
+    private static String updateRerunClusterTableStatement = """
+            WITH newest_created_rerun_clusters AS (
+            	SELECT
+            		max(rc.created) AS newest_created -- find the newest created date
+            	FROM
+            		rerun_clusters rc
+            ),
+            insert_update_rerun_clusters AS (
+            	INSERT INTO rerun_clusters (
+            		id,
+            		file_id,
+            		rerun_cluster_id,
+            		created,
+            		job_id,
+            		inserted,
+            		updated
+            	)
+            	SELECT DISTINCT ON (rrc.file_id) -- there can be multple of the same file_id (history) and we want the newest inserted file_id
+            		rrc.id,
+            		rrc.file_id,
+            		rrc.rerun_cluster_id,
+            		rrc.created,
+            		rrc.job_id,
+            		transaction_timestamp(), -- fixed at transactions start
+            		transaction_timestamp() -- fixed at transactions start
+            	FROM
+            		remote_rerun_clusters rrc
+            	INNER JOIN
+            		newest_created_rerun_clusters ncrc ON
+            		(
+            			ncrc.newest_created IS NULL -- takes care if the rerun_clusters table is empty so we still get rows to insert
+            			OR rrc.created > ncrc.newest_created
+            		)
+            	ORDER BY
+            		rrc.file_id ASC,
+            		rrc.created DESC
+            	ON CONFLICT (file_id)
+            	DO UPDATE SET
+            		id = EXCLUDED.id,
+            		rerun_cluster_id = EXCLUDED.rerun_cluster_id,
+            		created = EXCLUDED.created,
+            		job_id = EXCLUDED.job_id,
+            		updated = transaction_timestamp() -- fixed at transactions start
+            	RETURNING
+            		file_id, -- what rows need to be updated in ds_records
+            		updated -- we want to return updated so we can count later how many inserts or updates happend
+            ),
+            update_mtime_ds_records AS (
+            	UPDATE
+            		ds_records dr
+            	SET
+            		mtime = (EXTRACT(EPOCH FROM transaction_timestamp()) * 1000000)::bigint -- get unix timestamp in nano seconds
+            	FROM
+            		insert_update_rerun_clusters iurc
+            	WHERE
+            		dr.referenceid = iurc.file_id::TEXT
+            	RETURNING
+            		mtime
+            )
+            SELECT
+            	count(iurc.*) AS insert_update_rerun_clusters_count
+            FROM
+            	insert_update_rerun_clusters iurc
+            WHERE
+            	updated = transaction_timestamp() -- fixed at transactions start
+            """;
 
     private static String getRerunClusterByFileIdStatement = """
             SELECT
                 id,
                 file_id,
                 rerun_cluster_id,
-                cluster_id_creation_date,
-                created_time,
-                modified_time
+                created,
+                job_id,
+                inserted,
+                updated
             FROM
                 rerun_clusters
-            WHERE
-                file_id = ?
-            """;
-
-    private static String createRerunClusterStatement = """
-            INSERT INTO rerun_clusters(
-                file_id,
-                rerun_cluster_id,
-                cluster_id_creation_date,
-                created_time,
-                modified_time
-            )
-            VALUES(
-                ?,
-                ?,
-                ?,
-                ?,
-                ?
-            )
-            """;
-
-    private static String updateRerunClusterStatement = """
-            UPDATE
-                rerun_clusters
-            SET
-                rerun_cluster_id = ?,
-                cluster_id_creation_date = ?,
-                modified_time = ?
             WHERE
                 file_id = ?
             """;
@@ -65,65 +105,43 @@ public class RerunClusterStorage extends BaseModuleStorage {
     }
 
     /**
+     * Fetch new rows from remote rerun clusters table, save it to our rerun_cluster table, update mtime in ds_records
+     * table and return number of rows inserted or updated
+     *
+     * @return RecordsCountDto number of rows inserted or updated
+     * @throws Exception
+     */
+    public RecordsCountDto updateRerunClusterTable() throws Exception {
+        try (PreparedStatement stmt = connection.prepareStatement(updateRerunClusterTableStatement)) {
+            int rows = stmt.executeUpdate();
+
+            return recordsCountDtoMapper.map(rows);
+        } catch (SQLException e) {
+            String message = "SQL Exception in updateRerunClusterTable: " + e.getMessage();
+            log.error(message);
+            throw new SQLException(message, e);
+        }
+    }
+
+    /**
      * Get a rerun cluster by fileId
      *
      * @param fileId
      * @return
      * @throws Exception
      */
-    public RerunClusterResponseDto getRerunClusterByFileId(UUID fileId) throws Exception {
+    public RerunClusterDto getRerunClusterByFileId(UUID fileId) throws Exception {
         try (PreparedStatement stmt = connection.prepareStatement(getRerunClusterByFileIdStatement)) {
             stmt.setObject(1, fileId);
             ResultSet resultSet = stmt.executeQuery();
 
             while (resultSet.next()) {
-                return rerunClusterResponseDtoMapper.map(resultSet);
+                return rerunClusterDtoMapper.map(resultSet);
             }
 
             return null;
         } catch (SQLException e) {
             String message = "SQL Exception in getRerunClusterByFileId with fileId:'" + fileId + "' error: " + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }
-    }
-
-    /**
-     * Create a rerun cluster
-     *
-     * @param rerunClusterRequestDto
-     * @throws Exception
-     */
-    public void createRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) throws Exception {
-        try (PreparedStatement stmt = connection.prepareStatement(createRerunClusterStatement)) {
-            stmt.setObject(1, rerunClusterRequestDto.getFileId());
-            stmt.setObject(2, rerunClusterRequestDto.getRerunClusterId());
-            stmt.setObject(3, rerunClusterRequestDto.getClusterIdCreationDate());
-            stmt.setObject(4, OffsetDateTime.now(UTC));
-            stmt.setObject(5, OffsetDateTime.now(UTC));
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            String message = "SQL Exception in createRerunCluster with fileId:'" + rerunClusterRequestDto.getFileId() + "' error: " + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }
-    }
-
-    /**
-     * Update a rerun cluster
-     *
-     * @param rerunClusterRequestDto
-     * @throws Exception
-     */
-    public void updateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) throws Exception {
-        try (PreparedStatement stmt = connection.prepareStatement(updateRerunClusterStatement)) {
-            stmt.setObject(1, rerunClusterRequestDto.getRerunClusterId());
-            stmt.setObject(2, rerunClusterRequestDto.getClusterIdCreationDate());
-            stmt.setObject(3, OffsetDateTime.now(UTC));
-            stmt.setObject(4, rerunClusterRequestDto.getFileId());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            String message = "SQL Exception in updateRerunCluster with fileId:'" + rerunClusterRequestDto.getFileId() + "' error: " + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }

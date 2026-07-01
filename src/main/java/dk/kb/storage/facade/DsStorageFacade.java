@@ -367,17 +367,17 @@ public class DsStorageFacade {
      * @throws NotFoundServiceException when a record cannot be found in storage.
      */
     public static RecordsCountDto touchRecord(String recordId) {
-        RecordsCountDto countDto = BaseModuleStorage.performStorageAction("updateMTimeForRecord(" + recordId +")", DsStorage.class, storage -> {
+        RecordsCountDto recordsCountDto = BaseModuleStorage.performStorageAction("updateMTimeForRecord(" + recordId +")", DsStorage.class, storage -> {
             String idNorm = IdNormaliser.normaliseId(recordId);
             return ((DsStorage) storage).updateMTimeForRecord(idNorm);
         });
 
-        if (countDto.getCount() == null | countDto.getCount() < 1){
+        if (recordsCountDto.getCount() == null | recordsCountDto.getCount() < 1){
             log.error("The record with id: '{}' was not touched as it doesn't exist in DS-storage", recordId);
             throw new NotFoundServiceException("The record with id: '{}' doesn't exist in DS-storage");
         }
 
-        return countDto;
+        return recordsCountDto;
     }
   
     /**
@@ -432,10 +432,10 @@ public class DsStorageFacade {
         //TODO touch children etc.
         return BaseModuleStorage.performStorageAction("markRecordForDelete(" + recordId + ")", DsStorage.class, storage -> {
             String idNorm = IdNormaliser.normaliseId(recordId);            
-            RecordsCountDto countDto = ((DsStorage) storage).markRecordForDelete(idNorm);
+            RecordsCountDto recordsCountDto = ((DsStorage) storage).markRecordForDelete(idNorm);
             updateMTimeForParentChild(((DsStorage) storage), recordId);
             log.info("Record marked for delete: '{}'", recordId);                       
-            return countDto;
+            return recordsCountDto;
         });
     }
 

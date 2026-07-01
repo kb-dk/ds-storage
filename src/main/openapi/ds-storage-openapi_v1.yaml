@@ -478,26 +478,18 @@ paths:
     post:
       tags:
         - 'RerunCluster'
-      summary: 'Create a Rerun Cluster or update an existing Rerun Cluster from fileId.'
+      summary: 'Fetch new rows from remote rerun clusters table, save it to our rerun_cluster table, update mtime in ds_records table and return number of rows inserted or updated in rerun_clusters table'
       security:
         - KBOAuth:
           - any
-      operationId: createOrUpdateRerunCluster
-      description: 'Create or update an existing Rerun Cluster. If a record have a matching file_id then the update the mtime for that record.'
-      requestBody:
-        content:
-          application/json:    # Media type
-            schema:            # Request body contents
-              $ref: '#/components/schemas/RerunClusterRequest'  # Reference to an object
+      operationId: updateRerunClusterTable
       responses:
         '201':
-          description: 'Return the created RerunClusterResponse.'
+          description: 'Return the number of rows inserted or updated in rerun_clusters table'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RerunClusterResponse'
-        '204':
-          description: "No Content - The request has been executed correct and the server did not deliver any content."
+                $ref: '#/components/schemas/RecordsCount'
 
   /rerun-cluster/{fileId}:
     get:
@@ -517,11 +509,11 @@ paths:
             format: uuid
       responses:
         '200':
-          description: 'Return the RerunClusterResponse.'
+          description: 'Return the RerunCluster.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RerunClusterResponse'
+                $ref: '#/components/schemas/RerunCluster'
         '404':
           description: "Rerun Cluster fileId not found."
 
@@ -696,15 +688,13 @@ components:
           type: string
           description: 'The Kaltura  ID for the record. It can be null even if the record is Kaltura but the mapping has not been updated yet.  '
 
-
     RecordsCount:
-      type: object                   
-      properties:           
+      type: object
+      properties:
          count:
           type: integer
           format: int32
-          description: 'Number of records updated'
-
+          description: 'Number of rows inserted and/or updated'
 
     Transcription:
       type: object
@@ -731,39 +721,21 @@ components:
           type: string
           description: 'Each line from the transcription text.Must start with seconds.mm to and from interval. Line break between each sentence. Example: 27.06 - 32.04  This is a text'
 
-    RerunClusterRequest:
-      type: object
-      required:
-        - fileId
-        - rerun_cluster_id
-        - cluster_id_creation_date
-      properties:
-        fileId:
-          type: string
-          format: uuid
-          description: 'fileId that matches a Preservica.'
-        rerunClusterId:
-          type: string
-          format: uuid
-          description: 'All files with this id, is a rerun of the same broadcast.'
-        clusterIdCreationDate:
-          type: string
-          format: date-time
-          description: 'When was this identified as a rerun by AI team.'
-
-    RerunClusterResponse:
+    RerunCluster:
       type: object
       required:
         - id
         - fileId
         - rerun_cluster_id
-        - cluster_id_creation_date
-        - created_time
-        - modified_time
+        - created
+        - job_id
+        - inserted
+        - updated
       properties:
         id:
-          type: integer
-          description: 'Primary key'
+          type: string
+          format: uuid
+          description: 'Unique UUID.'
         fileId:
           type: string
           format: uuid
@@ -772,18 +744,22 @@ components:
           type: string
           format: uuid
           description: 'All files with this id, is a rerun of the same broadcast.'
-        clusterIdCreationDate:
+        created:
           type: string
           format: date-time
-          description: 'When was this identified as a rerun by AI team.'
-        createdTime:
+          description: 'When was this identified as a rerun by AI team?'
+        jobId:
+          type: string
+          format: uuid
+          description: 'Unique UUID of what job created this rerun cluster.'
+        inserted:
           type: string
           format: date-time
-          description: 'When was this rerun saved in database'
-        modifiedTime:
+          description: 'When was this row inserted in rerun_clusters table?'
+        updated:
           type: string
           format: date-time
-          description: 'When was this rerun last updated in database'
+          description: 'When was this row updated in rerun_clusters table'
 
     DsRecordList:
       type: array

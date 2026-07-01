@@ -131,15 +131,15 @@ public class DsStorageClientTest {
     @Test
     public void testTouchRecord() {
         String id = "ds.tv:oai:io:a89956ea-4e17-4756-92da-c196b59dbcc5";
-        RecordsCountDto countDto = remote.touchRecord(id);
+        RecordsCountDto recordsCountDto = remote.touchRecord(id);
 
-        assertEquals(1, countDto.getCount());
+        assertEquals(1, recordsCountDto.getCount());
     }
 
     @Test
     public void testMarkRecordForDelete() {              
          String id="ds.radio:oai:io:8f8f2da9-98e3-4ba2-aa6c-XXXXXX";  //does not exist
-         RecordsCountDto  marked = remote.markRecordForDelete(id); 
+         RecordsCountDto  marked = remote.markRecordForDelete(id);
          assertEquals(0,marked.getCount());
          
     }

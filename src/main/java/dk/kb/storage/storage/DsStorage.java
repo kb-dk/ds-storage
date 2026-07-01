@@ -1,5 +1,6 @@
 package dk.kb.storage.storage;
 
+import dk.kb.storage.mapper.RecordsCountDtoMapper;
 import dk.kb.storage.model.v1.*;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 import dk.kb.util.Pair;
@@ -23,6 +24,8 @@ import java.util.Objects;
 public class DsStorage extends BaseModuleStorage {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorage.class);
+
+    private final static RecordsCountDtoMapper recordsCountDtoMapper = new RecordsCountDtoMapper();
 
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ", Locale.getDefault());
 
@@ -726,10 +729,9 @@ public class DsStorage extends BaseModuleStorage {
         try (PreparedStatement stmt = connection.prepareStatement(updateMTimeForRecordStatement)) {
             stmt.setLong(1, nowStamp);
             stmt.setString(2, recordId);
-            int numberUpdated = stmt.executeUpdate();
-            RecordsCountDto countDto = new RecordsCountDto();
-            countDto.setCount(numberUpdated);
-            return countDto;
+            int rows = stmt.executeUpdate();
+
+            return recordsCountDtoMapper.map(rows);
         } catch (SQLException e) {
             String message = "SQL Exception in updateMTimeForRecord with id:" + recordId + " error:" + e.getMessage();
             log.error(message);
@@ -749,10 +751,9 @@ public class DsStorage extends BaseModuleStorage {
         try (PreparedStatement stmt = connection.prepareStatement(markRecordForDeleteStatement)) {
             stmt.setLong(1, nowStamp);
             stmt.setString(2, recordId);
-            int numberUpdated = stmt.executeUpdate();
-            RecordsCountDto countDto = new RecordsCountDto();
-            countDto.setCount(numberUpdated);
-            return countDto;
+            int rows = stmt.executeUpdate();
+
+            return recordsCountDtoMapper.map(rows);
         } catch (SQLException e) {
             String message = "SQL Exception in markRecordForDelete  with id:" + recordId + " error:" + e.getMessage();
             log.error(message);
@@ -772,11 +773,9 @@ public class DsStorage extends BaseModuleStorage {
             stmt.setString(1, origin);
             stmt.setLong(2, mTimeFrom);
             stmt.setLong(3, mTimeTo);
-            int deleted = stmt.executeUpdate();
-            RecordsCountDto countDto = new RecordsCountDto();
-            countDto.setCount(deleted);
-            return countDto;
+            int rows = stmt.executeUpdate();
 
+            return recordsCountDtoMapper.map(rows);
         } catch (SQLException e) {
             String message = "SQL Exception in deleteRecordsForOrigin for origin:" + origin + " error:" + e.getMessage();
             log.error(message, e);
@@ -792,11 +791,9 @@ public class DsStorage extends BaseModuleStorage {
 
         try (PreparedStatement stmt = connection.prepareStatement(deleteMarkedForDeleteStatement)) {
             stmt.setString(1, origin);
-            int numberDeleted = stmt.executeUpdate();
-            RecordsCountDto countDto = new RecordsCountDto();
-            countDto.setCount(numberDeleted);
-            return countDto;
+            int rows = stmt.executeUpdate();
 
+            return recordsCountDtoMapper.map(rows);
         } catch (SQLException e) {
             String message = "SQL Exception in deleteMarkedForDelete for origin:" + origin + " error:" + e.getMessage();
             log.error(message);

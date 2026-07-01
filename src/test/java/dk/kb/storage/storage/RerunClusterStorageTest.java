@@ -1,154 +1,135 @@
 package dk.kb.storage.storage;
 
-import dk.kb.storage.config.ServiceConfig;
-import dk.kb.storage.model.v1.RerunClusterRequestDto;
-import dk.kb.storage.model.v1.RerunClusterResponseDto;
-import dk.kb.storage.util.H2DbUtil;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import dk.kb.storage.model.v1.RecordsCountDto;
+import dk.kb.storage.model.v1.RerunClusterDto;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import java.sql.SQLException;
+import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import static java.time.ZoneOffset.UTC;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RerunClusterStorageTest extends UnitTestUtil {
+public class RerunClusterStorageTest {
 
-    private static RerunClusterStorageForUnitTest storage = null;
+    private BasicDataSource mockedDataSource;
+    private Connection mockedConnection;
+    private PreparedStatement mockedStatement;
+    private RerunClusterStorage rerunClusterStorage;
 
-    @BeforeAll
-    public static void beforeClass() throws Exception {
-        ServiceConfig.initialize("conf/ds-storage*.yaml");
-        H2DbUtil.createEmptyH2DBFromDDL(URL, DRIVER, USERNAME, PASSWORD, List.of("ddl/create_rerun_clusters_h2_unittest.ddl"));
-        BaseModuleStorage.initialize(DRIVER, URL, USERNAME, PASSWORD);
-        storage = new RerunClusterStorageForUnitTest();
-    }
-
-    /**
-     * Delete all records between each unittest. The clearTableRecords is only called from here.
-     * The facade class is responsible for committing transactions. So clean up between unittests.
-     */
     @BeforeEach
-    public void beforeEach() throws Exception {
-        storage.clearTableRecords();
-        storage.commit();
+    public void setUp() throws Exception {
+        // Create all mocks
+        mockedDataSource = Mockito.mock(BasicDataSource.class);
+        mockedConnection = Mockito.mock(Connection.class);
+        mockedStatement = Mockito.mock(PreparedStatement.class);
+
+        // Configure mocks
+        Mockito.when(mockedDataSource.getConnection()).thenReturn(mockedConnection);
+        Mockito.when(mockedConnection.prepareStatement(Mockito.anyString()))
+                .thenReturn(mockedStatement);
+
+        // Inject mocked dataSource into the static field BEFORE creating instance
+        Field field = BaseModuleStorage.class.getDeclaredField("dataSource");
+        field.setAccessible(true);
+        field.set(null, mockedDataSource);
+
+        // Now create the instance (constructor will use mocked dataSource)
+        rerunClusterStorage = new RerunClusterStorage();
     }
 
-    /**
-     * No reason to delete DB data file after test, since we clear table it before each test.
-     * This way you can open the DB in a DB-browser after the unittest and see the result.
-     * Just run that single test and look in the DB
-     */
-    @AfterAll
-    public static void afterClass() {
-        RerunClusterStorage.shutdown();
-    }
+    @AfterEach
+    public void tearDown() throws Exception {
+        // Reset static fields
+        Field field = BaseModuleStorage.class.getDeclaredField("dataSource");
+        field.setAccessible(true);
+        field.set(null, null);
 
-    @Test
-    public void createRerunCluster_whenCreatingRerunCluster_thenReturnRerunCluster() throws Exception {
-        // Arrange
-        UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
-        UUID rerunClusterId = UUID.fromString("9c79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
-        OffsetDateTime clusterIdCreationDate = OffsetDateTime.parse("2026-04-30T12:26:57.570+02:00");
-
-        RerunClusterRequestDto rerunClusterRequestDto = new RerunClusterRequestDto();
-        rerunClusterRequestDto.setFileId(fileId);
-        rerunClusterRequestDto.setRerunClusterId(rerunClusterId);
-        rerunClusterRequestDto.setClusterIdCreationDate(clusterIdCreationDate);
-
-        // Act
-        storage.createRerunCluster(rerunClusterRequestDto);
-        RerunClusterResponseDto rerunClusterResponseDto = storage.getRerunClusterByFileId(fileId);
-
-        // Assert
-        assertNotNull(rerunClusterResponseDto);
-        assertNotNull(rerunClusterResponseDto.getId());
-        assertEquals(fileId, rerunClusterResponseDto.getFileId());
-        assertEquals(rerunClusterId, rerunClusterResponseDto.getRerunClusterId());
-        assertEquals(clusterIdCreationDate, rerunClusterResponseDto.getClusterIdCreationDate());
-        assertTrue(OffsetDateTime.now(UTC).isAfter(rerunClusterResponseDto.getCreatedTime()));
-        assertTrue(OffsetDateTime.now(UTC).isAfter(rerunClusterResponseDto.getModifiedTime()));
+        // Close resources if needed
+        if (rerunClusterStorage != null) {
+            rerunClusterStorage.close();
+        }
     }
 
     @Test
-    public void createRerunCluster_whenFileIdAlreadyExists_thenThrowNewSQLException() throws Exception {
+    public void updateRerunClusterTable_whenNewRowsIsPresent_thenReturnHowManyRowsWasInsertedOrUpdated()
+            throws Exception {
         // Arrange
-        UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
-        UUID rerunClusterId = UUID.fromString("9c79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
-        OffsetDateTime clusterIdCreationDate = OffsetDateTime.parse("2026-04-30T12:26:57.570+02:00");
-
-        RerunClusterRequestDto rerunClusterRequestDto = new RerunClusterRequestDto();
-        rerunClusterRequestDto.setFileId(fileId);
-        rerunClusterRequestDto.setRerunClusterId(rerunClusterId);
-        rerunClusterRequestDto.setClusterIdCreationDate(clusterIdCreationDate);
-
-        String expectedMessage = "SQL Exception in createRerunCluster with fileId:'" + fileId + "' error: Unique index or primary key violation: ";
-
-        storage.createRerunCluster(rerunClusterRequestDto);
+        Mockito.when(mockedStatement.executeUpdate()).thenReturn(1);
 
         // Act
-        Exception exception = assertThrows(SQLException.class, () -> storage.createRerunCluster(rerunClusterRequestDto));
+        RecordsCountDto result = rerunClusterStorage.updateRerunClusterTable();
 
         // Assert
-        assertTrue(exception.getMessage().startsWith(expectedMessage));
+        Mockito.verify(mockedStatement, Mockito.times(1)).executeUpdate();
+        assertNotNull(result);
+        assertEquals(1, result.getCount());
     }
 
     @Test
-    public void updateRerunCluster_whenUpdatingRerunClusterInformation_thenReturnUpdatedRerunCluster() throws Exception {
+    public void getRerunClusterByFileId_whenFileIdExists_thenReturnRerunClusterDto() throws Exception {
         // Arrange
+        UUID id = UUID.fromString("0011e17f-2fa0-454f-98d2-f1c690de2df1");
         UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
         UUID rerunClusterId = UUID.fromString("9c79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
-        OffsetDateTime clusterIdCreationDate = OffsetDateTime.parse("2026-04-30T12:26:57.570+02:00");
+        OffsetDateTime created = OffsetDateTime.parse("2026-04-30T12:26:57.570Z");
+        UUID jobId = UUID.fromString("0033e17f-2fa0-454f-98d2-f1c690de2df1");
+        OffsetDateTime inserted = OffsetDateTime.parse("2026-06-01T12:26:57.570Z");
+        OffsetDateTime updated = OffsetDateTime.parse("2026-06-04T12:26:57.570Z");
 
-        UUID updateRerunClusterId = UUID.fromString("1a79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
-        OffsetDateTime updateClusterIdCreationDate = OffsetDateTime.parse("2026-05-30T00:00:00.001+02:00");
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
 
-        RerunClusterRequestDto rerunRerunClusterRequestDto = new RerunClusterRequestDto();
-        rerunRerunClusterRequestDto.setFileId(fileId);
-        rerunRerunClusterRequestDto.setRerunClusterId(rerunClusterId);
-        rerunRerunClusterRequestDto.setClusterIdCreationDate(clusterIdCreationDate);
+        // Mock next() to return true once, then false (simulates one row)
+        Mockito.when(resultSet.next()).thenReturn(true).thenReturn(false);
 
-        RerunClusterRequestDto updateRerunClusterRequestDto = new RerunClusterRequestDto();
-        updateRerunClusterRequestDto.setFileId(fileId);
-        updateRerunClusterRequestDto.setRerunClusterId(updateRerunClusterId);
-        updateRerunClusterRequestDto.setClusterIdCreationDate(updateClusterIdCreationDate);
+        // Mock the column getters by name
+        Mockito.when(resultSet.getObject("id", UUID.class)).thenReturn(id);
+        Mockito.when(resultSet.getObject("file_id", UUID.class)).thenReturn(fileId);
+        Mockito.when(resultSet.getObject("rerun_cluster_id", UUID.class)).thenReturn(rerunClusterId);
+        Mockito.when(resultSet.getObject("created", OffsetDateTime.class)).thenReturn(created);
+        Mockito.when(resultSet.getObject("job_id", UUID.class)).thenReturn(jobId);
+        Mockito.when(resultSet.getObject("inserted", OffsetDateTime.class)).thenReturn(inserted);
+        Mockito.when(resultSet.getObject("updated", OffsetDateTime.class)).thenReturn(updated);
 
-        storage.createRerunCluster(rerunRerunClusterRequestDto);
-        RerunClusterResponseDto createdRerunClusterResponseDto = storage.getRerunClusterByFileId(fileId);
+        Mockito.when(mockedStatement.executeQuery()).thenReturn(resultSet);
 
         // Act
-        storage.updateRerunCluster(updateRerunClusterRequestDto);
-        RerunClusterResponseDto updatedRerunClusterResponseDto = storage.getRerunClusterByFileId(fileId);
+        RerunClusterDto returnedRerunClusterDto = rerunClusterStorage.getRerunClusterByFileId(fileId);
 
         // Assert
-        assertNotNull(updatedRerunClusterResponseDto);
-        assertEquals(createdRerunClusterResponseDto.getId(), updatedRerunClusterResponseDto.getId());
-
-        assertEquals(createdRerunClusterResponseDto.getFileId(), updatedRerunClusterResponseDto.getFileId());
-
-        assertNotEquals(createdRerunClusterResponseDto.getRerunClusterId(), updatedRerunClusterResponseDto.getRerunClusterId());
-        assertEquals(updateRerunClusterId, updatedRerunClusterResponseDto.getRerunClusterId());
-
-        assertNotEquals(createdRerunClusterResponseDto.getClusterIdCreationDate(), updatedRerunClusterResponseDto.getClusterIdCreationDate());
-        assertEquals(updateClusterIdCreationDate, updatedRerunClusterResponseDto.getClusterIdCreationDate());
-
-        assertEquals(createdRerunClusterResponseDto.getCreatedTime(), updatedRerunClusterResponseDto.getCreatedTime());
-        assertTrue(createdRerunClusterResponseDto.getModifiedTime().isBefore(updatedRerunClusterResponseDto.getModifiedTime()));
+        Mockito.verify(mockedStatement, Mockito.times(1)).executeQuery();
+        assertNotNull(returnedRerunClusterDto);
+        assertEquals(id, returnedRerunClusterDto.getId());
+        assertEquals(fileId, returnedRerunClusterDto.getFileId());
+        assertEquals(rerunClusterId, returnedRerunClusterDto.getRerunClusterId());
+        assertEquals(created, returnedRerunClusterDto.getCreated());
+        assertEquals(jobId, returnedRerunClusterDto.getJobId());
+        assertEquals(inserted, returnedRerunClusterDto.getInserted());
+        assertEquals(updated, returnedRerunClusterDto.getUpdated());
     }
 
     @Test
     public void getRerunClusterByFileId_whenFileIdDoNotExists_thenReturnNull() throws Exception {
         // Arrange
         UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        // Mock next() to return false once simulate zero rows
+        Mockito.when(resultSet.next()).thenReturn(false);
+        Mockito.when(mockedStatement.executeQuery()).thenReturn(resultSet);
 
         // Act
-        RerunClusterResponseDto rerunClusterResponseDto = storage.getRerunClusterByFileId(fileId);
+        RerunClusterDto rerunClusterDto = rerunClusterStorage.getRerunClusterByFileId(fileId);
 
         // Assert
-        assertNull(rerunClusterResponseDto);
+        Mockito.verify(mockedStatement, Mockito.times(1)).executeQuery();
+        assertNull(rerunClusterDto);
     }
 }

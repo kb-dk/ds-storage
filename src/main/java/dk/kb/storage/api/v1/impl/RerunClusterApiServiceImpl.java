@@ -2,8 +2,8 @@ package dk.kb.storage.api.v1.impl;
 
 import dk.kb.storage.api.v1.RerunClusterApi;
 import dk.kb.storage.facade.RerunClusterFacade;
-import dk.kb.storage.model.v1.RerunClusterRequestDto;
-import dk.kb.storage.model.v1.RerunClusterResponseDto;
+import dk.kb.storage.model.v1.RecordsCountDto;
+import dk.kb.storage.model.v1.RerunClusterDto;
 import dk.kb.util.webservice.ImplBase;
 import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
 import org.apache.cxf.interceptor.InInterceptors;
@@ -23,44 +23,24 @@ public class RerunClusterApiServiceImpl extends ImplBase implements RerunCluster
     private static final Logger log = LoggerFactory.getLogger(RerunClusterApiServiceImpl.class);
 
     /**
-     * Create a Rerun Cluster or update an existing Rerun Cluster from fileId.
+     * Fetch new rows from remote rerun clusters table, save it to our rerun_cluster table, update mtime in ds_records
+     * table and return number of rows inserted or updated
      *
-     * @param rerunClusterRequestDto:
-     * @return <ul>
-     * <li>code = 201, message = "Return the created RerunClusterResponse.", response = RerunClusterResponseDto.class</li>
-     * <li>code = 204, message = "No Content - The request has been executed correct and the server did not deliver any content."</li>
-     * </ul>
-     * <p>
-     * Create or update an existing Rerun Cluster. If a record have a matching file_id then the update the mtime for that record.
-     * @implNote return will always produce a HTTP 200 code. Throw ServiceException if you need to return other codes
+     * @return RecordsCountDto number of rows inserted or updated
      */
     @Override
-    public RerunClusterResponseDto createOrUpdateRerunCluster(RerunClusterRequestDto rerunClusterRequestDto) {
-        // Maybe these are not needed! Sanity check
-        if (rerunClusterRequestDto.getFileId() == null) {
-            throw new InvalidArgumentServiceException("'fileId' can not be null");
-        }
-        if (rerunClusterRequestDto.getRerunClusterId() == null) {
-            throw new InvalidArgumentServiceException("'rerunClusterId' can not be null");
-        }
-        if (rerunClusterRequestDto.getClusterIdCreationDate() == null) {
-            throw new InvalidArgumentServiceException("'clusterIdCreationDate' can not be null");
-        }
-        return RerunClusterFacade.createOrUpdateRerunCluster(rerunClusterRequestDto);
+    public RecordsCountDto updateRerunClusterTable() {
+        return RerunClusterFacade.updateRerunClusterTable();
     }
 
     /**
      * Get a Rerun Cluster from fileId.
      *
      * @param fileId:
-     * @return <ul>
-     * <li>code = 200, message = "Return the RerunClusterResponse.", response = RerunClusterResponseDto.class</li>
-     * <li>code = 404, message = "Rerun Cluster fileId not found."</li>
-     * </ul>
-     * @implNote return will always produce a HTTP 200 code. Throw ServiceException if you need to return other codes
+     * @return RerunClusterDto
      */
     @Override
-    public RerunClusterResponseDto getRerunClusterByFileId(UUID fileId) {
+    public RerunClusterDto getRerunClusterByFileId(UUID fileId) {
         return RerunClusterFacade.getRerunClusterByFileId(fileId);
     }
 }
