@@ -23,7 +23,7 @@ public class DsStorageForUnitTest extends DsStorage {
     }
 
     /** 
-     * Will clear data in ds_records, transcriptions and rerun_clusters tables.
+     * Will clear data in ds_records and transcriptions tables.
      * Unit test functionality only.
      */
     public void clearTableRecords() throws SQLException {

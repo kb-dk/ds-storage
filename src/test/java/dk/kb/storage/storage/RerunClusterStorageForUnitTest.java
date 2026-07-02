@@ -22,7 +22,7 @@ public class RerunClusterStorageForUnitTest extends RerunClusterStorage {
     }
 
     /**
-     * Will clear data in ds_records, transcriptions and rerun_clusters tables.
+     * Will clear data in rerun_clusters tables.
      * Unit test functionality only.
      */
     public void clearTableRecords() throws SQLException {
