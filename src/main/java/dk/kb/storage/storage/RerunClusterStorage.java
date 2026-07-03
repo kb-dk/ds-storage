@@ -35,7 +35,7 @@ public class RerunClusterStorage extends BaseModuleStorage {
             		inserted,
             		updated
             	)
-            	SELECT DISTINCT ON (rrc.file_id) -- there can be multple of the same file_id (history) and we want the newest inserted file_id
+                SELECT DISTINCT ON (rrc.file_id) -- there can be multiple of the same file_id (history) and we want the newest inserted file_id
             		rrc.id,
             		rrc.file_id,
             		rrc.rerun_cluster_id,
