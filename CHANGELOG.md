@@ -5,25 +5,64 @@ All notable changes to ds-storage will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Added support for OffsetDateTime with OpenAPI generation.
+- Added rerun_clusters table (*Remember: rerun_clusters table creation for OPS to be found
+  in `create_rerun_clusters.ddl`*).
+- Added endpoint `POST /rerun_clusters` that fetch new rows from remote `p3rerun` `clusters` table, save it to our
+  `rerun_cluster` table, update `mtime` in `ds_records` table and return number of rows inserted or updated in
+  `rerun_clusters` table.
+- Added endpoint `GET /rerun_clusters/{fileId}` that returns a `RerunCluster` matching the fileId. Returns a `HTTP 404`
+  if no match was found.
+
+### Changed
+
+- Refactored base database methods into own class `BaseModuleStorage`, so it follows the style from `ds-datahandler` and
+  `ds-license``ds-datahandler`.
+- Refactored method `performStorageAction` to dynamically take storageClass from what class is calling the method, so it
+  is possible to have multiple storage classes.
+- Refactored mapping of inserted/updated/deleted database row(s) into own mapping class.
+- Refactored method `createEmptyH2DBFromDDL` to dynamically take multiple ddl scripts instead of hardcoded ddl.
+- Refactored `@InInterceptors(interceptors` in `apiServiceImpl.mustache` to add the correct path to
+  `KBAuthorizationInterceptor`.
+- Renamed class `DsStorageUnitTestUtil` to `UnitTestUtil` and refactored the class so it is possible to have multiple
+  unit test storage classes.
+
+### Deleted
+
+- Removed deprecated `description` from `@Api` in `api.mustache` file.
+- Removed deprecated `servers.description` from `ds-storage-openapi_v1.yaml`.
+
+### Fixed
+
 ## [5.0.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-5.0.0) - 2026-06-10
 
 ### Changed
+
 - Removed all logic using intermediate Kaltura Mapping table. Not used any longer.
 - Table can be deleted with: DROP TABLE DS_MAPPING;
 - Create minimum client jar. Cross module dependencies uses this new jar instead of the full classes jar.
 
 ### Fixed
+
 - Fixed keeping kalturaID in table when updating a record, if referenceID is the same for new and old record.
 
 ## [4.0.0](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-4.0.0) - 2026-01-29
 
 ### Added
+
 - New table in database (ds_transcriptions). DDL to create the table must be run for new release.
-- New service method transcription(POST) to add or update a transcription. Also added to DsStorageClient.(It was not, but is now)
+- New service method transcription(POST) to add or update a transcription. Also added to DsStorageClient.(It was not,
+  but is now)
 - New service method to load a transcription. Key is the external fileId (filename).
 
 ## [3.0.3](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-3.0.3) - 2025-12-03
+
 ### Fixed
+
 - Fix multiple records have same stream defined.This should not happen but it does due to data errors.
 
 ## [3.0.1](https://github.com/kb-dk/ds-storage/releases/tag/ds-storage-3.0.1) 2025-09-01
