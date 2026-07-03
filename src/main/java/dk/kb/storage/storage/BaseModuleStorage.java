@@ -123,7 +123,6 @@ public abstract class BaseModuleStorage implements AutoCloseable {
 
     /**
      * Start a storage transaction and performs the given action on it, returning the result from the action.
-     * <p>
      * If the action throws an exception, a {@link BaseModuleStorage#rollback()} is performed.
      * If the action passes without exceptions, a {@link BaseModuleStorage#commit()} is performed.
      *
