@@ -62,13 +62,18 @@ public class RerunClusterStorageTest {
     public void updateRerunClusterTable_whenNewRowsIsPresent_thenReturnHowManyRowsWasInsertedOrUpdated()
             throws Exception {
         // Arrange
-        Mockito.when(mockedStatement.executeUpdate()).thenReturn(1);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        // Mock the column getters by name
+        Mockito.when(resultSet.getInt("rerun_clusters_count")).thenReturn(1);
+        Mockito.when(resultSet.getInt("ds_records_count")).thenReturn(1);
+        Mockito.when(mockedStatement.executeQuery()).thenReturn(resultSet);
 
         // Act
         RecordsCountDto result = rerunClusterStorage.updateRerunClusterTable();
 
         // Assert
-        Mockito.verify(mockedStatement, Mockito.times(1)).executeUpdate();
+        Mockito.verify(mockedStatement, Mockito.times(1)).executeQuery();
         assertNotNull(result);
         assertEquals(1, result.getCount());
     }

@@ -62,8 +62,7 @@ public class RerunClusterStorage extends BaseModuleStorage {
             		job_id = EXCLUDED.job_id,
             		updated = transaction_timestamp() -- fixed at transactions start
             	RETURNING
-            		file_id, -- what rows need to be updated in ds_records
-            		updated -- we want to return updated so we can count later how many inserts or updates happend
+            		file_id -- what rows need to be updated in ds_records and used in count(*)
             ),
             update_mtime_ds_records AS (
             	UPDATE
@@ -75,14 +74,27 @@ public class RerunClusterStorage extends BaseModuleStorage {
             	WHERE
             		dr.referenceid = iurc.file_id::TEXT
             	RETURNING
-            		mtime
+            		mtime -- used in count(*)
+            ),
+            inserted_updated_rerun_clusters AS (
+                SELECT
+            		count(*) AS rerun_clusters_count
+            	FROM
+            		insert_update_rerun_clusters
+            ),
+            updated_ds_records AS (
+            	SELECT
+            		count(*) AS ds_records_count
+            	FROM
+            		update_mtime_ds_records
             )
             SELECT
-            	count(iurc.*) AS insert_update_rerun_clusters_count
+            	iurc.rerun_clusters_count,
+            	udr.ds_records_count
             FROM
-            	insert_update_rerun_clusters iurc
-            WHERE
-            	updated = transaction_timestamp() -- fixed at transactions start
+            	inserted_updated_rerun_clusters iurc
+            CROSS JOIN
+            	updated_ds_records udr
             """;
 
     private static String getRerunClusterByFileIdStatement = """
@@ -113,9 +125,14 @@ public class RerunClusterStorage extends BaseModuleStorage {
      */
     public RecordsCountDto updateRerunClusterTable() throws Exception {
         try (PreparedStatement stmt = connection.prepareStatement(updateRerunClusterTableStatement)) {
-            int rows = stmt.executeUpdate();
+            ResultSet resultSet = stmt.executeQuery();
 
-            return recordsCountDtoMapper.map(rows);
+            log.info("Inserted/updated rows in rerun_clusters:'{}'. Updated rows in ds_records:'{}'",
+                    resultSet.getInt("rerun_clusters_count"),
+                    resultSet.getInt("ds_records_count")
+            );
+
+            return recordsCountDtoMapper.map(resultSet.getInt("rerun_clusters_count"));
         } catch (SQLException e) {
             String message = "SQL Exception in updateRerunClusterTable: " + e.getMessage();
             log.error(message);

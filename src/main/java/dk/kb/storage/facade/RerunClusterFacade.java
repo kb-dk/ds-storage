@@ -23,7 +23,6 @@ public class RerunClusterFacade {
     public static RecordsCountDto updateRerunClusterTable() {
         return BaseModuleStorage.performStorageAction("updateRerunClusterTable()", RerunClusterStorage.class, storage -> {
             RecordsCountDto recordsCountDto = ((RerunClusterStorage) storage).updateRerunClusterTable();
-            log.info("Inserted or updated rows in rerun_clusters table='{}'", recordsCountDto.getCount());
             return recordsCountDto;
         });
     }
