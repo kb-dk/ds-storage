@@ -99,15 +99,16 @@ public class RerunClusterStorage extends BaseModuleStorage {
 
     private static String getRerunClusterByFileIdStatement = """
             SELECT
-                id,
-                file_id,
-                rerun_cluster_id,
-                created,
-                job_id,
-                inserted,
-                updated
+                rc.id,
+                rc.file_id,
+                rc.rerun_cluster_id,
+                rc.created,
+                rc.job_id,
+                rc.inserted,
+                rc.updated,
+                (SELECT COUNT(*) FROM rerun_clusters WHERE rerun_cluster_id = rc.rerun_cluster_id) as rerun_cluster_id_count
             FROM
-                rerun_clusters
+                rerun_clusters rc
             WHERE
                 file_id = ?
             """;

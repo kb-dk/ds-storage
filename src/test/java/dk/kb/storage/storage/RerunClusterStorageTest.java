@@ -84,6 +84,7 @@ public class RerunClusterStorageTest {
         UUID id = UUID.fromString("0011e17f-2fa0-454f-98d2-f1c690de2df1");
         UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
         UUID rerunClusterId = UUID.fromString("9c79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
+        Integer rerunClusterIdCount = 2;
         OffsetDateTime created = OffsetDateTime.parse("2026-04-30T12:26:57.570Z");
         UUID jobId = UUID.fromString("0033e17f-2fa0-454f-98d2-f1c690de2df1");
         OffsetDateTime inserted = OffsetDateTime.parse("2026-06-01T12:26:57.570Z");
@@ -98,6 +99,7 @@ public class RerunClusterStorageTest {
         Mockito.when(resultSet.getObject("id", UUID.class)).thenReturn(id);
         Mockito.when(resultSet.getObject("file_id", UUID.class)).thenReturn(fileId);
         Mockito.when(resultSet.getObject("rerun_cluster_id", UUID.class)).thenReturn(rerunClusterId);
+        Mockito.when(resultSet.getInt("rerun_cluster_id_count")).thenReturn(rerunClusterIdCount);
         Mockito.when(resultSet.getObject("created", OffsetDateTime.class)).thenReturn(created);
         Mockito.when(resultSet.getObject("job_id", UUID.class)).thenReturn(jobId);
         Mockito.when(resultSet.getObject("inserted", OffsetDateTime.class)).thenReturn(inserted);
@@ -114,6 +116,7 @@ public class RerunClusterStorageTest {
         assertEquals(id, returnedRerunClusterDto.getId());
         assertEquals(fileId, returnedRerunClusterDto.getFileId());
         assertEquals(rerunClusterId, returnedRerunClusterDto.getRerunClusterId());
+        assertEquals(rerunClusterIdCount, returnedRerunClusterDto.getRerunClusterIdCount());
         assertEquals(created, returnedRerunClusterDto.getCreated());
         assertEquals(jobId, returnedRerunClusterDto.getJobId());
         assertEquals(inserted, returnedRerunClusterDto.getInserted());

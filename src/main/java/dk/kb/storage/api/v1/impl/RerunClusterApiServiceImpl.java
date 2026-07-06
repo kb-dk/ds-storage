@@ -5,7 +5,6 @@ import dk.kb.storage.facade.RerunClusterFacade;
 import dk.kb.storage.model.v1.RecordsCountDto;
 import dk.kb.storage.model.v1.RerunClusterDto;
 import dk.kb.util.webservice.ImplBase;
-import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
 import org.apache.cxf.interceptor.InInterceptors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

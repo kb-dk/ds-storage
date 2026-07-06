@@ -726,9 +726,10 @@ components:
       required:
         - id
         - fileId
-        - rerun_cluster_id
+        - rerunClusterId
+        - rerunClusterIdCount
         - created
-        - job_id
+        - jobId
         - inserted
         - updated
       properties:
@@ -744,6 +745,10 @@ components:
           type: string
           format: uuid
           description: 'All files with this id, is a rerun of the same broadcast.'
+        rerunClusterIdCount:
+          type: integer
+          format: int32
+          description: 'How many rerun clusters has the same rerun cluster id.'
         created:
           type: string
           format: date-time

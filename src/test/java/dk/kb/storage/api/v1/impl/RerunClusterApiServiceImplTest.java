@@ -1,6 +1,5 @@
 package dk.kb.storage.api.v1.impl;
 
-import dk.kb.storage.facade.RerunClusterFacade;
 import dk.kb.storage.model.v1.RecordsCountDto;
 import dk.kb.storage.model.v1.RerunClusterDto;
 import dk.kb.storage.storage.BaseModuleStorage;
@@ -45,6 +44,7 @@ public class RerunClusterApiServiceImplTest {
         UUID id = UUID.fromString("0011e17f-2fa0-454f-98d2-f1c690de2df1");
         UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
         UUID rerunClusterId = UUID.fromString("9c79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
+        Integer rerunClusterIdCount = 2;
         OffsetDateTime created = OffsetDateTime.parse("2026-04-30T12:26:57.570Z");
         UUID jobId = UUID.fromString("0033e17f-2fa0-454f-98d2-f1c690de2df1");
         OffsetDateTime inserted = OffsetDateTime.parse("2026-06-01T12:26:57.570Z");
@@ -54,6 +54,7 @@ public class RerunClusterApiServiceImplTest {
         rerunClusterDto.setId(id);
         rerunClusterDto.setFileId(fileId);
         rerunClusterDto.setRerunClusterId(rerunClusterId);
+        rerunClusterDto.setRerunClusterIdCount(rerunClusterIdCount);
         rerunClusterDto.setCreated(created);
         rerunClusterDto.setJobId(jobId);
         rerunClusterDto.setInserted(inserted);
@@ -73,6 +74,7 @@ public class RerunClusterApiServiceImplTest {
             assertEquals(id, returnedRerunClusterDto.getId());
             assertEquals(fileId, returnedRerunClusterDto.getFileId());
             assertEquals(rerunClusterId, returnedRerunClusterDto.getRerunClusterId());
+            assertEquals(rerunClusterIdCount, returnedRerunClusterDto.getRerunClusterIdCount());
             assertEquals(created, returnedRerunClusterDto.getCreated());
             assertEquals(jobId, returnedRerunClusterDto.getJobId());
             assertEquals(inserted, returnedRerunClusterDto.getInserted());

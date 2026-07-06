@@ -5,7 +5,6 @@ import dk.kb.storage.model.v1.RerunClusterDto;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class RerunClusterDtoMapper {
@@ -23,6 +22,7 @@ public class RerunClusterDtoMapper {
         output.setId(resultSet.getObject("id", UUID.class));
         output.setFileId(resultSet.getObject("file_id", UUID.class));
         output.setRerunClusterId(resultSet.getObject("rerun_cluster_id", UUID.class));
+        output.setRerunClusterIdCount(resultSet.getInt("rerun_cluster_id_count"));
         output.setCreated(resultSet.getObject("created", OffsetDateTime.class));
         output.setJobId(resultSet.getObject("job_id", UUID.class));
         output.setInserted(resultSet.getObject("inserted", OffsetDateTime.class));

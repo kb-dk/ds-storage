@@ -1,23 +1,14 @@
 package dk.kb.storage.facade;
 
-import dk.kb.storage.config.ServiceConfig;
 import dk.kb.storage.model.v1.RecordsCountDto;
 import dk.kb.storage.model.v1.RerunClusterDto;
 import dk.kb.storage.storage.BaseModuleStorage;
-import dk.kb.storage.storage.RerunClusterStorage;
-import dk.kb.storage.storage.RerunClusterStorageForUnitTest;
-import dk.kb.storage.storage.UnitTestUtil;
-import dk.kb.storage.util.H2DbUtil;
 import dk.kb.util.webservice.exception.InternalServiceException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +17,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 
 public class RerunClusterFacadeTest {
 
- @Test
+    @Test
     public void updateRerunClusterTable_whenNewRowsIsPresent_thenReturnHowManyRowsWasInsertedOrUpdated() {
         // Arrange
         RecordsCountDto recordsCountDto = new RecordsCountDto();
@@ -51,6 +42,7 @@ public class RerunClusterFacadeTest {
         UUID id = UUID.fromString("0011e17f-2fa0-454f-98d2-f1c690de2df1");
         UUID fileId = UUID.fromString("0022e17f-2fa0-454f-98d2-f1c690de2df1");
         UUID rerunClusterId = UUID.fromString("9c79bde1-9030-47a8-bb5f-3abaf2bb4ecf");
+        Integer rerunClusterIdCount = 2;
         OffsetDateTime created = OffsetDateTime.parse("2026-04-30T12:26:57.570Z");
         UUID jobId = UUID.fromString("0033e17f-2fa0-454f-98d2-f1c690de2df1");
         OffsetDateTime inserted = OffsetDateTime.parse("2026-06-01T12:26:57.570Z");
@@ -60,6 +52,7 @@ public class RerunClusterFacadeTest {
         rerunClusterDto.setId(id);
         rerunClusterDto.setFileId(fileId);
         rerunClusterDto.setRerunClusterId(rerunClusterId);
+        rerunClusterDto.setRerunClusterIdCount(rerunClusterIdCount);
         rerunClusterDto.setCreated(created);
         rerunClusterDto.setJobId(jobId);
         rerunClusterDto.setInserted(inserted);
@@ -77,6 +70,7 @@ public class RerunClusterFacadeTest {
             assertEquals(id, returnedRerunClusterDto.getId());
             assertEquals(fileId, returnedRerunClusterDto.getFileId());
             assertEquals(rerunClusterId, returnedRerunClusterDto.getRerunClusterId());
+            assertEquals(rerunClusterIdCount, returnedRerunClusterDto.getRerunClusterIdCount());
             assertEquals(created, returnedRerunClusterDto.getCreated());
             assertEquals(jobId, returnedRerunClusterDto.getJobId());
             assertEquals(inserted, returnedRerunClusterDto.getInserted());
