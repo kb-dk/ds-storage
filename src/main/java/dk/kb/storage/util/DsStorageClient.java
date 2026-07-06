@@ -20,6 +20,7 @@ import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
+import dk.kb.storage.model.v1.RerunClusterDto;
 import dk.kb.storage.model.v1.TranscriptionDto;
 import dk.kb.util.webservice.Service2ServiceRequest;
 import dk.kb.util.webservice.exception.InternalServiceException;
@@ -36,6 +37,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.hc.core5.net.URIBuilder;
 
@@ -466,5 +468,46 @@ public class DsStorageClient {
             throw new InternalServiceException(CLIENT_URL_EXCEPTION);               
         }                      
     }
-  
+
+    /**
+     * Fetch new rows from remote rerun clusters table, save it to our rerun_cluster table, update mtime in ds_records
+     * table and return number of rows inserted or updated
+     *
+     * @throws ServiceException if fails to make API call
+     */
+    public RecordsCountDto updateRerunClusterTable() throws ServiceException {
+        try {
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPathSegments("rerun-cluster")
+                    .build();
+
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri, "POST", new RecordsCountDto(), null);
+
+        } catch (URISyntaxException uriSyntaxException) {
+            log.error("Invalid url: " + uriSyntaxException.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);
+        }
+    }
+
+    /**
+     * Get a Rerun Cluster from fileId.
+     *
+     * @param fileId (required)
+     * @return RerunClusterDto
+     * @throws ServiceException if fails to make API call
+     */
+    public RerunClusterDto getRerunClusterByFileId(UUID fileId) throws ServiceException {
+        try {
+            URI uri = new URIBuilder(serviceURI)
+                    .appendPathSegments("rerun-cluster")
+                    .addParameter("fileId", fileId.toString())
+                    .build();
+
+            return Service2ServiceRequest.httpCallWithOAuthToken(uri, "GET", new RerunClusterDto(), null);
+
+        } catch (URISyntaxException uriSyntaxException) {
+            log.error("Invalid url: " + uriSyntaxException.getMessage());
+            throw new InternalServiceException(CLIENT_URL_EXCEPTION);
+        }
+    }
 }
