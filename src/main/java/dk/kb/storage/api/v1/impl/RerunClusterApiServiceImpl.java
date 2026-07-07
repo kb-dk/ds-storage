@@ -23,13 +23,13 @@ public class RerunClusterApiServiceImpl extends ImplBase implements RerunCluster
 
     /**
      * Fetch new rows from remote rerun clusters table, save it to our rerun_cluster table, update mtime in ds_records
-     * table and return number of rows inserted or updated
+     * table and return number of rows inserted or updated in rerun_clusters table.
      *
      * @return RecordsCountDto number of rows inserted or updated
      */
     @Override
-    public RecordsCountDto updateRerunClusterTable() {
-        return RerunClusterFacade.updateRerunClusterTable();
+    public RecordsCountDto updateRerunClustersTable() {
+        return RerunClusterFacade.updateRerunClustersTable();
     }
 
     /**

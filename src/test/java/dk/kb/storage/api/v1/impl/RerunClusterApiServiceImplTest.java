@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 public class RerunClusterApiServiceImplTest {
 
     @Test
-    public void updateRerunClusterTable_whenNewRowsIsPresent_thenReturnHowManyRowsWasInsertedOrUpdated() {
+    public void updateRerunClustersTable_whenNewRowsIsPresent_thenReturnHowManyRowsWasInsertedOrUpdated() {
         // Arrange
         RecordsCountDto recordsCountDto = new RecordsCountDto();
         recordsCountDto.setCount(1);
@@ -30,7 +30,7 @@ public class RerunClusterApiServiceImplTest {
             RerunClusterApiServiceImpl rerunClusterApiServiceImpl = new RerunClusterApiServiceImpl();
 
             // Act
-            RecordsCountDto returnedRecordsCountDto = rerunClusterApiServiceImpl.updateRerunClusterTable();
+            RecordsCountDto returnedRecordsCountDto = rerunClusterApiServiceImpl.updateRerunClustersTable();
 
             // Assert
             assertNotNull(returnedRecordsCountDto);

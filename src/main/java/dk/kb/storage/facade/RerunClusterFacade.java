@@ -16,13 +16,13 @@ public class RerunClusterFacade {
 
     /**
      * Fetch new rows from remote rerun clusters table, save it to our rerun_cluster table, update mtime in ds_records
-     * table and return number of rows inserted or updated
+     * table and return number of rows inserted or updated in rerun_clusters table.
      *
      * @return RecordsCountDto number of rows inserted or updated
      */
-    public static RecordsCountDto updateRerunClusterTable() {
-        return BaseModuleStorage.performStorageAction("updateRerunClusterTable()", RerunClusterStorage.class, storage -> {
-            RecordsCountDto recordsCountDto = ((RerunClusterStorage) storage).updateRerunClusterTable();
+    public static RecordsCountDto updateRerunClustersTable() {
+        return BaseModuleStorage.performStorageAction("updateRerunClustersTable()", RerunClusterStorage.class, storage -> {
+            RecordsCountDto recordsCountDto = ((RerunClusterStorage) storage).updateRerunClustersTable();
             return recordsCountDto;
         });
     }

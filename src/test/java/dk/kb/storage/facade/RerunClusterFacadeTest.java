@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 public class RerunClusterFacadeTest {
 
     @Test
-    public void updateRerunClusterTable_whenNewRowsIsPresent_thenReturnHowManyRowsWasInsertedOrUpdated() {
+    public void updateRerunClustersTable_whenNewRowsIsPresent_thenReturnHowManyRowsWasInsertedOrUpdated() {
         // Arrange
         RecordsCountDto recordsCountDto = new RecordsCountDto();
         recordsCountDto.setCount(1);
@@ -28,7 +28,7 @@ public class RerunClusterFacadeTest {
             mockedStatic.when(() -> BaseModuleStorage.performStorageAction(anyString(), any(), any())).thenReturn(recordsCountDto);
 
             // Act
-            RecordsCountDto returnedRecordsCountDto = RerunClusterFacade.updateRerunClusterTable();
+            RecordsCountDto returnedRecordsCountDto = RerunClusterFacade.updateRerunClustersTable();
 
             // Assert
             assertNotNull(returnedRecordsCountDto);

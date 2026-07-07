@@ -18,7 +18,7 @@ public class RerunClusterStorage extends BaseModuleStorage {
     private final static RecordsCountDtoMapper recordsCountDtoMapper = new RecordsCountDtoMapper();
     private final static RerunClusterDtoMapper rerunClusterDtoMapper = new RerunClusterDtoMapper();
 
-    private static String updateRerunClusterTableStatement = """
+    private static String updateRerunClustersTableStatement = """
             WITH newest_created_rerun_clusters AS (
             	SELECT
             		max(rc.created) AS newest_created -- find the newest created date
@@ -119,13 +119,13 @@ public class RerunClusterStorage extends BaseModuleStorage {
 
     /**
      * Fetch new rows from remote rerun clusters table, save it to our rerun_cluster table, update mtime in ds_records
-     * table and return number of rows inserted or updated
+     * table and return number of rows inserted or updated in rerun_clusters table.
      *
      * @return RecordsCountDto number of rows inserted or updated
      * @throws Exception
      */
-    public RecordsCountDto updateRerunClusterTable() throws Exception {
-        try (PreparedStatement stmt = connection.prepareStatement(updateRerunClusterTableStatement)) {
+    public RecordsCountDto updateRerunClustersTable() throws Exception {
+        try (PreparedStatement stmt = connection.prepareStatement(updateRerunClustersTableStatement)) {
             ResultSet resultSet = stmt.executeQuery();
 
             log.info("Inserted/updated rows in rerun_clusters:'{}'. Updated rows in ds_records:'{}'",
@@ -135,7 +135,7 @@ public class RerunClusterStorage extends BaseModuleStorage {
 
             return recordsCountDtoMapper.map(resultSet.getInt("rerun_clusters_count"));
         } catch (SQLException e) {
-            String message = "SQL Exception in updateRerunClusterTable: " + e.getMessage();
+            String message = "SQL Exception in updateRerunClustersTable: " + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }

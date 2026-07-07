@@ -482,7 +482,7 @@ paths:
       security:
         - KBOAuth:
           - any
-      operationId: updateRerunClusterTable
+      operationId: updateRerunClustersTable
       responses:
         '201':
           description: 'Return the number of rows inserted or updated in rerun_clusters table'
