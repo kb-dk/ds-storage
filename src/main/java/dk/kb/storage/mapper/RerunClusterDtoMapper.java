@@ -12,7 +12,7 @@ public class RerunClusterDtoMapper {
     /**
      * Create a {@link RerunClusterDtoMapper} from a ResultSet
      *
-     * @param resultSet containing values from rerun_cluster table
+     * @param resultSet containing values from rerun_clusters table
      * @return RerunClusterDtoMapper populated with data
      * @throws SQLException
      */

@@ -15,8 +15,8 @@ public class RerunClusterFacade {
     private static final Logger log = LoggerFactory.getLogger(RerunClusterFacade.class);
 
     /**
-     * Fetch new rows from remote rerun clusters table, save it to our rerun_cluster table, update mtime in ds_records
-     * table and return number of rows inserted or updated in rerun_clusters table.
+     * Fetch new rows from remote p3rerun database in table clusters table, save it to our rerun_clusters table,
+     * update mtime in ds_records table and return number of rows inserted or updated in rerun_clusters table.
      *
      * @return RecordsCountDto number of rows inserted or updated
      */

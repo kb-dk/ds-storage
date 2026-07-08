@@ -470,7 +470,7 @@ public class DsStorageClient {
     }
 
     /**
-     * Fetch new rows from remote rerun clusters table, save it to our rerun_cluster table, update mtime in ds_records
+     * Fetch new rows from remote p3rerun database in table clusters table, save it to our rerun_clusters table, update mtime in ds_records
      * table and return number of rows inserted or updated in rerun_clusters table.
      *
      * @throws ServiceException if fails to make API call
