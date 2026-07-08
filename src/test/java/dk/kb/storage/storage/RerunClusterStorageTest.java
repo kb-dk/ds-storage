@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,22 +35,14 @@ public class RerunClusterStorageTest {
         Mockito.when(mockedConnection.prepareStatement(Mockito.anyString()))
                 .thenReturn(mockedStatement);
 
-        // Inject mocked dataSource into the static field BEFORE creating instance
-        Field field = BaseModuleStorage.class.getDeclaredField("dataSource");
-        field.setAccessible(true);
-        field.set(null, mockedDataSource);
+        BaseModuleStorage.dataSource = mockedDataSource;
 
         // Now create the instance (constructor will use mocked dataSource)
         rerunClusterStorage = new RerunClusterStorage();
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
-        // Reset static fields
-        Field field = BaseModuleStorage.class.getDeclaredField("dataSource");
-        field.setAccessible(true);
-        field.set(null, null);
-
+    public void tearDown() {
         // Close resources if needed
         if (rerunClusterStorage != null) {
             rerunClusterStorage.close();
@@ -59,7 +50,7 @@ public class RerunClusterStorageTest {
     }
 
     @Test
-    public void updateRerunClusterTable_whenNewRowsIsPresent_thenReturnHowManyRowsWasInsertedOrUpdated()
+    public void updateRerunClustersTable_whenNewRowsIsPresent_thenReturnHowManyRowsWasInsertedOrUpdated()
             throws Exception {
         // Arrange
         ResultSet resultSet = Mockito.mock(ResultSet.class);
@@ -70,7 +61,7 @@ public class RerunClusterStorageTest {
         Mockito.when(mockedStatement.executeQuery()).thenReturn(resultSet);
 
         // Act
-        RecordsCountDto result = rerunClusterStorage.updateRerunClusterTable();
+        RecordsCountDto result = rerunClusterStorage.updateRerunClustersTable();
 
         // Assert
         Mockito.verify(mockedStatement, Mockito.times(1)).executeQuery();
