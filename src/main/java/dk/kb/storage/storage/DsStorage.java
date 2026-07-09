@@ -1,7 +1,12 @@
 package dk.kb.storage.storage;
 
 import dk.kb.storage.mapper.RecordsCountDtoMapper;
-import dk.kb.storage.model.v1.*;
+import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.DsRecordMinimalDto;
+import dk.kb.storage.model.v1.OriginCountDto;
+import dk.kb.storage.model.v1.RecordTypeDto;
+import dk.kb.storage.model.v1.RecordsCountDto;
+import dk.kb.storage.model.v1.TranscriptionDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 import dk.kb.util.Pair;
 import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
@@ -17,10 +22,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 
-/*
+/**
  * This class will be called by the facade class. The facade class is also responsible for commit or rollback
  */
-
 public class DsStorage extends BaseModuleStorage {
 
     private static final Logger log = LoggerFactory.getLogger(DsStorage.class);
