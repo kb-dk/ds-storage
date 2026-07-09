@@ -8,7 +8,6 @@ import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
-import dk.kb.storage.model.v1.TranscriptionDto;
 import dk.kb.util.Pair;
 import dk.kb.util.webservice.ImplBase;
 import dk.kb.util.webservice.stream.ExportWriter;
@@ -23,8 +22,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.Providers;
 import java.util.ArrayList;
@@ -344,24 +341,5 @@ public class DsStorageApiServiceImpl extends ImplBase implements DsStorageApi {
                 DsStorageFacade.getMinimalRecordsModifiedAfter(writer, origin, finalMTime, finalMaxRecords, ServiceConfig.getDBBatchSize());
             }
         };
-    }
-   
-    
-    @Override
-    public void createOrUpdateTranscription(@Valid TranscriptionDto transcriptionDto) {
-       DsStorageFacade.createOrUpdateTranscription(transcriptionDto);        
-    }
-        
-    
-    /**
-    *  Load full transcription for a stream 
-    *  
-    *  @param fileId FileId for the stream, this is the stream filename.   
-    *  @return TranscriptionDto Will return empty transcriptionDto if no transcription is found
-    */
-    @Override
-    public TranscriptionDto getTranscription(@NotNull String fileId) {
-        // TODO Auto-generated method stub
-        return DsStorageFacade.getTranscription(fileId);
     }
 }

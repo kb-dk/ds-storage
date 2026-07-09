@@ -1,25 +1,27 @@
 package dk.kb.storage.facade;
 
-
 import dk.kb.storage.config.ServiceConfig;
+import dk.kb.storage.model.v1.DsRecordDto;
+import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.storage.BaseModuleStorage;
 import dk.kb.storage.storage.DsStorage;
 import dk.kb.storage.storage.DsStorageForUnitTest;
+import dk.kb.storage.storage.UnitTestUtil;
 import dk.kb.storage.util.H2DbUtil;
+import dk.kb.util.webservice.exception.InternalServiceException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
-import dk.kb.storage.model.v1.DsRecordDto;
-import dk.kb.storage.model.v1.RecordTypeDto;
-import dk.kb.storage.storage.UnitTestUtil;
-import dk.kb.util.webservice.exception.InternalServiceException;
-
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DsStorageFacadeTest extends UnitTestUtil {
     protected static DsStorageForUnitTest storage = null;

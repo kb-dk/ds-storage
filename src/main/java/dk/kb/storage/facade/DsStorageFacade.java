@@ -7,7 +7,6 @@ import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.OriginDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
-import dk.kb.storage.model.v1.TranscriptionDto;
 import dk.kb.storage.model.v1.UpdateStrategyDto;
 import dk.kb.storage.storage.BaseModuleStorage;
 import dk.kb.storage.storage.DsStorage;
@@ -73,35 +72,6 @@ public class DsStorageFacade {
         log.info("Delivered '{}' records", totalDelivered);
         return totalDelivered;
     }
-
-    /**
-     * <p>
-     * Create or update a new transcription. The primary key is fileId that comes from
-     * the external system. The transcription text is the full text and transcription_lines
-     * are lines with start-end followed by the sentence and with a new line in the end.
-     *
-     * @param TranscriptionDto The entry to be created or updated
-     *
-     */
-    public static void createOrUpdateTranscription(TranscriptionDto transcription) {
-        BaseModuleStorage.performStorageAction("createOrUpdatTranscription(" + transcription.getFileId() + ")", DsStorage.class, storage -> {
-            String fileId = transcription.getFileId();
-            // Sanity check
-            if (fileId == null) {
-                throw new Exception("Fileid must not be null");
-            }
-            int count = ((DsStorage) storage).countTranscriptionByFileId(fileId);
-            if (count > 0) {
-                ((DsStorage) storage).deleteTranscriptionByFileId(fileId);
-            }
-            ((DsStorage) storage).createNewTranscription(transcription);
-            //Touch the record in the ds_records table so will be selected in next indexing job and transcriptions will be indexed as well.
-            int touched = ((DsStorage) storage).updateMTimeForRecordByFileId(fileId);
-            log.info("Create/Updated transcription with fileId='{}' number of records touched='{}'", fileId, touched);
-            return null; // Something must be returned
-        });
-    }
-
 
     public static void createOrUpdateRecord(DsRecordDto record) {
         BaseModuleStorage.performStorageAction("createOrUpdateRecord(" + record.getId() + ")", DsStorage.class, storage -> {
@@ -687,18 +657,5 @@ public class DsStorageFacade {
 
         //just alternative method                  
         //childrenIds.forEach( c -> record.getChildren().add(getRecord(c))); // Just to make Toke happy, but only as a comment instead of the for-loop        
-    }
-
-
-    /**
-     * Load full transcription for a stream
-     *
-     * @param fileId FileId for the stream, this is the stream filename.
-     * @return TranscriptionDto Return empty transcriptionDto if none is found
-     */
-    public static TranscriptionDto getTranscription(String fileId) {
-        return BaseModuleStorage.performStorageAction(
-                "getTranscription(fileId='" + fileId + ")",
-                DsStorage.class, storage -> ((DsStorage) storage).getTranscriptionByFileId(fileId));
     }
 }

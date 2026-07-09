@@ -6,7 +6,6 @@ import dk.kb.storage.model.v1.DsRecordMinimalDto;
 import dk.kb.storage.model.v1.OriginCountDto;
 import dk.kb.storage.model.v1.RecordTypeDto;
 import dk.kb.storage.model.v1.RecordsCountDto;
-import dk.kb.storage.model.v1.TranscriptionDto;
 import dk.kb.storage.util.UniqueTimestampGenerator;
 import dk.kb.util.Pair;
 import dk.kb.util.webservice.exception.InvalidArgumentServiceException;
@@ -33,7 +32,6 @@ public class DsStorage extends BaseModuleStorage {
 
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ", Locale.getDefault());
 
-    private static final String TRANSCRIPTIONS_TABLE = "transcriptions";
     private static final String RECORDS_TABLE = "ds_records";
     private static final String ORGID_COLUMN = "orgid";
     private static final String ID_COLUMN = "id";
@@ -47,10 +45,6 @@ public class DsStorage extends BaseModuleStorage {
     private static final String PARENT_ID_COLUMN = "parentid";
     private static final String RECORDS_REFERENCE_ID_COLUMN = "referenceid";
     private static final String RECORDS_KALTURA_ID_COLUMN = "kalturaid";
-    private static final String FILE_ID_COLUMN = "fileid";
-    private static final String FILE_NAME_COLUMN = "filename";
-    private static final String TRANSCRIPTION_TEXT_COLUMN = "transcription";
-    private static final String TRANSCRIPTION_LINES_COLUMN = "transcription_lines";
 
     private static String createRecordStatement = "INSERT INTO " + RECORDS_TABLE +
             " (" + ID_COLUMN + ", " + ORIGIN_COLUMN + ", " + ORGID_COLUMN + "," + RECORDTYPE_COLUMN + "," + IDERROR_COLUMN + "," + DELETED_COLUMN + ", " + CTIME_COLUMN + ", " + MTIME_COLUMN + ", " + DATA_COLUMN + ", " + PARENT_ID_COLUMN + " , " + RECORDS_REFERENCE_ID_COLUMN + " , " + RECORDS_KALTURA_ID_COLUMN + ")" +
@@ -105,10 +99,6 @@ public class DsStorage extends BaseModuleStorage {
             + PARENT_ID_COLUMN + "= ?";
 
     private static String recordByIdStatement = "SELECT * FROM " + RECORDS_TABLE + " WHERE ID= ?";
-
-    private static String transcriptionByFileIdStatement = "SELECT * FROM " + TRANSCRIPTIONS_TABLE + " WHERE " + FILE_ID_COLUMN + " = ?";
-
-    private static String transcriptionByFileIdCountStatement = "SELECT count(*) as count FROM " + TRANSCRIPTIONS_TABLE + " WHERE " + FILE_ID_COLUMN + " = ?";
 
     // SELECT mtime FROM ds_records WHERE origin= 'test_base' ORDER BY mtime DESC
     private static final String maxMtimeStatement =
@@ -197,20 +187,8 @@ public class DsStorage extends BaseModuleStorage {
                     " AND " + PARENT_ID_COLUMN + " IS NULL" +
                     " ORDER BY " + MTIME_COLUMN + " ASC LIMIT ?";
 
-
-    //SELECT * FROM  ds_records  WHERE origin= 'test_origin' AND mtime  > 1637237120476001 AND parentId IS NULL ORDER BY mtime ASC LIMIT 100    
-    private static String createTranscriptionStatement =
-            "INSERT INTO " + TRANSCRIPTIONS_TABLE +
-                    " (" +
-                    FILE_ID_COLUMN + ", " +
-                    FILE_NAME_COLUMN + ", " +
-                    MTIME_COLUMN + ", " +
-                    TRANSCRIPTION_TEXT_COLUMN + ", " +
-                    TRANSCRIPTION_LINES_COLUMN + ") " +
-                    " VALUES (?,?,?,?,?)";
-
     private static String originsStatisticsStatement = "SELECT " + ORIGIN_COLUMN + " ,COUNT(*) AS COUNT , SUM(" + DELETED_COLUMN + ") AS deleted,  max(" + MTIME_COLUMN + ") AS MAX FROM " + RECORDS_TABLE + " group by " + ORIGIN_COLUMN;
-    private static String deleteTranscriptionByFileIdStatement = "DELETE FROM " + TRANSCRIPTIONS_TABLE + " WHERE " + FILE_ID_COLUMN + " = ?";
+
     private static String deleteMarkedForDeleteStatement = "DELETE FROM " + RECORDS_TABLE + " WHERE " + ORIGIN_COLUMN + " = ? AND " + DELETED_COLUMN + " = 1";
     private static String recordIdExistsStatement = "SELECT COUNT(*) AS COUNT FROM " + RECORDS_TABLE + " WHERE " + ID_COLUMN + " = ?";
     private static String countRecordsInOriginStatement = "SELECT COUNT(*) FROM " + RECORDS_TABLE + " WHERE " + ORIGIN_COLUMN + " = ? AND " + MTIME_COLUMN + " > ?";
@@ -696,26 +674,6 @@ public class DsStorage extends BaseModuleStorage {
     }
 
     /**
-     * @param transcription fileId must not be full
-     */
-    public void createNewTranscription(TranscriptionDto transcription) throws Exception {
-        long nowStamp = UniqueTimestampGenerator.next();
-
-        try (PreparedStatement stmt = connection.prepareStatement(createTranscriptionStatement)) {
-            stmt.setString(1, transcription.getFileId());
-            stmt.setString(2, transcription.getFileName());
-            stmt.setLong(3, nowStamp);
-            stmt.setString(4, transcription.getTranscription());
-            stmt.setString(5, transcription.getTranscriptionLines());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            String message = "SQL Exception in createNewTranscription with fileid:" + transcription.getFileId() + " error:" + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }
-    }
-
-    /**
      * Update the modified time for input record.
      *
      * @param recordId of record to update
@@ -800,28 +758,6 @@ public class DsStorage extends BaseModuleStorage {
             return recordsCountDtoMapper.map(rows);
         } catch (SQLException e) {
             String message = "SQL Exception in deleteMarkedForDelete for origin:" + origin + " error:" + e.getMessage();
-            log.error(message);
-            throw new SQLException(message, e);
-        }
-    }
-
-    /**
-     * Delete a transcription by fileId.
-     *
-     * @param fileId the fileId. If fileId is not found nothing will be deleted, but it will be logged.
-     * @return Number of deleted records. Value 1 should be expected but can be higher if several records by mistake have same stream
-     * @throws Exception Only if unexpected SQL exception happens.
-     */
-    public int deleteTranscriptionByFileId(String fileId) throws Exception {
-        try (PreparedStatement stmt = connection.prepareStatement(deleteTranscriptionByFileIdStatement)) {
-            stmt.setString(1, fileId);
-            int numberDeleted = stmt.executeUpdate();
-            if (numberDeleted != 1) {
-                log.warn("Delete transcription by fileId did not delete 1 as expected. Deleted='{}', FileId='{}'", numberDeleted, fileId);
-            }
-            return numberDeleted;
-        } catch (SQLException e) {
-            String message = "SQL Exception in deleteTranscriptionByFileId for fileId:" + fileId + " error:" + e.getMessage();
             log.error(message);
             throw new SQLException(message, e);
         }
@@ -937,60 +873,6 @@ public class DsStorage extends BaseModuleStorage {
         record.setReferenceId(referenceId);
         record.setKalturaId(kalturaId);
         return record;
-    }
-
-    /**
-     * Load a transcription by fileId.
-     *
-     * @param fileId the fileId to load
-     * @return TranscriptionDto. If fileId is not found will return null
-     */
-    public TranscriptionDto getTranscriptionByFileId(String fileId) throws SQLException {
-        try (PreparedStatement stmt = connection.prepareStatement(transcriptionByFileIdStatement)) {
-            stmt.setString(1, fileId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) {
-                    TranscriptionDto empty = new TranscriptionDto(); //DsStorageClient can not handle null values when serializing.
-                    empty.setFileId(fileId);
-                    return empty;
-                }
-                TranscriptionDto trans = createTranscriptionFromRS(rs);
-                return trans;
-            }
-        }
-    }
-
-    /**
-     * Count number of transcriptions by fileId. This is a fast method so see if a transcriptions exists instead of loading all text.
-     *
-     * @param fileId the fileId count
-     * @return 0 or 1. FileId is unique
-     */
-    public int countTranscriptionByFileId(String fileId) throws SQLException {
-        try (PreparedStatement stmt = connection.prepareStatement(transcriptionByFileIdCountStatement)) {
-            stmt.setString(1, fileId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                rs.next();//always value                
-                return rs.getInt("count");
-            }
-        }
-    }
-
-    private static TranscriptionDto createTranscriptionFromRS(ResultSet rs) throws SQLException {
-        String fileId = rs.getString(FILE_ID_COLUMN);
-        String fileName = rs.getString(FILE_NAME_COLUMN);
-        long mTime = rs.getLong(MTIME_COLUMN);
-        String transcriptionText = rs.getString(TRANSCRIPTION_TEXT_COLUMN);
-        String transcriptionLines = rs.getString(TRANSCRIPTION_LINES_COLUMN);
-
-        TranscriptionDto transcription = new TranscriptionDto();
-        transcription.setFileId(fileId);
-        transcription.setFileName(fileName);
-        transcription.setmTime(mTime);
-        transcription.setTranscription(transcriptionText);
-        transcription.setTranscriptionLines(transcriptionLines);
-        return transcription;
     }
 
     private static int boolToInt(Boolean isTrue) {
