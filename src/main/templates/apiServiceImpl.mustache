@@ -4,9 +4,6 @@ import {{package}}.*;
 {{#imports}}import {{import}};
 {{/imports}}
 
-import {{packageName}}.webservice.exception.ServiceException;
-import {{packageName}}.webservice.exception.InternalServiceException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +23,7 @@ import org.openapitools.codegen.utils.JsonCache.CacheException;
 {{/loadTestDataFromFile}}
 {{/generateOperationBody}}
 import dk.kb.util.webservice.ImplBase;
+import org.apache.cxf.interceptor.InInterceptors;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.servlet.ServletConfig;
