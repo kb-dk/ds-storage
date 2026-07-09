@@ -10,10 +10,10 @@ import java.util.UUID;
 public class RerunClusterDtoMapper {
 
     /**
-     * Create a {@link RerunClusterDtoMapper} from a ResultSet
+     * Create a {@link RerunClusterDto} from a ResultSet
      *
      * @param resultSet containing values from rerun_clusters table
-     * @return RerunClusterDtoMapper populated with data
+     * @return RerunClusterDto populated with data
      * @throws SQLException
      */
     public RerunClusterDto map(ResultSet resultSet) throws SQLException {
