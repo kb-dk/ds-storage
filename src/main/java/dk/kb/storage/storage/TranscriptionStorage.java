@@ -17,7 +17,11 @@ public class TranscriptionStorage extends BaseModuleStorage {
 
     private static String transcriptionByFileIdStatement = """
             SELECT
-                *
+                fileid,
+                filename,
+                mtime,
+                transcription,
+                transcription_lines
             FROM
                 transcriptions
             WHERE
