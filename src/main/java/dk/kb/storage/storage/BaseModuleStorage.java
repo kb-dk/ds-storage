@@ -13,7 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
- * The BaseModuleStorage, which sets up the connection to the database which is then used by {@link DsStorage}, {@link RerunClusterStorage}.
+ * The BaseModuleStorage, which sets up the connection to the database which is then used by {@link DsStorage}, {@link TranscriptionStorage} {@link RerunClusterStorage}.
  * This class only sets up the connection, while the other three are responsible for implementing the interactions with the database.
  */
 public abstract class BaseModuleStorage implements AutoCloseable {
