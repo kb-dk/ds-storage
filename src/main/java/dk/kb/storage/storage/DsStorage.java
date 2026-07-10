@@ -288,7 +288,6 @@ public class DsStorage extends BaseModuleStorage {
      * Only parents posts (those that have children) will be load or only children (those that have parent)
      */
     public ArrayList<DsRecordDto> getModifiedAfterParentsOnly(String origin, long mTime, int batchSize) throws Exception {
-
         if (batchSize < 1 || batchSize > 100000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 100000");
         }
@@ -519,13 +518,13 @@ public class DsStorage extends BaseModuleStorage {
      * Will extract all no matter of parent or child ids
      */
     public ArrayList<DsRecordDto> getRecordsModifiedAfter(String origin, long mTime, int batchSize) throws Exception {
-
         if (batchSize < 1 || batchSize > 10000) { //No doom switch
             throw new Exception("Batchsize must be in range 1 to 10000");
         }
-        ArrayList<DsRecordDto> records = new ArrayList<>();
-        try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement)) {
 
+        ArrayList<DsRecordDto> records = new ArrayList<>();
+
+        try (PreparedStatement stmt = connection.prepareStatement(recordsModifiedAfterStatement)) {
             prepareStatementAndGetRecords(origin, mTime, batchSize, records, stmt);
         } catch (Exception e) {
             String message = "SQL Exception in getRecordsModifiedAfter";
@@ -585,7 +584,6 @@ public class DsStorage extends BaseModuleStorage {
             log.error(message);
             throw new SQLException(message, e);
         }
-
         return records;
     }
 
@@ -609,6 +607,7 @@ public class DsStorage extends BaseModuleStorage {
                 }
             }
         }
+
         return originCountList;
     }
 
@@ -621,6 +620,7 @@ public class DsStorage extends BaseModuleStorage {
      */
     public Long getAmountOfRecordsForOrigin(String origin, Long mTime) throws SQLException {
         long recordsInOrigin = 0L;
+
         try (PreparedStatement statement = connection.prepareStatement(countRecordsInOriginStatement)) {
             statement.setString(1, origin);
             statement.setLong(2, Objects.requireNonNullElse(mTime, 0L));
@@ -670,7 +670,6 @@ public class DsStorage extends BaseModuleStorage {
             log.error(message);
             throw new SQLException(message, e);
         }
-
     }
 
     /**
@@ -882,11 +881,10 @@ public class DsStorage extends BaseModuleStorage {
         return isTrue ? 1 : 0;
     }
 
-    /*
+    /**
      * Method is synchronized because simple dateformat is not thread safe. Faster to reuse synchronized than to construct new every time.
      */
     private static synchronized String convertToHumanDate(long millis_time_1000) {
         return dateFormat.format(new Date(millis_time_1000 / 1000));
-
     }
 }

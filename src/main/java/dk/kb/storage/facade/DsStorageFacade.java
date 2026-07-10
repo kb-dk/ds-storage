@@ -26,15 +26,11 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class DsStorageFacade {
-
     private static final Logger log = LoggerFactory.getLogger(DsStorageFacade.class);
 
-
     /**
-     * <p>
      * Get a list of records after a given mTime. The records will only have fields
      * id, mTime, referenceid and kalturaid defined
-     * </p>
      *
      * @param origin    The origin to fetch records from
      * @param mTime     only fetch records with mTime larger that this
@@ -118,7 +114,6 @@ public class DsStorageFacade {
         });
     }
 
-
     /**
      * Update kaltura id for a record. The kaltura id is given to the record when uploaded to Kaltura. The Kaltura id must then later be updated with this method.
      * Due to data error there can be several records having same stream.
@@ -145,7 +140,6 @@ public class DsStorageFacade {
             return null;    // Something must be returned
         });
     }
-
 
     public static ArrayList<OriginCountDto> getOriginStatistics() {
         return BaseModuleStorage.performStorageAction("getOriginStatistics", DsStorage.class, storage -> {
@@ -249,7 +243,6 @@ public class DsStorageFacade {
         return totalDelivered;
     }
 
-
     /**
      * Load a record with childrenIds and parentId if they exist
      * If the value includeLocalTree is true also load the local tree for the given record. Parent will be loaded and all children. Siblings will not be loaded.
@@ -257,10 +250,9 @@ public class DsStorageFacade {
      *   <li>If there is a parent record, the given record will point to it, but the parent will not point back to this child</li>
      *   <li>If there is a parent record, the given record will point to it, but the parent will not point back to this child</li>
      * </ol>
-     * <p>
-     * @param recordId The record id . If includeLocalTree is set the object tree will be returned with a pointer to this record
-     * @param  includeLocalTree Load the parent and children as object and not just IDs.
      *
+     * @param recordId         The record id . If includeLocalTree is set the object tree will be returned with a pointer to this record
+     * @param includeLocalTree Load the parent and children as object and not just IDs.
      */
     public static DsRecordDto getRecord(String recordId, Boolean includeLocalTree) {
         if (!includeLocalTree) {
@@ -274,12 +266,11 @@ public class DsStorageFacade {
         }
     }
 
-
     /**
      * Load a record with childrenIds
-     * <p>
-     * Return null if record does not exist
      *
+     * @param recordId The record id.
+     * @return DsRecordDto or null if record does not exist
      */
     private static DsRecordDto getRecord(String recordId) {
         return BaseModuleStorage.performStorageAction(" getRecord(" + recordId + ")", DsStorage.class, storage -> {
@@ -291,14 +282,11 @@ public class DsStorageFacade {
 
     /**
      * Will load full object tree. The DsRecordDto return will a pointer the record with the recordId in the tree
-     * <p>
      * Logic: Find top parent recursive and load children.
      *
      * @param recordId The full object tree will be returned with a pointer to this record
-     *
      */
     public static DsRecordDto getRecordTree(String recordId) {
-
         return BaseModuleStorage.performStorageAction("getRecord(" + recordId + ")", DsStorage.class, storage -> {
             String idNorm = IdNormaliser.normaliseId(recordId);
             DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children. Will return null if record not found
@@ -308,10 +296,8 @@ public class DsStorageFacade {
             loadAndSetChildRelations(topParent, new HashSet<>(), record); //Recursive method
 
             return record;
-
         });
     }
-
 
     /**
      * Will load the local tree for the given record. Parent will be loaded and all children. Siblings will not be loaded. The tree will only point one way
@@ -320,10 +306,8 @@ public class DsStorageFacade {
      * 2) Children will be loaded, but the children will not point back to this parent record.
      *
      * @param recordId The local object tree will be returned with a pointer to this record
-     *
      */
     private static DsRecordDto getRecordTreeLocal(String recordId) {
-
         return BaseModuleStorage.performStorageAction("getRecordTreeLocal(" + recordId + ")", DsStorage.class, storage -> {
             String idNorm = IdNormaliser.normaliseId(recordId);
             DsRecordDto record = getRecord(idNorm); //Load from facade as this will set children as id's.
@@ -383,7 +367,6 @@ public class DsStorageFacade {
         return topParent;
     }
 
-
     /**
      * Delete all records for an origin that has been modified time interval. The records will be deleted and not just marked for deletion
      *
@@ -400,7 +383,6 @@ public class DsStorageFacade {
         });
     }
 
-
     public static RecordsCountDto markRecordForDelete(String recordId) {
         //TODO touch children etc.
         return BaseModuleStorage.performStorageAction("markRecordForDelete(" + recordId + ")", DsStorage.class, storage -> {
@@ -411,7 +393,6 @@ public class DsStorageFacade {
             return recordsCountDto;
         });
     }
-
 
     public static RecordsCountDto deleteMarkedForDelete(String origin) {
         return BaseModuleStorage.performStorageAction("deleteMarkedForDelete(" + origin + ")", DsStorage.class, storage -> {
@@ -466,12 +447,10 @@ public class DsStorageFacade {
                 storage -> ((DsStorage) storage).getMaxMtimeAfter(origin, recordType, mTime, maxRecords));
     }
 
-    /*
+    /**
      * This is called whenever a record is modified (create/update/markfordelete). The recordId here
      * has already been assigned a new mTime. Update mTime for parent and/or children according to  update strategy for that origin.
-     *
      * This method will not commit/rollback as this is handled by the calling method.
-     *
      * See UpdateStrategyDto
      */
     private static void updateMTimeForParentChild(DsStorage storage, String recordId) throws Exception {
@@ -601,10 +580,7 @@ public class DsStorageFacade {
      * @param previousIdsForCycleDetection Set to keep track of cycles. When calling this method supply it with a new empty HashSet
      * @param origo                        record used as recursive parameter
      */
-
     private static void loadAndSetChildRelations(DsRecordDto currentRecord, HashSet<String> previousIdsForCycleDetection, DsRecordDto origo) {
-
-
         List<String> childrenIds = currentRecord.getChildrenIds();
         List<DsRecordDto> childrenRecords = new ArrayList<>();
         for (String childId : childrenIds) {
@@ -621,11 +597,8 @@ public class DsStorageFacade {
             previousIdsForCycleDetection.add(child.getId());
             loadAndSetChildRelations(child, previousIdsForCycleDetection, origo); //This is the recursive call
         }
-
         currentRecord.setChildren(childrenRecords);
-
     }
-
 
     /**
      * This method will load the local tree around the given record. It will
@@ -635,9 +608,7 @@ public class DsStorageFacade {
      * @param record The input record with the local tree set
      * @throws InvalidArgumentServiceException is thrown if a record has over 1000 children. It is not expected any caller would want this, but is instead seen as mistake.
      */
-
     private static void setLocalTreeForRecord(DsRecordDto record) {
-
         //Doom switch prevention.
         if (record.getChildrenIds() != null && record.getChildrenIds().size() > 1000) { // It seems our collections will have a very few or millions. 
             throw new InvalidArgumentServiceException("Record has too many children, id:" + record.getId());
