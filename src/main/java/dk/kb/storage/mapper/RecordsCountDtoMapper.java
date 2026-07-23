@@ -5,6 +5,7 @@ import dk.kb.storage.model.v1.RecordsCountDto;
 import java.sql.SQLException;
 
 public class RecordsCountDtoMapper {
+
     /**
      * Create a {@link RecordsCountDto} from an int
      *

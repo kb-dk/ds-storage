@@ -11,7 +11,7 @@ public class TranscriptionDtoMapper {
      * Create a {@link TranscriptionDto} from a ResultSet
      *
      * @param resultSet containing values from transcription table
-     * @return RerunClusterDtoMapper populated with data
+     * @return TranscriptionDto populated with data
      * @throws SQLException
      */
     public TranscriptionDto map(ResultSet resultSet) throws SQLException {
